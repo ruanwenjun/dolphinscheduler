@@ -33,6 +33,7 @@ import org.apache.dolphinscheduler.remote.config.NettyClientConfig;
 import org.apache.dolphinscheduler.server.master.cache.ProcessInstanceExecCacheManager;
 import org.apache.dolphinscheduler.server.master.config.MasterConfig;
 import org.apache.dolphinscheduler.server.master.dispatch.executor.NettyExecutorManager;
+import org.apache.dolphinscheduler.server.master.exception.MasterException;
 import org.apache.dolphinscheduler.server.master.metrics.MasterServerMetrics;
 import org.apache.dolphinscheduler.server.master.metrics.ProcessInstanceMetrics;
 import org.apache.dolphinscheduler.server.master.registry.ServerNodeManager;
@@ -146,7 +147,9 @@ public class MasterSchedulerService extends BaseDaemonThread {
                 Thread.currentThread().interrupt();
                 break;
             } catch (Exception e) {
-                logger.error("Master schedule service loop command error", e);
+                logger.error("Master schedule workflow error", e);
+                // sleep for 1s here to avoid the database down cause the exception boom
+                ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS);
             }
         }
     }
@@ -154,7 +157,7 @@ public class MasterSchedulerService extends BaseDaemonThread {
     /**
      * Query command from database by slot, and transform to workflow instance, then submit to workflowExecuteThreadPool.
      */
-    private void scheduleWorkflow() throws InterruptedException {
+    private void scheduleWorkflow() throws InterruptedException, MasterException {
         List<Command> commands = findCommands();
         if (CollectionUtils.isEmpty(commands)) {
             // indicate that no command ,sleep for 1s
@@ -164,6 +167,8 @@ public class MasterSchedulerService extends BaseDaemonThread {
 
         List<ProcessInstance> processInstances = command2ProcessInstance(commands);
         if (CollectionUtils.isEmpty(processInstances)) {
+            // indicate that the command transform to processInstance error, sleep for 1s
+            Thread.sleep(Constants.SLEEP_TIME_MILLIS);
             return;
         }
         MasterServerMetrics.incMasterConsumeCommand(commands.size());
@@ -236,23 +241,27 @@ public class MasterSchedulerService extends BaseDaemonThread {
         return processInstances;
     }
 
-    private List<Command> findCommands() {
-        long scheduleStartTime = System.currentTimeMillis();
-        int thisMasterSlot = ServerNodeManager.getSlot();
-        int masterCount = ServerNodeManager.getMasterSize();
-        if (masterCount <= 0) {
-            logger.warn("Master count: {} is invalid, the current slot: {}", masterCount, thisMasterSlot);
-            return Collections.emptyList();
+    private List<Command> findCommands() throws MasterException {
+        try {
+            long scheduleStartTime = System.currentTimeMillis();
+            int thisMasterSlot = ServerNodeManager.getSlot();
+            int masterCount = ServerNodeManager.getMasterSize();
+            if (masterCount <= 0) {
+                logger.warn("Master count: {} is invalid, the current slot: {}", masterCount, thisMasterSlot);
+                return Collections.emptyList();
+            }
+            int pageNumber = 0;
+            int pageSize = masterConfig.getFetchCommandNum();
+            final List<Command> result = processService.findCommandPageBySlot(pageSize, pageNumber, masterCount, thisMasterSlot);
+            if (CollectionUtils.isNotEmpty(result)) {
+                logger.info("Master schedule service loop command success, command size: {}, current slot: {}, total slot size: {}",
+                    result.size(), thisMasterSlot, masterCount);
+            }
+            ProcessInstanceMetrics.recordCommandQueryTime(System.currentTimeMillis() - scheduleStartTime);
+            return result;
+        } catch (Exception ex) {
+            throw new MasterException("Master loop command from database error", ex);
         }
-        int pageNumber = 0;
-        int pageSize = masterConfig.getFetchCommandNum();
-        final List<Command> result = processService.findCommandPageBySlot(pageSize, pageNumber, masterCount, thisMasterSlot);
-        if (CollectionUtils.isNotEmpty(result)) {
-            logger.info("Master schedule service loop command success, command size: {}, current slot: {}, total slot size: {}",
-                result.size(), thisMasterSlot, masterCount);
-        }
-        ProcessInstanceMetrics.recordCommandQueryTime(System.currentTimeMillis() - scheduleStartTime);
-        return result;
     }
 
     private SlotCheckState slotCheck(Command command) {
