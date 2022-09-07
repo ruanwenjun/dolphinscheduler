@@ -20,6 +20,7 @@ package org.apache.dolphinscheduler.server.master.runner.task;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.auto.service.AutoService;
 import org.apache.commons.lang.StringUtils;
+import org.apache.dolphinscheduler.common.thread.ThreadNameReplacer;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.common.utils.NetUtils;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
@@ -59,21 +60,10 @@ public class SubTaskProcessor extends BaseTaskProcessor {
     private StateEventCallbackService stateEventCallbackService =
             SpringApplicationContext.getBean(StateEventCallbackService.class);
 
-    @Override
-    public boolean submitTask() {
-        this.taskInstance =
-                processService.submitTaskWithRetry(processInstance, taskInstance, maxRetryTimes, commitInterval);
-
-        if (this.taskInstance == null) {
-            return false;
+    protected boolean postSubmit() {
+        try (ThreadNameReplacer threadNameReplacer = new ThreadNameReplacer(threadLoggerInfoName)) {
+            logger.info("SubTask submit to DB success");
         }
-        this.setTaskExecutionLogger();
-        taskInstance.setLogPath(LogUtils.getTaskLogPath(taskInstance.getFirstSubmitTime(),
-                processInstance.getProcessDefinitionCode(),
-                processInstance.getProcessDefinitionVersion(),
-                taskInstance.getProcessInstanceId(),
-                taskInstance.getId()));
-
         return true;
     }
 
@@ -92,11 +82,6 @@ public class SubTaskProcessor extends BaseTaskProcessor {
         } finally {
             this.runLock.unlock();
         }
-        return true;
-    }
-
-    @Override
-    protected boolean dispatchTask() {
         return true;
     }
 

@@ -18,10 +18,10 @@
 package org.apache.dolphinscheduler.server.master.runner.task;
 
 import com.google.auto.service.AutoService;
+import org.apache.dolphinscheduler.common.thread.ThreadNameReplacer;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinition;
-import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -87,41 +86,27 @@ public class DependentTaskProcessor extends BaseTaskProcessor {
     boolean allDependentItemFinished;
 
     @Override
-    public boolean submitTask() {
-        Optional<TaskInstance> taskInstanceOptional =
-                submitTaskInstanceToDb(processInstance, taskInstance, maxRetryTimes, commitInterval);
-        if (!taskInstanceOptional.isPresent()) {
-            logger.info("Submit Dependent task instance to DB failed, taskInstanceId: {}", taskInstance.getId());
-            return false;
-        }
-        taskInstance = taskInstanceOptional.get();
-        try {
-            setTaskExecutionLogger();
+    public boolean postSubmit() {
+        try (ThreadNameReplacer threadNameReplacer = new ThreadNameReplacer(threadLoggerInfoName)) {
             logger.info("Dependent task submit to DB success");
-            taskInstance.setLogPath(LogUtils.getTaskLogPath(taskInstance.getFirstSubmitTime(),
-                    processInstance.getProcessDefinitionCode(),
-                    processInstance.getProcessDefinitionVersion(),
-                    taskInstance.getProcessInstanceId(),
-                    taskInstance.getId()));
+            // Since someone may set the
+            taskInstance.setLogPath(LogUtils.getTaskLogPath(processInstance, taskInstance));
             taskInstance.setHost(masterConfig.getMasterAddress());
             taskInstance.setState(ExecutionStatus.RUNNING_EXECUTION);
             taskInstance.setStartTime(new Date());
             taskInstanceDao.updateTaskInstance(taskInstance);
             logger.info("Dependent task begin to running");
             initDependParameters();
-            logger.info("Success initialize dependent task parameters, the dependent data is: {}", dependentDate);
             return true;
         } catch (Exception ex) {
             logger.info("Submit/initialize dependent task failed", ex);
-            taskInstance.setEndTime(new Date());
-            taskInstance.setState(ExecutionStatus.FAILURE);
-            taskInstanceDao.updateTaskInstanceSafely(taskInstance);
-            return false;
+            throw new RuntimeException(ex);
         }
     }
 
     @Override
     public boolean runTask() {
+        logger.info("Success initialize dependent task parameters, the dependent data is: {}", dependentDate);
         if (!allDependentItemFinished) {
             allDependentItemFinished = allDependentTaskFinish();
         }
@@ -129,11 +114,6 @@ public class DependentTaskProcessor extends BaseTaskProcessor {
             getTaskDependResult();
             endTask();
         }
-        return true;
-    }
-
-    @Override
-    protected boolean dispatchTask() {
         return true;
     }
 

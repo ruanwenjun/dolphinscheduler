@@ -17,14 +17,13 @@
 
 package org.apache.dolphinscheduler.server.master.runner.task;
 
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_CONDITIONS;
-
-import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.plugin.task.api.enums.TaskTimeoutStrategy;
+import com.google.auto.service.AutoService;
+import org.apache.dolphinscheduler.common.thread.ThreadNameReplacer;
 import org.apache.dolphinscheduler.common.utils.NetUtils;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.plugin.task.api.enums.DependResult;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
+import org.apache.dolphinscheduler.plugin.task.api.enums.TaskTimeoutStrategy;
 import org.apache.dolphinscheduler.plugin.task.api.model.DependentItem;
 import org.apache.dolphinscheduler.plugin.task.api.model.DependentTaskModel;
 import org.apache.dolphinscheduler.plugin.task.api.parameters.DependentParameters;
@@ -37,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.auto.service.AutoService;
+import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_CONDITIONS;
 
 /**
  * condition task processor
@@ -60,15 +59,10 @@ public class ConditionTaskProcessor extends BaseTaskProcessor {
      */
     private Map<Long, ExecutionStatus> completeTaskList = new ConcurrentHashMap<>();
 
-    @Override
-    public boolean submitTask() {
-        this.taskInstance =
-                processService.submitTaskWithRetry(processInstance, taskInstance, maxRetryTimes, commitInterval);
-        if (this.taskInstance == null) {
-            return false;
+    protected boolean postSubmit() {
+        try (ThreadNameReplacer threadNameReplacer = new ThreadNameReplacer(threadLoggerInfoName)) {
+            logger.info("Condition task submit success");
         }
-        this.setTaskExecutionLogger();
-        logger.info("condition task submit success");
         return true;
     }
 
@@ -83,11 +77,6 @@ public class ConditionTaskProcessor extends BaseTaskProcessor {
             endTask();
         }
         logger.info("condition task finished");
-        return true;
-    }
-
-    @Override
-    protected boolean dispatchTask() {
         return true;
     }
 

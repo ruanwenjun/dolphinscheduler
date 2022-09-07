@@ -17,10 +17,10 @@
 
 package org.apache.dolphinscheduler.server.master.runner.task;
 
-import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_BLOCKING;
-
+import com.google.auto.service.AutoService;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.BlockingOpportunity;
+import org.apache.dolphinscheduler.common.thread.ThreadNameReplacer;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.common.utils.NetUtils;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.auto.service.AutoService;
+import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_TYPE_BLOCKING;
 
 /**
  * blocking task processor
@@ -105,14 +105,10 @@ public class BlockingTaskProcessor extends BaseTaskProcessor {
     }
 
     @Override
-    protected boolean submitTask() {
-        this.taskInstance =
-                processService.submitTaskWithRetry(processInstance, taskInstance, maxRetryTimes, commitInterval);
-        if (this.taskInstance == null) {
-            return false;
+    protected boolean postSubmit() {
+        try (ThreadNameReplacer threadNameReplacer = new ThreadNameReplacer(threadLoggerInfoName)) {
+            logger.info("Blocking task submit to DB success");
         }
-        this.setTaskExecutionLogger();
-        logger.info("blocking task submit success");
         return true;
     }
 
@@ -128,11 +124,6 @@ public class BlockingTaskProcessor extends BaseTaskProcessor {
         }
         logger.info("blocking task finished");
         return true;
-    }
-
-    @Override
-    protected boolean dispatchTask() {
-        return false;
     }
 
     @Override
