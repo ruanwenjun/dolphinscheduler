@@ -21,11 +21,12 @@ import org.apache.dolphinscheduler.plugin.datasource.api.utils.PasswordUtils;
 import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.datasource.ConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
-
+import com.google.common.collect.Sets;
 import org.apache.commons.collections4.MapUtils;
 
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public abstract class AbstractDataSourceProcessor implements DataSourceProcessor {
@@ -37,6 +38,8 @@ public abstract class AbstractDataSourceProcessor implements DataSourceProcessor
     private static final Pattern DATABASE_PATTER = Pattern.compile("^[a-zA-Z0-9\\_\\-\\.]+$");
 
     private static final Pattern PARAMS_PATTER = Pattern.compile("^[a-zA-Z0-9\\-\\_\\/\\@\\.]+$");
+
+    private static final Set<String> POSSIBLE_MALICIOUS_KEYS = Sets.newHashSet("allowLoadLocalInfile");
 
     @Override
     public void checkDatasourceParam(BaseDataSourceParamDTO baseDataSourceParamDTO) {
@@ -75,6 +78,9 @@ public abstract class AbstractDataSourceProcessor implements DataSourceProcessor
     protected void checkOther(Map<String, String> other) {
         if (MapUtils.isEmpty(other)) {
             return;
+        }
+        if (!Sets.intersection(other.keySet(), POSSIBLE_MALICIOUS_KEYS).isEmpty()) {
+            throw new IllegalArgumentException("Other params include possible malicious keys.");
         }
         boolean paramsCheck = other.entrySet().stream().allMatch(p -> PARAMS_PATTER.matcher(p.getValue()).matches());
         if (!paramsCheck) {
