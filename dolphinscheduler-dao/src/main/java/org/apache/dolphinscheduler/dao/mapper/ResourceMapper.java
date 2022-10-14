@@ -52,7 +52,7 @@ public interface ResourceMapper extends BaseMapper<Resource> {
     /**
      * resource page
      * @param page page
-     * @param userId userId
+     * @param id userId
      * @param id id
      * @param type type
      * @param searchVal searchVal
@@ -153,4 +153,12 @@ public interface ResourceMapper extends BaseMapper<Resource> {
     Boolean existResource(@Param("fullName") String fullName,
                           @Param("type") int type);
 
+    /**
+     * check resources exist
+     * @param fullNames full names
+     * @param type type
+     * @return repeat resource names
+     */
+    List<String> existResources(@Param("fullNames") List<String> fullNames,
+                                @Param("type") int type);
 }

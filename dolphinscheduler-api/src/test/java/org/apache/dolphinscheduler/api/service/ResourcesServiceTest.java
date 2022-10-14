@@ -19,8 +19,6 @@ package org.apache.dolphinscheduler.api.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant;
 import org.apache.dolphinscheduler.api.enums.Status;
@@ -74,6 +72,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.io.Files;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * resources service test
@@ -132,6 +131,61 @@ public class ResourcesServiceTest {
         }
         // PowerMockito.when(HadoopUtils.getInstance()).thenReturn(hadoopUtils);
         PowerMockito.mockStatic(PropertyUtils.class);
+    }
+
+    @Test
+    public void testCreateBatchResource() {
+        PowerMockito.when(resourcePermissionCheckService.operationPermissionCheck(AuthorizationType.RESOURCE_FILE_ID,
+                null, 1, ApiFuncIdentificationConstant.FILE_UPLOAD, serviceLogger)).thenReturn(true);
+        PowerMockito.when(resourcePermissionCheckService.resourcePermissionCheck(AuthorizationType.RESOURCE_FILE_ID,
+                null, 1, serviceLogger)).thenReturn(true);
+
+        PowerMockito.when(PropertyUtils.getResUploadStartupState()).thenReturn(false);
+        User user = new User();
+        user.setId(1);
+        user.setUserType(UserType.GENERAL_USER);
+
+        // CURRENT_LOGIN_USER_TENANT_NOT_EXIST
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("test.pdf", "test.pdf", "pdf", "test".getBytes());
+        MockMultipartFile mockMultipartFile1 = new MockMultipartFile("test1.pdf", "test1.pdf", "pdf", "test1".getBytes());
+        List<MultipartFile> mockMultipartFiles = new ArrayList<>();
+        mockMultipartFiles.add(mockMultipartFile);
+        mockMultipartFiles.add(mockMultipartFile1);
+        PowerMockito.when(PropertyUtils.getResUploadStartupState()).thenReturn(true);
+        Mockito.when(userMapper.selectById(1)).thenReturn(getUser());
+        Mockito.when(tenantMapper.queryById(1)).thenReturn(null);
+        Result result = resourcesService.createBatchResource(user,
+                ResourceType.FILE, mockMultipartFiles, -1, "/");
+        Assert.assertEquals(Status.CURRENT_LOGIN_USER_TENANT_NOT_EXIST.getCode(), (long)result.getCode());
+
+        // set tenant for user
+        user.setTenantId(1);
+        Mockito.when(tenantMapper.queryById(1)).thenReturn(getTenant());
+
+        // BATCH_RESOURCE_NAME_REPEAT
+        MockMultipartFile mockMultipartFile2 = new MockMultipartFile("test1.pdf", "test1.pdf", "pdf", "test1".getBytes());
+        mockMultipartFiles.add(mockMultipartFile2);
+        PowerMockito.when(PropertyUtils.getResUploadStartupState()).thenReturn(true);
+        result = resourcesService.createBatchResource(user,
+                ResourceType.FILE, mockMultipartFiles, -1, "/");
+        Assert.assertEquals(Status.BATCH_RESOURCE_NAME_REPEAT.getCode(), (long)result.getCode());
+
+        //RESOURCE_EXIST
+        mockMultipartFiles.remove(mockMultipartFile2);
+        List<String> repeatFileNames = Arrays.asList("test1.pdf");
+        Mockito.when(resourcesMapper.existResources(any(List.class), eq(ResourceType.FILE.ordinal()))).thenReturn(repeatFileNames);
+        result = resourcesService.createBatchResource(user,
+                ResourceType.FILE, mockMultipartFiles, -1, "/");
+        Assert.assertEquals(Status.RESOURCE_EXIST.getCode(), (long)result.getCode());
+
+        //RESOURCE_FULL_NAME_TOO_LONG_ERROR
+        MockMultipartFile mockMultipartFile3 = new MockMultipartFile("tesfff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222t1.pdf", "test11111111ffffffff1111122fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff11111222222.pdf",
+                "pdf", "test1".getBytes());
+        mockMultipartFiles.add(mockMultipartFile3);
+        Mockito.when(resourcesMapper.existResources(any(List.class), eq(ResourceType.FILE.ordinal()))).thenReturn(new ArrayList());
+        result = resourcesService.createBatchResource(user,
+                ResourceType.FILE, mockMultipartFiles, -1, "/");
+        Assert.assertEquals(Status.RESOURCE_FULL_NAME_TOO_LONG_ERROR.getCode(), (long)result.getCode());
     }
 
     @Test
