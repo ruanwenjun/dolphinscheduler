@@ -346,7 +346,7 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
      */
     @Override
     @Transactional
-    public Result<Object> createBatchResource(User loginUser,
+    public Result<Object> createBatchResources(User loginUser,
                                          ResourceType type,
                                          List<MultipartFile> files,
                                          int pid,
@@ -360,10 +360,10 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
             putMsg(result, Status.NO_CURRENT_OPERATING_PERMISSION);
             return result;
         }
-//        result = checkResourceUploadStartupState();
-//        if (!result.getCode().equals(Status.SUCCESS.getCode())) {
-//            return result;
-//        }
+        result = checkResourceUploadStartupState();
+        if (!result.getCode().equals(Status.SUCCESS.getCode())) {
+            return result;
+        }
         result = verifyPid(loginUser, pid);
         if (!result.getCode().equals(Status.SUCCESS.getCode())) {
             return result;

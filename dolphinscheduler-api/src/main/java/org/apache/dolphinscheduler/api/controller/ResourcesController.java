@@ -161,12 +161,12 @@ public class ResourcesController extends BaseController {
     @PostMapping(value = "/batch-upload")
     @ApiException(CREATE_BATCH_RESOURCE_NOTES)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
-    public Result<Object> createBatchResource(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+    public Result<Object> createBatchResources(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
                                               @RequestParam(value = "type") ResourceType type,
                                               @RequestParam(value = "files")  MultipartFile[] files,
                                               @RequestParam(value = "pid") int pid,
                                               @RequestParam(value = "currentDir") String currentDir) {
-        return resourceService.createBatchResource(loginUser, type, Arrays.asList(files), pid, currentDir);
+        return resourceService.createBatchResources(loginUser, type, Arrays.asList(files), pid, currentDir);
     }
 
     /**
