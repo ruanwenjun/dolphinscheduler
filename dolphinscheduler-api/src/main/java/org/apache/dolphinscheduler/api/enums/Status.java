@@ -264,6 +264,7 @@ public enum Status {
     LISTING_WAITING_TASK_INSTANCE_BY_WORKER_ERROR(10203, "listing waiting task by worker address error",
             "查询Worker中等待执行的任务信息错误"),
 
+    CREATE_BATCH_RESOURCE_NOTES(10204, "create batch resource error", "创建资源错误"),
     UDF_FUNCTION_NOT_EXIST(20001, "UDF function not found", "UDF函数不存在"),
     UDF_FUNCTION_EXISTS(20002, "UDF function already exists", "UDF函数已存在"),
     RESOURCE_NOT_EXIST(20004, "resource not exist", "资源不存在"),
@@ -285,6 +286,8 @@ public enum Status {
     RESOURCE_IS_AUTHORIZED(20017, "resource is authorized to user {0},suffix not allowed to be modified",
             "资源文件已授权其他用户[{0}],后缀不允许修改"),
     RESOURCE_HAS_FOLDER(20018, "There are files or folders in the current directory:{0}", "当前目录下有文件或文件夹[{0}]"),
+
+    BATCH_RESOURCE_NAME_REPEAT(20019, "duplicate file names in this batch", "此批处理中存在重复的文件名"),
 
     USER_NO_OPERATION_PERM(30001, "user has no operation privilege", "当前用户没有操作权限"),
     USER_NO_OPERATION_PROJECT_PERM(30002, "user {0} is not has project {1} permission", "当前用户[{0}]没有[{1}]项目的操作权限"),

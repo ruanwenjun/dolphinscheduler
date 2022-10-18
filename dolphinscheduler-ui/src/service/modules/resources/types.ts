@@ -118,6 +118,8 @@ interface ResourceViewRes {
   content: string
 }
 
+export type FileType = 'FILE' | 'UDF'
+
 export {
   FileReq,
   ResourceTypeReq,

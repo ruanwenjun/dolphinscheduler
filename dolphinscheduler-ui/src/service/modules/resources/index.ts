@@ -31,7 +31,8 @@ import {
   ListReq,
   ViewResourceReq,
   ResourceIdReq,
-  UdfFuncReq
+  UdfFuncReq,
+  FileType
 } from './types'
 
 export function queryResourceListPaging(
@@ -67,6 +68,19 @@ export function createResource(
 ): any {
   return axios({
     url: '/resources',
+    method: 'post',
+    data
+  })
+}
+
+export function resourceBatchUpload(data: {
+  type: FileType
+  files: File[]
+  pid: string
+  currentDir: string
+}): any {
+  return axios({
+    url: '/resources/batch-upload',
     method: 'post',
     data
   })

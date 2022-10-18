@@ -223,7 +223,7 @@ const resource = {
     folder_name: '文件夹名称',
     enter_name_tips: '请输入名称',
     enter_description_tips: '请输入描述',
-    enter_content_tips: '请输入资源内容',
+    enter_content_tips: '请选择上传的资源',
     enter_suffix_tips: '请输入文件后缀',
     file_format: '文件格式',
     file_content: '文件内容',
@@ -233,7 +233,8 @@ const resource = {
     success: '成功',
     file_details: '文件详情',
     return: '返回',
-    save: '保存'
+    save: '保存',
+    upload_tips: '点击或者拖动文件到该区域来上传'
   },
   udf: {
     udf_resources: 'UDF资源',
