@@ -154,7 +154,7 @@ public class ResourcesServiceTest {
         PowerMockito.when(PropertyUtils.getResUploadStartupState()).thenReturn(true);
         Mockito.when(userMapper.selectById(1)).thenReturn(getUser());
         Mockito.when(tenantMapper.queryById(1)).thenReturn(null);
-        Result result = resourcesService.createBatchResource(user,
+        Result result = resourcesService.createBatchResources(user,
                 ResourceType.FILE, mockMultipartFiles, -1, "/");
         Assert.assertEquals(Status.CURRENT_LOGIN_USER_TENANT_NOT_EXIST.getCode(), (long)result.getCode());
 
@@ -166,7 +166,7 @@ public class ResourcesServiceTest {
         MockMultipartFile mockMultipartFile2 = new MockMultipartFile("test1.pdf", "test1.pdf", "pdf", "test1".getBytes());
         mockMultipartFiles.add(mockMultipartFile2);
         PowerMockito.when(PropertyUtils.getResUploadStartupState()).thenReturn(true);
-        result = resourcesService.createBatchResource(user,
+        result = resourcesService.createBatchResources(user,
                 ResourceType.FILE, mockMultipartFiles, -1, "/");
         Assert.assertEquals(Status.BATCH_RESOURCE_NAME_REPEAT.getCode(), (long)result.getCode());
 
@@ -174,7 +174,7 @@ public class ResourcesServiceTest {
         mockMultipartFiles.remove(mockMultipartFile2);
         List<String> repeatFileNames = Arrays.asList("test1.pdf");
         Mockito.when(resourcesMapper.existResources(any(List.class), eq(ResourceType.FILE.ordinal()))).thenReturn(repeatFileNames);
-        result = resourcesService.createBatchResource(user,
+        result = resourcesService.createBatchResources(user,
                 ResourceType.FILE, mockMultipartFiles, -1, "/");
         Assert.assertEquals(Status.RESOURCE_EXIST.getCode(), (long)result.getCode());
 
@@ -183,7 +183,7 @@ public class ResourcesServiceTest {
                 "pdf", "test1".getBytes());
         mockMultipartFiles.add(mockMultipartFile3);
         Mockito.when(resourcesMapper.existResources(any(List.class), eq(ResourceType.FILE.ordinal()))).thenReturn(new ArrayList());
-        result = resourcesService.createBatchResource(user,
+        result = resourcesService.createBatchResources(user,
                 ResourceType.FILE, mockMultipartFiles, -1, "/");
         Assert.assertEquals(Status.RESOURCE_FULL_NAME_TOO_LONG_ERROR.getCode(), (long)result.getCode());
     }
