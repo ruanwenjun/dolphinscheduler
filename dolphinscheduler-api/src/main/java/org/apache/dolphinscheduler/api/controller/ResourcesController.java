@@ -62,6 +62,7 @@ import static org.apache.dolphinscheduler.api.enums.Status.QUERY_DATASOURCE_BY_T
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_RESOURCES_LIST_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_RESOURCES_LIST_PAGING;
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_UDF_FUNCTION_LIST_PAGING_ERROR;
+import static org.apache.dolphinscheduler.api.enums.Status.RESOURCE_FILE_CATNOT_BE_EMPTY;
 import static org.apache.dolphinscheduler.api.enums.Status.RESOURCE_FILE_IS_EMPTY;
 import static org.apache.dolphinscheduler.api.enums.Status.RESOURCE_NOT_EXIST;
 import static org.apache.dolphinscheduler.api.enums.Status.UNAUTHORIZED_UDF_FUNCTION_ERROR;
@@ -404,7 +405,7 @@ public class ResourcesController extends BaseController {
                                        @RequestParam(value = "currentDir") String currentDir) {
         if (StringUtils.isEmpty(content)) {
             logger.error("resource file contents are not allowed to be empty");
-            return error(RESOURCE_FILE_IS_EMPTY.getCode(), RESOURCE_FILE_IS_EMPTY.getMsg());
+            return error(RESOURCE_FILE_CATNOT_BE_EMPTY.getCode(), RESOURCE_FILE_CATNOT_BE_EMPTY.getMsg());
         }
         return resourceService.onlineCreateResource(loginUser, type, fileName, fileSuffix, description, content, pid,
                 currentDir);
@@ -431,7 +432,7 @@ public class ResourcesController extends BaseController {
                                         @RequestParam(value = "content") String content) {
         if (StringUtils.isEmpty(content)) {
             logger.error("The resource file contents are not allowed to be empty");
-            return error(RESOURCE_FILE_IS_EMPTY.getCode(), RESOURCE_FILE_IS_EMPTY.getMsg());
+            return error(RESOURCE_FILE_CATNOT_BE_EMPTY.getCode(), RESOURCE_FILE_CATNOT_BE_EMPTY.getMsg());
         }
         return resourceService.updateResourceContent(loginUser, resourceId, content);
     }
