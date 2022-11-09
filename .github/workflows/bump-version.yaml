@@ -6,7 +6,6 @@ on:
     branches:
       - ws-3.0.0
       - v*
-      - zhongxin-v*
 
 env:
   GITHUB_USERNAME: x-access-token
