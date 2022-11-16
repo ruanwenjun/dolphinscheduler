@@ -267,7 +267,6 @@ public enum Status {
     UDF_FUNCTION_NOT_EXIST(20001, "UDF function not found", "UDF函数不存在"),
     UDF_FUNCTION_EXISTS(20002, "UDF function already exists", "UDF函数已存在"),
     RESOURCE_NOT_EXIST(20004, "resource not exist", "资源不存在"),
-    CREATE_BATCH_RESOURCE_NOTES(10204, "create batch resource error", "创建资源错误"),
     RESOURCE_EXIST(20005, "other users have uploaded files with the same name", "其他用户已经上传过同名文件"),
     RESOURCE_SUFFIX_NOT_SUPPORT_VIEW(20006, "resource suffix do not support online viewing", "资源文件后缀不支持查看"),
     RESOURCE_SIZE_EXCEED_LIMIT(20007, "upload resource file size exceeds limit", "上传资源文件大小超过限制"),
@@ -289,7 +288,6 @@ public enum Status {
 
     USER_NO_OPERATION_PERM(30001, "user has no operation privilege", "当前用户没有操作权限"),
     USER_NO_OPERATION_PROJECT_PERM(30002, "user {0} is not has project {1} permission", "当前用户[{0}]没有[{1}]项目的操作权限"),
-    BATCH_RESOURCE_NAME_REPEAT(20019, "duplicate file names in this batch", "此批处理中存在重复的文件名"),
 
     PROCESS_INSTANCE_NOT_EXIST(50001, "process instance {0} does not exist", "工作流实例[{0}]不存在"),
     PROCESS_INSTANCE_EXIST(50002, "process instance {0} already exists", "工作流实例[{0}]已存在"),
@@ -501,9 +499,6 @@ public enum Status {
     FUNCTION_DISABLED(1400002, "The current feature is disabled.", "当前功能已被禁用"),
     SCHEDULE_TIME_NUMBER(1400003, "The number of complement dates exceed 100.", "补数日期个数超过100"),
     DESCRIPTION_TOO_LONG_ERROR(1400004, "description is too long error", "描述过长"),
-    FILE_NAME_CONTAIN_RESTRICTIONS(1300019, "The file name [{0}] contain restrictions", "文件命名[{0}]包含限制内容"),
-    FILE_TYPE_IS_RESTRICTIONS(1300020, "The file [{0}] type is restrictions", "文件[{0}]类型为限制类型"),
-
     COMPLEMENT_COMMAND_SCHEDULE_TIME_EMPTY(1400005, "complement command schedule time can not be empty", "补数数据日期不可为空"),
     START_TIME_CAN_NOT_AFTER_END_TIME(1400006, "start time can not after end time", "开始时间不可晚于结束时间"),
     CONFIG_FILTER_EMPTY(1400007, "complement time is empty after filtering according to the configuration",

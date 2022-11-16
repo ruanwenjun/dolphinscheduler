@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.PROJECT;
@@ -212,9 +211,7 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
         } else if (!canOperatorPermissions(loginUser, new Object[]{project.getId()}, AuthorizationType.PROJECTS,
                 perm)) {
             // check read permission
-            Project checkProject = projectMapper.queryByCode(projectCode);
-            putMsg(result, Status.USER_NO_OPERATION_PROJECT_PERM, loginUser.getUserName(),
-                    Objects.nonNull(checkProject) ? project.getName() : projectCode);
+            putMsg(result, Status.USER_NO_OPERATION_PROJECT_PERM, loginUser.getUserName(), projectCode);
         } else {
             putMsg(result, Status.SUCCESS);
         }
@@ -228,7 +225,7 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
             putMsg(result, Status.PROJECT_NOT_FOUND, "");
         } else if (!canOperatorPermissions(loginUser, new Object[]{project.getId()}, AuthorizationType.PROJECTS,
                 perm)) {
-            putMsg(result, Status.USER_NO_OPERATION_PROJECT_PERM, loginUser.getUserName(), project.getName());
+            putMsg(result, Status.USER_NO_OPERATION_PROJECT_PERM, loginUser.getUserName(), project.getCode());
         } else {
             checkResult = true;
         }
