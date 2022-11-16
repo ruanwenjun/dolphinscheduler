@@ -17,14 +17,13 @@
 
 package org.apache.dolphinscheduler.api.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.base.Joiner;
-import com.google.common.io.Files;
-import org.apache.commons.beanutils.BeanMap;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import static org.apache.dolphinscheduler.common.Constants.ALIAS;
+import static org.apache.dolphinscheduler.common.Constants.CONTENT;
+import static org.apache.dolphinscheduler.common.Constants.FOLDER_SEPARATOR;
+import static org.apache.dolphinscheduler.common.Constants.FORMAT_SS;
+import static org.apache.dolphinscheduler.common.Constants.FORMAT_S_S;
+import static org.apache.dolphinscheduler.common.Constants.JAR;
+
 import org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant;
 import org.apache.dolphinscheduler.api.dto.resources.ResourceComponent;
 import org.apache.dolphinscheduler.api.dto.resources.filter.ResourceFilter;
@@ -32,6 +31,7 @@ import org.apache.dolphinscheduler.api.dto.resources.visitor.ResourceTreeVisitor
 import org.apache.dolphinscheduler.api.dto.resources.visitor.Visitor;
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.exceptions.ServiceException;
+import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
 import org.apache.dolphinscheduler.api.service.ResourcesService;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.api.utils.RegexUtils;
@@ -56,15 +56,11 @@ import org.apache.dolphinscheduler.dao.mapper.TenantMapper;
 import org.apache.dolphinscheduler.dao.mapper.UdfFuncMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
 import org.apache.dolphinscheduler.dao.utils.ResourceProcessDefinitionUtils;
-import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
 import org.apache.dolphinscheduler.spi.enums.ResourceType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+
+import org.apache.commons.beanutils.BeanMap;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.rmi.ServerException;
@@ -77,18 +73,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-import static org.apache.dolphinscheduler.common.Constants.ALIAS;
-import static org.apache.dolphinscheduler.common.Constants.CONTENT;
-import static org.apache.dolphinscheduler.common.Constants.FOLDER_SEPARATOR;
-import static org.apache.dolphinscheduler.common.Constants.FORMAT_SS;
-import static org.apache.dolphinscheduler.common.Constants.FORMAT_S_S;
-import static org.apache.dolphinscheduler.common.Constants.JAR;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Joiner;
+import com.google.common.io.Files;
 
 /**
  * resources service impl
@@ -211,6 +213,28 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
                 : String.format(FORMAT_S_S, currentDir, name);
     }
 
+    private List<String> getFullNames(String currentDir, Object[] filesNameSet, Map<String, MultipartFile> fileMap) {
+        boolean equals = currentDir.equals(FOLDER_SEPARATOR);
+        List<String> result = new ArrayList<>();
+        for (Object name : filesNameSet) {
+            String format;
+            if (equals) {
+                format = String.format(FORMAT_SS, currentDir, name);
+            } else {
+                format = String.format(FORMAT_S_S, currentDir, name);
+            }
+            extracted(fileMap, (String) name, format);
+            result.add(format);
+        }
+        return result;
+    }
+
+    private void extracted(Map<String, MultipartFile> fileMap, String name, String format) {
+        MultipartFile file = fileMap.get(name);
+        fileMap.remove(name);
+        fileMap.put(format, file);
+    }
+
     /**
      * create resource
      *
@@ -313,6 +337,116 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
     }
 
     /**
+     * create batch resource
+     *
+     * @param loginUser  login user
+     * @param files      files
+     * @param type       type
+     * @param pid        parent id
+     * @param currentDir current directory
+     * @return create result code
+     */
+    @Override
+    @Transactional
+    public Result<Object> createBatchResources(User loginUser,
+                                               ResourceType type,
+                                               List<MultipartFile> files,
+                                               int pid,
+                                               String currentDir) {
+        Result<Object> result = new Result<>();
+        String funcPermissionKey = type.equals(ResourceType.FILE) ? ApiFuncIdentificationConstant.FILE_UPLOAD
+                : ApiFuncIdentificationConstant.UDF_UPLOAD;
+        boolean canOperatorPermissions =
+                canOperatorPermissions(loginUser, null, AuthorizationType.RESOURCE_FILE_ID, funcPermissionKey);
+        if (!canOperatorPermissions) {
+            putMsg(result, Status.NO_CURRENT_OPERATING_PERMISSION);
+            return result;
+        }
+        result = checkResourceUploadStartupState();
+        if (!result.getCode().equals(Status.SUCCESS.getCode())) {
+            return result;
+        }
+        result = verifyPid(loginUser, pid);
+        if (!result.getCode().equals(Status.SUCCESS.getCode())) {
+            return result;
+        }
+
+        // make sure login user has tenant
+        String tenantCode = getTenantCode(loginUser.getId(), result);
+        if (StringUtils.isEmpty(tenantCode)) {
+            return result;
+        }
+
+        result = verifyFiles(type, files);
+        if (!result.getCode().equals(Status.SUCCESS.getCode())) {
+            return result;
+        }
+        Map<String, MultipartFile> fileMap = files.stream().collect(Collectors.toMap(key -> key.getOriginalFilename(), value -> value, (isOld, isNew) -> isOld));
+
+        Object[] filesNameSet = fileMap.keySet().toArray();
+        if(files.size() != filesNameSet.length){
+            logger.error("There are duplicate file names in this batch");
+            putMsg(result, Status.BATCH_RESOURCE_NAME_REPEAT);
+            return result;
+        }
+
+        List<String> fullNames = getFullNames(currentDir, filesNameSet, fileMap);
+        List<String> repeatFileNames = checkResourcesExists(fullNames, type.ordinal());
+        if (!repeatFileNames.isEmpty()) {
+            logger.error("resource {} has exist, can't recreate", repeatFileNames);
+            putMsg(result, Status.RESOURCE_EXIST);
+            return result;
+        }
+        List<Resource> resources = new ArrayList<>();
+        long size = 0;
+        for (String fullName : fullNames) {
+            MultipartFile file = fileMap.get(fullName);
+            if (fullName.length() > Constants.RESOURCE_FULL_NAME_MAX_LENGTH) {
+                logger.error("resource {}'s full name {}' is longer than the max length {}", RegexUtils.escapeNRT(file.getOriginalFilename()),
+                        fullName, Constants.RESOURCE_FULL_NAME_MAX_LENGTH);
+                putMsg(result, Status.RESOURCE_FULL_NAME_TOO_LONG_ERROR);
+                return result;
+            }
+            Date now = new Date();
+            Resource resource = new Resource(pid, file.getOriginalFilename(), fullName, false, "", file.getOriginalFilename(),
+                    loginUser.getId(), type, file.getSize(), now, now);
+            size += file.getSize();
+            resources.add(resource);
+        }
+
+        try {
+            Map<String, Object> resultMap = new HashMap<>();
+            for (Resource resource : resources) {
+                resourcesMapper.insert(resource);
+                permissionPostHandle(resource.getType(), loginUser, resource.getId());
+                for (Map.Entry<Object, Object> entry : new BeanMap(resource).entrySet()) {
+                    if (!"class".equalsIgnoreCase(entry.getKey().toString())) {
+                        resultMap.put(entry.getKey().toString(), entry.getValue());
+                    }
+                }
+            }
+            updateParentResourceSize(resources.get(0), size);
+            putMsg(result, Status.SUCCESS);
+
+            result.setData(resultMap);
+        } catch (Exception e) {
+            logger.error("resource already exists, can't recreate ", e);
+            throw new ServiceException("resource already exists, can't recreate");
+        }
+
+        for (String fullName : fullNames) {
+            MultipartFile file = fileMap.get(fullName);
+            // fail upload
+            if (!upload(loginUser, fullName, file, type)) {
+                logger.error("upload resource: {} file: failed.", RegexUtils.escapeNRT(file.getOriginalFilename()));
+                putMsg(result, Status.STORE_OPERATE_CREATE_ERROR);
+                throw new ServiceException(
+                        String.format("upload resource: %s file: failed.", file.getOriginalFilename()));
+            }
+        }
+        return result;
+    }
+    /**
      * update the folder's size of the resource
      *
      * @param resource the current resource
@@ -350,6 +484,17 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
     private boolean checkResourceExists(String fullName, int type) {
         Boolean existResource = resourcesMapper.existResource(fullName, type);
         return Boolean.TRUE.equals(existResource);
+    }
+
+    /**
+     * check resources is exists
+     *
+     * @param fullNames fullNames
+     * @param type      type
+     * @return true if resource exists
+     */
+    private List<String> checkResourcesExists(List<String> fullNames, int type) {
+        return resourcesMapper.existResources(fullNames, type);
     }
 
     /**
@@ -592,50 +737,101 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
         Result<Object> result = new Result<>();
         putMsg(result, Status.SUCCESS);
 
-        if (FileUtils.directoryTraversal(name)) {
-            logger.error("file alias name {} verify failed", name);
-            putMsg(result, Status.VERIFY_PARAMETER_NAME_FAILED);
-            return result;
+        Result<Object> emptyCheck = fileEmptyCheck(result, file);
+        if (!emptyCheck.isSuccess()) {
+            return emptyCheck;
         }
+        fileNameCheck(result, name);
+        fileNameCheck(result, file.getOriginalFilename());
+        String nameSuffix = Files.getFileExtension(name);
+        String fileSuffix = Files.getFileExtension(file.getOriginalFilename());
+        fileSuffixCheck(result, type, name, nameSuffix, fileSuffix);
+        fileSizeCheck(result, file);
+        return result;
+    }
 
-        if (file != null && FileUtils.directoryTraversal(Objects.requireNonNull(file.getOriginalFilename()))) {
-            logger.error("file original name {} verify failed", file.getOriginalFilename());
-            putMsg(result, Status.VERIFY_PARAMETER_NAME_FAILED);
-            return result;
-        }
-
-        if (file != null) {
-            // file is empty
-            if (file.isEmpty()) {
-                logger.error("file is empty: {}", RegexUtils.escapeNRT(file.getOriginalFilename()));
-                putMsg(result, Status.RESOURCE_FILE_IS_EMPTY);
+    private Result<Object> verifyFiles(ResourceType type, List<MultipartFile> files) {
+        Result<Object> result = new Result<>();
+        putMsg(result, Status.SUCCESS);
+        for (MultipartFile file : files) {
+            Result<Object> emptyCheck = fileEmptyCheck(result, file);
+            if (!emptyCheck.isSuccess()) {
                 return result;
             }
-
-            // file suffix
+            String originalFilename = file.getOriginalFilename();
+            fileNameCheck(result, file.getName());
+            fileNameCheck(result, originalFilename);
             String fileSuffix = Files.getFileExtension(file.getOriginalFilename());
-            String nameSuffix = Files.getFileExtension(name);
+            fileSuffixCheck(result, type, originalFilename, null, fileSuffix);
+            fileSizeCheck(result, file);
+        }
+        return result;
+    }
 
-            // determine file suffix
+    private Result<Object> fileEmptyCheck(Result<Object> result, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            logger.error("file is empty: {}", RegexUtils.escapeNRT(file.getOriginalFilename()));
+            putMsg(result, Status.RESOURCE_FILE_IS_EMPTY, file.getOriginalFilename());
+            return result;
+        }
+        return result;
+    }
+
+    private Result<Object> fileNameCheck(Result<Object> result, String name) {
+        // file name check
+        if (StringUtils.isEmpty(name) || FileUtils.directoryTraversal(name)) {
+            logger.error("file original name {} verify failed", name);
+            putMsg(result, Status.VERIFY_PARAMETER_NAME_FAILED, name);
+            return result;
+        }
+        String restrictedContents = PropertyUtils.getString(Constants.FILE_NAME_RESTRICTED_CONTENT, null);
+        if (restrictedContents != null) {
+            Set<String> containSet = Arrays.stream(restrictedContents.split(Constants.COMMA))
+                    .filter(name::contains).collect(Collectors.toSet());
+            if (!containSet.isEmpty()) {
+                putMsg(result, Status.FILE_NAME_CONTAIN_RESTRICTIONS, name);
+                return result;
+            }
+        }
+        return result;
+    }
+
+    private Result<Object> fileSuffixCheck(Result<Object> result, ResourceType type, String fileName,
+                                           String nameSuffix, String fileSuffix) {
+        // // determine file suffix
+        if (StringUtils.isNotEmpty(nameSuffix)) {
             if (!fileSuffix.equalsIgnoreCase(nameSuffix)) {
                 // rename file suffix and original suffix must be consistent
                 logger.error("rename file suffix and original suffix must be consistent: {}",
-                        RegexUtils.escapeNRT(file.getOriginalFilename()));
+                        RegexUtils.escapeNRT(fileName));
                 putMsg(result, Status.RESOURCE_SUFFIX_FORBID_CHANGE);
                 return result;
             }
+        }
+        String fileAllowTypes = PropertyUtils.getString(Constants.FILE_TYPE_RESTRICTED_LIST, null);
+        if (fileAllowTypes != null) {
+            Set<String> containSet = Arrays.stream(fileAllowTypes.split(Constants.COMMA))
+                    .filter(fileSuffix::contains).collect(Collectors.toSet());
+            if (!containSet.isEmpty()) {
+                putMsg(result, Status.FILE_TYPE_IS_RESTRICTIONS, fileName);
+                return result;
+            }
+        }
+        // If resource type is UDF, only jar packages are allowed to be uploaded, and the suffix must be .jar
+        if (Constants.UDF.equals(type.name()) && !JAR.equalsIgnoreCase(fileSuffix)) {
+            logger.error(Status.UDF_RESOURCE_SUFFIX_NOT_JAR.getMsg());
+            putMsg(result, Status.UDF_RESOURCE_SUFFIX_NOT_JAR);
+            return result;
+        }
+        return result;
+    }
 
-            // If resource type is UDF, only jar packages are allowed to be uploaded, and the suffix must be .jar
-            if (Constants.UDF.equals(type.name()) && !JAR.equalsIgnoreCase(fileSuffix)) {
-                logger.error(Status.UDF_RESOURCE_SUFFIX_NOT_JAR.getMsg());
-                putMsg(result, Status.UDF_RESOURCE_SUFFIX_NOT_JAR);
-                return result;
-            }
-            if (file.getSize() > Constants.MAX_FILE_SIZE) {
-                logger.error("file size is too large: {}", RegexUtils.escapeNRT(file.getOriginalFilename()));
-                putMsg(result, Status.RESOURCE_SIZE_EXCEED_LIMIT);
-                return result;
-            }
+    private Result<Object> fileSizeCheck(Result<Object> result, MultipartFile file) {
+        // file size check
+        if (file.getSize() > Constants.MAX_FILE_SIZE) {
+            logger.error("file size is too large: {}", RegexUtils.escapeNRT(file.getOriginalFilename()));
+            putMsg(result, Status.RESOURCE_SIZE_EXCEED_LIMIT);
+            return result;
         }
         return result;
     }
