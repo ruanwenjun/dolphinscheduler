@@ -176,7 +176,7 @@ public class ResourcesController extends BaseController {
                                               @RequestParam(value = "files")  MultipartFile[] files,
                                               @RequestParam(value = "pid") int pid,
                                               @RequestParam(value = "currentDir") String currentDir) {
-        return resourceService.createBatchResource(loginUser, type, Arrays.asList(files), pid, currentDir);
+        return resourceService.createBatchResources(loginUser, type, Arrays.asList(files), pid, currentDir);
     }
 
     /**
