@@ -80,7 +80,7 @@ public interface ResourcesService {
      * @param currentDir current directory
      * @return create result code
      */
-    Result<Object> createBatchResource(User loginUser,
+    Result<Object> createBatchResources(User loginUser,
                                   ResourceType type,
                                   List<MultipartFile> files,
                                   int pid,
