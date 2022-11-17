@@ -225,7 +225,7 @@ const resource = {
     folder_name: 'Folder Name',
     enter_name_tips: 'Please enter name',
     enter_description_tips: 'Please enter description',
-    enter_content_tips: 'Please select the files to upload',
+    enter_content_tips: 'Please enter the resource content',
     file_format: 'File Format',
     file_content: 'File Content',
     delete_confirm: 'Delete?',
@@ -234,8 +234,7 @@ const resource = {
     success: 'Success',
     file_details: 'File Details',
     return: 'Return',
-    save: 'Save',
-    upload_tips: 'Click or drag files to this area to upload.'
+    save: 'Save'
   },
   udf: {
     udf_resources: 'UDF resources',

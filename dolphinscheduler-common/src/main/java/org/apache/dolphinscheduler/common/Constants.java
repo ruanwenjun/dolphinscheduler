@@ -854,11 +854,4 @@ public final class Constants {
     public static final String TYPE_DATA_QUALITY = "DataQuality";
     public static final String TYPE_OTHER = "Other";
     public static final String TYPE_MACHINE_LEARNING = "MachineLearning";
-
-
-    /**
-     * file upload verify
-     */
-    public static final String FILE_TYPE_RESTRICTED_LIST = "file.type.restricted.list";
-    public static final String FILE_NAME_RESTRICTED_CONTENT = "file.name.restricted.content";
 }
