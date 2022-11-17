@@ -211,6 +211,28 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
                 : String.format(FORMAT_S_S, currentDir, name);
     }
 
+    private List<String> getFullNames(String currentDir, Object[] filesNameSet, Map<String, MultipartFile> fileMap) {
+        boolean equals = currentDir.equals(FOLDER_SEPARATOR);
+        List<String> result = new ArrayList<>();
+        for (Object name : filesNameSet) {
+            String format;
+            if (equals) {
+                format = String.format(FORMAT_SS, currentDir, name);
+            } else {
+                format = String.format(FORMAT_S_S, currentDir, name);
+            }
+            extracted(fileMap, (String) name, format);
+            result.add(format);
+        }
+        return result;
+    }
+
+    private void extracted(Map<String, MultipartFile> fileMap, String name, String format) {
+        MultipartFile file = fileMap.get(name);
+        fileMap.remove(name);
+        fileMap.put(format, file);
+    }
+
     /**
      * create resource
      *
@@ -597,45 +619,84 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
             putMsg(result, Status.VERIFY_PARAMETER_NAME_FAILED);
             return result;
         }
+        Result<Object> emptyCheck = fileEmptyCheck(result, file);
+        if (!emptyCheck.isSuccess()) {
+            return emptyCheck;
+        }
+        fileNameCheck(result, name);
+        fileNameCheck(result, file.getOriginalFilename());
+        String nameSuffix = Files.getFileExtension(name);
+        String fileSuffix = Files.getFileExtension(file.getOriginalFilename());
+        fileSuffixCheck(result, type, name, nameSuffix, fileSuffix);
+        fileSizeCheck(result, file);
+        return result;
+    }
 
-        if (file != null && FileUtils.directoryTraversal(Objects.requireNonNull(file.getOriginalFilename()))) {
-            logger.error("file original name {} verify failed", file.getOriginalFilename());
-            putMsg(result, Status.VERIFY_PARAMETER_NAME_FAILED);
+    private Result<Object> fileEmptyCheck(Result<Object> result, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            logger.error("file is empty: {}", RegexUtils.escapeNRT(file.getOriginalFilename()));
+            putMsg(result, Status.RESOURCE_FILE_IS_EMPTY, file.getOriginalFilename());
             return result;
         }
+        return result;
+    }
 
-        if (file != null) {
-            // file is empty
-            if (file.isEmpty()) {
-                logger.error("file is empty: {}", RegexUtils.escapeNRT(file.getOriginalFilename()));
-                putMsg(result, Status.RESOURCE_FILE_IS_EMPTY);
+    private Result<Object> fileSizeCheck(Result<Object> result, MultipartFile file) {
+        // file size check
+        if (file.getSize() > Constants.MAX_FILE_SIZE) {
+            logger.error("file size is too large: {}", RegexUtils.escapeNRT(file.getOriginalFilename()));
+            putMsg(result, Status.RESOURCE_SIZE_EXCEED_LIMIT);
+            return result;
+        }
+        return result;
+    }
+
+    private Result<Object> fileNameCheck(Result<Object> result, String name) {
+        // file name check
+        if (StringUtils.isEmpty(name) || FileUtils.directoryTraversal(name)) {
+            logger.error("file original name {} verify failed", name);
+            putMsg(result, Status.VERIFY_PARAMETER_NAME_FAILED, name);
+            return result;
+        }
+        String restrictedContents = PropertyUtils.getString(Constants.FILE_NAME_RESTRICTED_CONTENT, null);
+        if (restrictedContents != null) {
+            Set<String> containSet = Arrays.stream(restrictedContents.split(Constants.COMMA))
+                    .filter(name::contains).collect(Collectors.toSet());
+            if (!containSet.isEmpty()) {
+                putMsg(result, Status.FILE_NAME_CONTAIN_RESTRICTIONS, name);
                 return result;
             }
+        }
+        return result;
+    }
 
-            // file suffix
-            String fileSuffix = Files.getFileExtension(file.getOriginalFilename());
-            String nameSuffix = Files.getFileExtension(name);
-
-            // determine file suffix
+    private Result<Object> fileSuffixCheck(Result<Object> result, ResourceType type, String fileName,
+                                           String nameSuffix, String fileSuffix) {
+        // // determine file suffix
+        if (StringUtils.isNotEmpty(nameSuffix)) {
             if (!fileSuffix.equalsIgnoreCase(nameSuffix)) {
                 // rename file suffix and original suffix must be consistent
                 logger.error("rename file suffix and original suffix must be consistent: {}",
-                        RegexUtils.escapeNRT(file.getOriginalFilename()));
+                        RegexUtils.escapeNRT(fileName));
+                RegexUtils.escapeNRT(fileName);
                 putMsg(result, Status.RESOURCE_SUFFIX_FORBID_CHANGE);
                 return result;
             }
-
-            // If resource type is UDF, only jar packages are allowed to be uploaded, and the suffix must be .jar
-            if (Constants.UDF.equals(type.name()) && !JAR.equalsIgnoreCase(fileSuffix)) {
-                logger.error(Status.UDF_RESOURCE_SUFFIX_NOT_JAR.getMsg());
-                putMsg(result, Status.UDF_RESOURCE_SUFFIX_NOT_JAR);
+        }
+        String fileAllowTypes = PropertyUtils.getString(Constants.FILE_TYPE_RESTRICTED_LIST, null);
+        if (fileAllowTypes != null) {
+            Set<String> containSet = Arrays.stream(fileAllowTypes.split(Constants.COMMA))
+                    .filter(fileSuffix::contains).collect(Collectors.toSet());
+            if (!containSet.isEmpty()) {
+                putMsg(result, Status.FILE_TYPE_IS_RESTRICTIONS, fileName);
                 return result;
             }
-            if (file.getSize() > Constants.MAX_FILE_SIZE) {
-                logger.error("file size is too large: {}", RegexUtils.escapeNRT(file.getOriginalFilename()));
-                putMsg(result, Status.RESOURCE_SIZE_EXCEED_LIMIT);
-                return result;
-            }
+        }
+        // If resource type is UDF, only jar packages are allowed to be uploaded, and the suffix must be .jar
+        if (Constants.UDF.equals(type.name()) && !JAR.equalsIgnoreCase(fileSuffix)) {
+            logger.error(Status.UDF_RESOURCE_SUFFIX_NOT_JAR.getMsg());
+            putMsg(result, Status.UDF_RESOURCE_SUFFIX_NOT_JAR);
+            return result;
         }
         return result;
     }

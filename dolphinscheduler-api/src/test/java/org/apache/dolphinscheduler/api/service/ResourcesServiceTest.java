@@ -19,8 +19,6 @@ package org.apache.dolphinscheduler.api.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant;
 import org.apache.dolphinscheduler.api.enums.Status;
@@ -74,6 +72,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.io.Files;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * resources service test
