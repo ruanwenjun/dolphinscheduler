@@ -911,13 +911,6 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
 
                     if (!complementListDate.isEmpty() && Flag.NO == processInstance.getIsSubProcess()) {
                         processInstance.setScheduleTime(complementListDate.get(0));
-                        String globalParams = curingParamsService.curingGlobalParams(processInstance.getId(),
-                                processDefinition.getGlobalParamMap(),
-                                processDefinition.getGlobalParamList(),
-                                CommandType.COMPLEMENT_DATA,
-                                processInstance.getScheduleTime(),
-                                cmdParam.get(Constants.SCHEDULE_TIMEZONE));
-                        processInstance.setGlobalParams(globalParams);
                         processInstanceDao.updateProcessInstance(processInstance);
                     }
                 }

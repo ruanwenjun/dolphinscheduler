@@ -90,7 +90,7 @@ public enum Status {
     VERIFY_RESOURCE_BY_NAME_AND_TYPE_ERROR(10059, "verify resource by name and type error", "资源名称或类型验证错误"),
     VIEW_RESOURCE_FILE_ON_LINE_ERROR(10060, "view resource file online error", "查看资源文件错误"),
     CREATE_RESOURCE_FILE_ON_LINE_ERROR(10061, "create resource file online error", "创建资源文件错误"),
-    RESOURCE_FILE_IS_EMPTY(10062, "resource file is empty", "资源文件内容不能为空"),
+    RESOURCE_FILE_CATNOT_BE_EMPTY(10062, "resource file is empty", "资源文件内容不能为空"),
     EDIT_RESOURCE_FILE_ON_LINE_ERROR(10063, "edit resource file online error", "更新资源文件错误"),
     DOWNLOAD_RESOURCE_FILE_ERROR(10064, "download resource file error", "下载资源文件错误"),
     CREATE_UDF_FUNCTION_ERROR(10065, "create udf function error", "创建UDF函数错误"),
@@ -264,10 +264,11 @@ public enum Status {
     LISTING_WAITING_TASK_INSTANCE_BY_WORKER_ERROR(10203, "listing waiting task by worker address error",
             "查询Worker中等待执行的任务信息错误"),
 
+    CREATE_BATCH_RESOURCE_NOTES(10204, "create batch resource error", "创建资源错误"),
     UDF_FUNCTION_NOT_EXIST(20001, "UDF function not found", "UDF函数不存在"),
     UDF_FUNCTION_EXISTS(20002, "UDF function already exists", "UDF函数已存在"),
     RESOURCE_NOT_EXIST(20004, "resource not exist", "资源不存在"),
-    RESOURCE_EXIST(20005, "other users have uploaded files with the same name", "其他用户已经上传过同名文件"),
+    RESOURCE_EXIST(20005, "resource already exists", "资源已存在"),
     RESOURCE_SUFFIX_NOT_SUPPORT_VIEW(20006, "resource suffix do not support online viewing", "资源文件后缀不支持查看"),
     RESOURCE_SIZE_EXCEED_LIMIT(20007, "upload resource file size exceeds limit", "上传资源文件大小超过限制"),
     RESOURCE_SUFFIX_FORBID_CHANGE(20008, "resource suffix not allowed to be modified", "资源文件后缀不支持修改"),
@@ -285,6 +286,8 @@ public enum Status {
     RESOURCE_IS_AUTHORIZED(20017, "resource is authorized to user {0},suffix not allowed to be modified",
             "资源文件已授权其他用户[{0}],后缀不允许修改"),
     RESOURCE_HAS_FOLDER(20018, "There are files or folders in the current directory:{0}", "当前目录下有文件或文件夹[{0}]"),
+
+    RESOURCE_FILE_IS_EMPTY(20020, "resource file [{0}] is empty", "资源文件 [{0}] 内容不能为空"),
 
     USER_NO_OPERATION_PERM(30001, "user has no operation privilege", "当前用户没有操作权限"),
     USER_NO_OPERATION_PROJECT_PERM(30002, "user {0} is not has project {1} permission", "当前用户[{0}]没有[{1}]项目的操作权限"),
@@ -484,7 +487,7 @@ public enum Status {
     K8S_CLIENT_OPS_ERROR(1300006, "k8s error with exception {0}", "k8s操作报错[{0}]"),
     VERIFY_K8S_NAMESPACE_ERROR(1300007, "verify k8s and namespace error", "验证k8s命名空间信息错误"),
     DELETE_K8S_NAMESPACE_BY_ID_ERROR(1300008, "delete k8s namespace by id error", "删除命名空间错误"),
-    VERIFY_PARAMETER_NAME_FAILED(1300009, "The file name verify failed", "文件命名校验失败"),
+    VERIFY_PARAMETER_NAME_FAILED(1300009, "The file name [{0}] verify failed", "文件命名[{0}]校验失败"),
     STORE_OPERATE_CREATE_ERROR(1300010, "create the resource failed", "存储操作失败"),
     GRANT_K8S_NAMESPACE_ERROR(1300011, "grant namespace error", "授权资源错误"),
     QUERY_UNAUTHORIZED_NAMESPACE_ERROR(1300012, "query unauthorized namespace error", "查询未授权命名空间错误"),
@@ -494,6 +497,8 @@ public enum Status {
     TENANT_FULL_NAME_TOO_LONG_ERROR(1300016, "tenant's fullname is too long error", "租户名过长"),
     USER_PASSWORD_LENGTH_ERROR(1300017, "user's password length error", "用户密码长度错误"),
     QUERY_CAN_USE_K8S_NAMESPACE_ERROR(1300018, "login user query can used namespace list error", "查询可用命名空间错误"),
+    FILE_NAME_CONTAIN_RESTRICTIONS(1300019, "The file name [{0}] contain restrictions", "文件命名[{0}]包含限制内容"),
+    FILE_TYPE_IS_RESTRICTIONS(1300020, "The file [{0}] type is restrictions", "文件[{0}]类型为限制类型"),
 
     NO_CURRENT_OPERATING_PERMISSION(1400001, "The current user does not have this permission.", "当前用户无此权限"),
     FUNCTION_DISABLED(1400002, "The current feature is disabled.", "当前功能已被禁用"),
