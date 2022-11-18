@@ -136,18 +136,44 @@
         group by td.user_id,tu.user_name
     </select>
 
+    <select id="countDefinitionByProjectCode" resultType="java.lang.Long">
+        SELECT count(1)
+        FROM t_ds_process_definition
+        where project_code = #{projectCode}
+    </select>
+
+    <select id="selectProcessDefinitionCodeByProjectCode" resultType="java.lang.Long">
+        SELECT code
+        FROM t_ds_process_definition
+        where project_code = #{projectCode}
+    </select>
+
     <select id="queryByDefineId" resultType="org.apache.dolphinscheduler.dao.entity.ProcessDefinition">
-        SELECT
-            pd.id, pd.code, pd.name, pd.version, pd.release_state, pd.project_code, pd.user_id, pd.description,
-            pd.global_params, pd.flag, pd.locations, pd.warning_group_id, pd.create_time, pd.timeout,
-            pd.tenant_id, pd.update_time, u.user_name,p.name AS project_name ,pd.execution_type
-        FROM
-            t_ds_process_definition pd,
-            t_ds_user u,
-            t_ds_project p
-        WHERE
-            pd.user_id = u.id AND pd.project_code = p.code
-        AND pd.id = #{processDefineId}
+        SELECT pd.id,
+               pd.code,
+               pd.name,
+               pd.version,
+               pd.release_state,
+               pd.project_code,
+               pd.user_id,
+               pd.description,
+               pd.global_params,
+               pd.flag,
+               pd.locations,
+               pd.warning_group_id,
+               pd.create_time,
+               pd.timeout,
+               pd.tenant_id,
+               pd.update_time,
+               u.user_name,
+               p.name AS project_name,
+               pd.execution_type
+        FROM t_ds_process_definition pd,
+             t_ds_user u,
+             t_ds_project p
+        WHERE pd.user_id = u.id
+          AND pd.project_code = p.code
+          AND pd.id = #{processDefineId}
     </select>
 
     <select id="listResources" resultType="java.util.HashMap">

@@ -24,7 +24,9 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.dolphinscheduler.api.aspect.AccessLogAnnotation;
 import org.apache.dolphinscheduler.api.exceptions.ApiException;
 import org.apache.dolphinscheduler.api.service.ProjectService;
+import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.api.utils.Result;
+import org.apache.dolphinscheduler.api.vo.project.ProjectListingVO;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.utils.ParameterUtils;
 import org.apache.dolphinscheduler.dao.entity.User;
@@ -158,18 +160,17 @@ public class ProjectController extends BaseController {
     @ResponseStatus(HttpStatus.OK)
     @ApiException(LOGIN_USER_QUERY_PROJECT_LIST_PAGING_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
-    public Result queryProjectListPaging(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
-                                         @RequestParam(value = "searchVal", required = false) String searchVal,
-                                         @RequestParam("pageSize") Integer pageSize,
-                                         @RequestParam("pageNo") Integer pageNo) {
+    public Result<PageInfo<ProjectListingVO>> queryProjectListPaging(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                                                                     @RequestParam(value = "searchVal", required = false) String searchVal,
+                                                                     @RequestParam("pageSize") Integer pageSize,
+                                                                     @RequestParam("pageNo") Integer pageNo) {
 
-        Result result = checkPageParams(pageNo, pageSize);
+        Result<PageInfo<ProjectListingVO>> result = checkPageParams(pageNo, pageSize);
         if (!result.checkResult()) {
             return result;
         }
         searchVal = ParameterUtils.handleEscapes(searchVal);
-        result = projectService.queryProjectListPaging(loginUser, pageSize, pageNo, searchVal);
-        return result;
+        return Result.success(projectService.queryProjectListPaging(loginUser, pageSize, pageNo, searchVal));
     }
 
     /**

@@ -157,6 +157,8 @@ public interface ProcessDefinitionMapper extends BaseMapper<ProcessDefinition> {
      */
     List<DefinitionGroupByUser> countDefinitionByProjectCodes(@Param("projectCodes") Long[] projectCodes);
 
+    long countDefinitionByProjectCode(@Param("projectCode") long projectCode);
+
     /**
      * list all resource ids
      *
@@ -179,4 +181,6 @@ public interface ProcessDefinitionMapper extends BaseMapper<ProcessDefinition> {
      * @return project ids list
      */
     List<Integer> listProjectIds();
+
+    List<Long> selectProcessDefinitionCodeByProjectCode(long projectCode);
 }

@@ -25,6 +25,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * project mapper interface
@@ -75,7 +76,7 @@ public interface ProjectMapper extends BaseMapper<Project> {
      * @return project Ipage
      */
     IPage<Project> queryProjectListPaging(IPage<Project> page,
-                                          @Param("projectsIds") List<Integer> projectsIds,
+                                          @Param("projectsIds") Set<Integer> projectsIds,
                                           @Param("searchName") String searchName);
 
     /**

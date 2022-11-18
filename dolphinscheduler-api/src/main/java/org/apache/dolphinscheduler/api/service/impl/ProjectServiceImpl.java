@@ -17,8 +17,9 @@
 
 package org.apache.dolphinscheduler.api.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.NonNull;
+import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
+import org.apache.dolphinscheduler.api.vo.project.ProjectListingVO;
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.service.ProjectService;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
@@ -28,6 +29,7 @@ import org.apache.dolphinscheduler.common.enums.AuthorizationType;
 import org.apache.dolphinscheduler.common.enums.UserType;
 import org.apache.dolphinscheduler.common.utils.CodeGenerateUtils;
 import org.apache.dolphinscheduler.common.utils.CodeGenerateUtils.CodeGenerateException;
+import org.apache.dolphinscheduler.dao.dto.ListingItem;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.ProjectUser;
@@ -36,7 +38,10 @@ import org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectUserMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
-import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
+import org.apache.dolphinscheduler.dao.repository.ProcessDefinitionDao;
+import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
+import org.apache.dolphinscheduler.dao.repository.ProjectDao;
+import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,15 +58,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.PROJECT;
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.PROJECT_CREATE;
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.PROJECT_DELETE;
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.PROJECT_UPDATE;
 
-/**
- * project service impl
- **/
 @Service
 public class ProjectServiceImpl extends BaseServiceImpl implements ProjectService {
 
@@ -71,10 +74,19 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
     private ProjectMapper projectMapper;
 
     @Autowired
+    private ProjectDao projectDao;
+
+    @Autowired
     private ProjectUserMapper projectUserMapper;
 
     @Autowired
     private ProcessDefinitionMapper processDefinitionMapper;
+
+    @Autowired
+    private ProcessDefinitionDao processDefinitionDao;
+
+    @Autowired
+    private ProcessInstanceDao processInstanceDao;
 
     @Autowired
     private UserMapper userMapper;
@@ -117,8 +129,7 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
         Date now = new Date();
 
         try {
-            project = Project
-                    .newBuilder()
+            project = Project.builder()
                     .name(name)
                     .code(CodeGenerateUtils.getInstance().genCode())
                     .description(desc)
@@ -256,31 +267,38 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
      * @return project list which the login user have permission to see
      */
     @Override
-    public Result queryProjectListPaging(User loginUser, Integer pageSize, Integer pageNo, String searchVal) {
-        Result result = new Result();
-        PageInfo<Project> pageInfo = new PageInfo<>(pageNo, pageSize);
-        Page<Project> page = new Page<>(pageNo, pageSize);
+    public PageInfo<ProjectListingVO> queryProjectListPaging(User loginUser, Integer pageSize, Integer pageNo,
+                                                             String searchVal) {
+        PageInfo<ProjectListingVO> pageInfo = new PageInfo<>(pageNo, pageSize);
         Set<Integer> projectIds = resourcePermissionCheckService
                 .userOwnedResourceIdsAcquisition(AuthorizationType.PROJECTS, loginUser.getId(), logger);
         if (projectIds.isEmpty()) {
-            result.setData(pageInfo);
-            putMsg(result, Status.SUCCESS);
-            return result;
+            return pageInfo;
         }
-        IPage<Project> projectIPage =
-                projectMapper.queryProjectListPaging(page, new ArrayList<>(projectIds), searchVal);
 
-        List<Project> projectList = projectIPage.getRecords();
-        if (loginUser.getUserType() != UserType.ADMIN_USER) {
-            for (Project project : projectList) {
-                project.setPerm(Constants.DEFAULT_ADMIN_PERMISSION);
-            }
-        }
-        pageInfo.setTotal((int) projectIPage.getTotal());
-        pageInfo.setTotalList(projectList);
-        result.setData(pageInfo);
-        putMsg(result, Status.SUCCESS);
-        return result;
+        ListingItem<Project> projectListingItem = projectDao.listingProjects(pageSize, pageNo, projectIds, searchVal);
+        List<ProjectListingVO> projectListingVOList = projectListingItem.getItems()
+                .stream()
+                .map(project -> {
+                    ProjectListingVO projectListingDTO = new ProjectListingVO(project);
+                    List<Long> processDefinitionCodes =
+                            processDefinitionDao.selectProcessDefinitionCodeByProjectCode(project.getCode());
+                    projectListingDTO.setDefCount(processDefinitionCodes.size());
+                    // todo: if we add project code in process instance then we can directly query by projectCode
+                    projectListingDTO.setInstRunningCount(processInstanceDao
+                            .countByProcessDefinitionCodes(processDefinitionCodes, ExecutionStatus.RUNNING_EXECUTION));
+
+                    if (loginUser.getUserType() != UserType.ADMIN_USER) {
+                        projectListingDTO.setPerm(Constants.DEFAULT_ADMIN_PERMISSION);
+                    }
+                    return projectListingDTO;
+                })
+                .collect(Collectors.toList());
+
+        // todo: change to long
+        pageInfo.setTotal((int) projectListingItem.getTotalCount());
+        pageInfo.setTotalList(projectListingVOList);
+        return pageInfo;
     }
 
     /**
