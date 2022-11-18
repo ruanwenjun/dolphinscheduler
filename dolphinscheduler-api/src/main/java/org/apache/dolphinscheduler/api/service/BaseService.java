@@ -17,14 +17,21 @@
 
 package org.apache.dolphinscheduler.api.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.api.enums.Status;
+import org.apache.dolphinscheduler.api.exceptions.ServiceException;
 import org.apache.dolphinscheduler.api.utils.Result;
+import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.AuthorizationType;
+import org.apache.dolphinscheduler.common.utils.DateUtils;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * base service
@@ -111,7 +118,11 @@ public interface BaseService {
      * @param endDateStr end date string
      * @return map<status,startDate,endDate>
      */
+    @Deprecated
     Map<String, Object> checkAndParseDateParameters(String startDateStr, String endDateStr);
+
+    @Nullable
+    Date getTimeFormStringWithException(String startDate);
 
     /**
      * check checkInputLength

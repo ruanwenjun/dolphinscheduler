@@ -57,7 +57,7 @@ public class ProcessInstanceControllerTest extends AbstractControllerTest {
                 .queryProcessInstanceList(Mockito.any(), Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
                         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
                         Mockito.any(), Mockito.any()))
-                .thenReturn(mockResult);
+                .thenReturn(null);
 
         MultiValueMap<String, String> paramsMap = new LinkedMultiValueMap<>();
         paramsMap.add("processDefineCode", "91");

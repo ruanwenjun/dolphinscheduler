@@ -19,6 +19,7 @@ package org.apache.dolphinscheduler.api.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.api.enums.Status;
+import org.apache.dolphinscheduler.api.exceptions.ServiceException;
 import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
 import org.apache.dolphinscheduler.api.service.BaseService;
 import org.apache.dolphinscheduler.api.utils.Result;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -190,6 +192,7 @@ public class BaseServiceImpl implements BaseService {
      * @param endDateStr end date string
      * @return map<status,startDate,endDate>
      */
+    @Deprecated
     @Override
     public Map<String, Object> checkAndParseDateParameters(String startDateStr, String endDateStr) {
         Map<String, Object> result = new HashMap<>();
@@ -215,6 +218,17 @@ public class BaseServiceImpl implements BaseService {
 
         putMsg(result, Status.SUCCESS);
         return result;
+    }
+
+    public @Nullable Date getTimeFormStringWithException(String startDate) {
+        if (StringUtils.isEmpty(startDate)) {
+            return null;
+        }
+        Date start = DateUtils.stringToDate(startDate);
+        if (Objects.isNull(start)) {
+            throw new ServiceException(Status.REQUEST_PARAMS_NOT_VALID_ERROR, Constants.START_END_DATE);
+        }
+        return start;
     }
 
     @Override

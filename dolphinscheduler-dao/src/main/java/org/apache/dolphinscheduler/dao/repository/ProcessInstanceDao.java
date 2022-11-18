@@ -17,18 +17,31 @@
 
 package org.apache.dolphinscheduler.dao.repository;
 
+import lombok.NonNull;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
+import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface ProcessInstanceDao {
 
-    public int insertProcessInstance(ProcessInstance processInstance);
+    List<ProcessInstance> queryProcessInstanceByIds(List<Integer> processInstanceIds);
 
-    public int updateProcessInstance(ProcessInstance processInstance);
+    Optional<ProcessInstance> queryProcessInstanceById(@NonNull Integer processInstanceId);
+
+    int insertProcessInstance(ProcessInstance processInstance);
+
+    int updateProcessInstance(ProcessInstance processInstance);
 
     /**
      * insert or update work process instance to database
      *
      * @param processInstance processInstance
      */
-    public int upsertProcessInstance(ProcessInstance processInstance);
+    int upsertProcessInstance(ProcessInstance processInstance);
+
+    List<ProcessInstance> queryProcessInstanceByStatus(@NonNull ExecutionStatus pauseByIsolation);
+
+    long countByProcessDefinitionCodes(List<Long> processDefinitionCodes, @NonNull ExecutionStatus runningExecution);
 }
