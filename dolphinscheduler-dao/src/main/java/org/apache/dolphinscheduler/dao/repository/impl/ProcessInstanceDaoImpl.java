@@ -17,15 +17,21 @@
 
 package org.apache.dolphinscheduler.dao.repository.impl;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.mapper.ProcessInstanceMapper;
 import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
 
+import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -33,6 +39,19 @@ public class ProcessInstanceDaoImpl implements ProcessInstanceDao {
 
     @Autowired
     private ProcessInstanceMapper processInstanceMapper;
+
+    @Override
+    public List<ProcessInstance> queryProcessInstanceByIds(List<Integer> processInstanceIds) {
+        if (CollectionUtils.isEmpty(processInstanceIds)) {
+            return Collections.emptyList();
+        }
+        return processInstanceMapper.selectBatchIds(processInstanceIds);
+    }
+
+    @Override
+    public Optional<ProcessInstance> queryProcessInstanceById(@NonNull Integer processInstanceId) {
+        return Optional.ofNullable(processInstanceMapper.selectById(processInstanceId));
+    }
 
     @Override
     public int insertProcessInstance(ProcessInstance processInstance) {
@@ -51,5 +70,19 @@ public class ProcessInstanceDaoImpl implements ProcessInstanceDao {
         } else {
             return insertProcessInstance(processInstance);
         }
+    }
+
+    @Override
+    public List<ProcessInstance> queryProcessInstanceByStatus(@NonNull ExecutionStatus executionStatus) {
+        return processInstanceMapper.queryByStatus(executionStatus.getCode());
+    }
+
+    @Override
+    public long countByProcessDefinitionCodes(List<Long> processDefinitionCodes,
+                                              @NonNull ExecutionStatus runningExecution) {
+        if (CollectionUtils.isEmpty(processDefinitionCodes)) {
+            return 0;
+        }
+        return processInstanceMapper.countByProcessDefinitionCodes(processDefinitionCodes, runningExecution.getCode());
     }
 }

@@ -248,6 +248,18 @@
         and id <![CDATA[ < ]]> #{id}
         order by id desc
     </select>
+
+    <select id="countByProcessDefinitionCodes" resultType="java.lang.Long">
+        select count(*) from t_ds_process_instance
+        where state = #{status}
+        <if test="processDefinitionCodes != null and processDefinitionCodes.size() != 0">
+            and process_definition_code in
+            <foreach collection="processDefinitionCodes" index="index" item="i" open="(" close=")" separator=",">
+                #{i}
+            </foreach>
+        </if>
+    </select>
+
     <select id="loadNextProcess4Serial" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
         select
         <include refid="baseSql"/>
