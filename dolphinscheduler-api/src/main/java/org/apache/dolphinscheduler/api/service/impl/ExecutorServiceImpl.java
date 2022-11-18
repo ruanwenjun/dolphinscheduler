@@ -178,11 +178,9 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
                                                    ComplementDependentMode complementDependentMode) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result =
-                projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_START);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_START);
+
         // timeout is invalid
         if (timeout <= 0 || timeout > MAX_TASK_TIMEOUT) {
             putMsg(result, Status.TASK_TIMEOUT_PARAMS_ERROR);
@@ -356,11 +354,9 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
 
-        Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode,
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode,
                 ApiFuncIdentificationConstant.map.get(executeType));
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
 
         // check master exists
         if (!checkMasterExists(result)) {

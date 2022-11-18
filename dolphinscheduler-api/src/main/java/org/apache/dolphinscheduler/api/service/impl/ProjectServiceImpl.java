@@ -17,13 +17,13 @@
 
 package org.apache.dolphinscheduler.api.service.impl;
 
-import lombok.NonNull;
-import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
-import org.apache.dolphinscheduler.api.vo.project.ProjectListingVO;
 import org.apache.dolphinscheduler.api.enums.Status;
+import org.apache.dolphinscheduler.api.exceptions.ServiceException;
+import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
 import org.apache.dolphinscheduler.api.service.ProjectService;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.api.utils.Result;
+import org.apache.dolphinscheduler.api.vo.project.ProjectListingVO;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.AuthorizationType;
 import org.apache.dolphinscheduler.common.enums.UserType;
@@ -38,10 +38,7 @@ import org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectUserMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
-import org.apache.dolphinscheduler.dao.repository.ProcessDefinitionDao;
-import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
 import org.apache.dolphinscheduler.dao.repository.ProjectDao;
-import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -81,12 +79,6 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
 
     @Autowired
     private ProcessDefinitionMapper processDefinitionMapper;
-
-    @Autowired
-    private ProcessDefinitionDao processDefinitionDao;
-
-    @Autowired
-    private ProcessInstanceDao processInstanceDao;
 
     @Autowired
     private UserMapper userMapper;
@@ -180,10 +172,7 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
     public Map<String, Object> queryByCode(User loginUser, long projectCode) {
         Map<String, Object> result = new HashMap<>();
         Project project = projectMapper.queryByCode(projectCode);
-        boolean hasProjectAndPerm = hasProjectAndPerm(loginUser, project, result, PROJECT);
-        if (!hasProjectAndPerm) {
-            return result;
-        }
+        hasProjectAndPerm(loginUser, project, result, PROJECT);
         if (project != null) {
             result.put(Constants.DATA_LIST, project);
             putMsg(result, Status.SUCCESS);
@@ -195,10 +184,8 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
     public Map<String, Object> queryByName(User loginUser, String projectName) {
         Map<String, Object> result = new HashMap<>();
         Project project = projectMapper.queryByName(projectName);
-        boolean hasProjectAndPerm = hasProjectAndPerm(loginUser, project, result, PROJECT);
-        if (!hasProjectAndPerm) {
-            return result;
-        }
+        hasProjectAndPerm(loginUser, project, result, PROJECT);
+
         if (project != null) {
             result.put(Constants.DATA_LIST, project);
             putMsg(result, Status.SUCCESS);
@@ -215,32 +202,27 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
      * @return true if the login user have permission to see the project
      */
     @Override
-    public Map<String, Object> checkProjectAndAuth(User loginUser, Project project, long projectCode, String perm) {
-        Map<String, Object> result = new HashMap<>();
+    public void checkProjectAndAuth(User loginUser, Project project, long projectCode, String perm) {
         if (project == null) {
-            putMsg(result, Status.PROJECT_NOT_EXIST);
+            throw new ServiceException(Status.PROJECT_NOT_EXIST);
         } else if (!canOperatorPermissions(loginUser, new Object[]{project.getId()}, AuthorizationType.PROJECTS,
                 perm)) {
             // check read permission
-            putMsg(result, Status.USER_NO_OPERATION_PROJECT_PERM, loginUser.getUserName(), projectCode);
-        } else {
-            putMsg(result, Status.SUCCESS);
+            Project checkProject = projectMapper.queryByCode(projectCode);
+            throw new ServiceException(Status.USER_NO_OPERATION_PROJECT_PERM, loginUser.getUserName(),
+                    Objects.nonNull(checkProject) ? project.getName() : projectCode);
         }
-        return result;
     }
 
     @Override
-    public boolean hasProjectAndPerm(User loginUser, Project project, Map<String, Object> result, String perm) {
-        boolean checkResult = false;
+    public void hasProjectAndPerm(User loginUser, Project project, Map<String, Object> result, String perm) {
         if (project == null) {
-            putMsg(result, Status.PROJECT_NOT_FOUND, "");
+            throw new ServiceException(Status.PROJECT_NOT_FOUND, "");
         } else if (!canOperatorPermissions(loginUser, new Object[]{project.getId()}, AuthorizationType.PROJECTS,
                 perm)) {
-            putMsg(result, Status.USER_NO_OPERATION_PROJECT_PERM, loginUser.getUserName(), project.getCode());
-        } else {
-            checkResult = true;
+            throw new ServiceException(Status.USER_NO_OPERATION_PROJECT_PERM, loginUser.getUserName(),
+                    project.getName());
         }
-        return checkResult;
     }
 
     @Override
@@ -280,18 +262,14 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
         List<ProjectListingVO> projectListingVOList = projectListingItem.getItems()
                 .stream()
                 .map(project -> {
-                    ProjectListingVO projectListingDTO = new ProjectListingVO(project);
-                    List<Long> processDefinitionCodes =
-                            processDefinitionDao.selectProcessDefinitionCodeByProjectCode(project.getCode());
-                    projectListingDTO.setDefCount(processDefinitionCodes.size());
+                    ProjectListingVO projectListingVO = new ProjectListingVO(project);
+                    User user = userMapper.selectById(project.getId());
+                    projectListingVO.setUserName(user == null ? null : user.getUserName());
                     // todo: if we add project code in process instance then we can directly query by projectCode
-                    projectListingDTO.setInstRunningCount(processInstanceDao
-                            .countByProcessDefinitionCodes(processDefinitionCodes, ExecutionStatus.RUNNING_EXECUTION));
-
                     if (loginUser.getUserType() != UserType.ADMIN_USER) {
-                        projectListingDTO.setPerm(Constants.DEFAULT_ADMIN_PERMISSION);
+                        projectListingVO.setPerm(Constants.DEFAULT_ADMIN_PERMISSION);
                     }
-                    return projectListingDTO;
+                    return projectListingVO;
                 })
                 .collect(Collectors.toList());
 
@@ -313,10 +291,7 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
         Map<String, Object> result = new HashMap<>();
         Project project = projectMapper.queryByCode(projectCode);
 
-        Map<String, Object> checkResult = getCheckResult(loginUser, project, PROJECT_DELETE);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        getCheckResult(loginUser, project, PROJECT_DELETE);
 
         List<ProcessDefinition> processDefinitionList =
                 processDefinitionMapper.queryAllDefinitionList(project.getCode());
@@ -341,14 +316,8 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
      * @param project project
      * @return check result
      */
-    private Map<String, Object> getCheckResult(User loginUser, Project project, String perm) {
-        Map<String, Object> checkResult =
-                checkProjectAndAuth(loginUser, project, project == null ? 0L : project.getCode(), perm);
-        Status status = (Status) checkResult.get(Constants.STATUS);
-        if (status != Status.SUCCESS) {
-            return checkResult;
-        }
-        return null;
+    private void getCheckResult(User loginUser, Project project, String perm) {
+        checkProjectAndAuth(loginUser, project, project == null ? 0L : project.getCode(), perm);
     }
 
     /**
@@ -377,10 +346,8 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
         }
 
         Project project = projectMapper.queryByCode(projectCode);
-        boolean hasProjectAndPerm = hasProjectAndPerm(loginUser, project, result, PROJECT_UPDATE);
-        if (!hasProjectAndPerm) {
-            return result;
-        }
+        hasProjectAndPerm(loginUser, project, result, PROJECT_UPDATE);
+
         Project tempProject = projectMapper.queryByName(projectName);
         if (tempProject != null && tempProject.getCode() != project.getCode()) {
             putMsg(result, Status.PROJECT_ALREADY_EXISTS, projectName);
@@ -490,10 +457,7 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
 
         // 1. check read permission
         Project project = this.projectMapper.queryByCode(projectCode);
-        boolean hasProjectAndPerm = this.hasProjectAndPerm(loginUser, project, result, PROJECT);
-        if (!hasProjectAndPerm) {
-            return result;
-        }
+        hasProjectAndPerm(loginUser, project, result, PROJECT);
 
         // 2. query authorized user list
         List<User> users = this.userMapper.queryAuthedUserListByProjectId(project.getId());

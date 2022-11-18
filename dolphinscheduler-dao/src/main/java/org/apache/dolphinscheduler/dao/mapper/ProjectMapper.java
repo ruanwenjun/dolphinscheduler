@@ -136,4 +136,6 @@ public interface ProjectMapper extends BaseMapper<Project> {
      * @return
      */
     List<Project> listAuthorizedProjects(@Param("userId") int userId, @Param("projectsIds") List<Integer> projectsIds);
+
+    List<Long> queryProjectCodeByIds(@Param("projectIds") Set<Integer> projectIds);
 }
