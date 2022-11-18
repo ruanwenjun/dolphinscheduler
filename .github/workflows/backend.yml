@@ -20,7 +20,9 @@ name: Backend
 on:
   push:
     branches:
-      - dev
+      - ws-3.0.0
+      - v*
+      - zhongxin-v*
     paths:
       - '.github/workflows/backend.yml'
       - 'package.xml'

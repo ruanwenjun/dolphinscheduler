@@ -753,9 +753,6 @@ public class UsersServiceTest {
         project.setCode(1L);
         project.setUserId(1);
         project.setName("PJ-001");
-        project.setPerm(7);
-        project.setDefCount(0);
-        project.setInstRunningCount(0);
         return project;
     }
 
