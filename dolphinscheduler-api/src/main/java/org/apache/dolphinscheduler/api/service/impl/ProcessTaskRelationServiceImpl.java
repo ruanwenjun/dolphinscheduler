@@ -99,10 +99,9 @@ public class ProcessTaskRelationServiceImpl extends BaseServiceImpl implements P
                                                          long preTaskCode, long postTaskCode) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
+
+        Map<String, Object> result = new HashMap<>();
         ProcessDefinition processDefinition = processDefinitionMapper.queryByCode(processDefinitionCode);
         if (processDefinition == null) {
             putMsg(result, Status.PROCESS_DEFINE_NOT_EXIST, String.valueOf(processDefinitionCode));
@@ -196,10 +195,9 @@ public class ProcessTaskRelationServiceImpl extends BaseServiceImpl implements P
                                                          long taskCode) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
+
         if (taskCode == 0) {
             putMsg(result, Status.DELETE_TASK_PROCESS_RELATION_ERROR);
             return result;
@@ -280,10 +278,9 @@ public class ProcessTaskRelationServiceImpl extends BaseServiceImpl implements P
                                                       long taskCode) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
+
         if (StringUtils.isEmpty(preTaskCodes)) {
             putMsg(result, Status.DATA_IS_NULL, "preTaskCodes");
             return result;
@@ -359,10 +356,9 @@ public class ProcessTaskRelationServiceImpl extends BaseServiceImpl implements P
                                                         long taskCode) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
+
         if (StringUtils.isEmpty(postTaskCodes)) {
             putMsg(result, Status.DATA_IS_NULL, "postTaskCodes");
             return result;
@@ -409,10 +405,9 @@ public class ProcessTaskRelationServiceImpl extends BaseServiceImpl implements P
     public Map<String, Object> queryUpstreamRelation(User loginUser, long projectCode, long taskCode) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
+
         List<ProcessTaskRelation> processTaskRelationList =
                 processTaskRelationMapper.queryUpstreamByCode(projectCode, taskCode);
         List<TaskDefinitionLog> taskDefinitionLogList = new ArrayList<>();
@@ -446,10 +441,9 @@ public class ProcessTaskRelationServiceImpl extends BaseServiceImpl implements P
     public Map<String, Object> queryDownstreamRelation(User loginUser, long projectCode, long taskCode) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
+
         List<ProcessTaskRelation> processTaskRelationList =
                 processTaskRelationMapper.queryDownstreamByCode(projectCode, taskCode);
         List<TaskDefinitionLog> taskDefinitionLogList = new ArrayList<>();
@@ -487,10 +481,9 @@ public class ProcessTaskRelationServiceImpl extends BaseServiceImpl implements P
                                           long preTaskCode, long postTaskCode) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result = projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, null);
+
         ProcessDefinition processDefinition = processDefinitionMapper.queryByCode(processDefinitionCode);
         if (processDefinition == null) {
             putMsg(result, Status.PROCESS_DEFINE_NOT_EXIST, String.valueOf(processDefinitionCode));

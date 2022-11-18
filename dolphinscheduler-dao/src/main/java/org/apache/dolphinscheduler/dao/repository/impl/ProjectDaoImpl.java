@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @Repository
@@ -31,5 +33,13 @@ public class ProjectDaoImpl implements ProjectDao {
         IPage<Project> projects =
                 projectMapper.queryProjectListPaging(new Page<>(pageNo, pageSize), projectIds, searchVal);
         return new ListingItem<>(projects.getRecords(), projects.getTotal());
+    }
+
+    @Override
+    public List<Long> queryProjectCodeByIds(Set<Integer> projectIds) {
+        if (CollectionUtils.isEmpty(projectIds)) {
+            return Collections.emptyList();
+        }
+        return projectMapper.queryProjectCodeByIds(projectIds);
     }
 }

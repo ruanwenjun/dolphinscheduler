@@ -33,14 +33,9 @@ public class ProjectListingVO {
 
     private int perm;
 
-    private long defCount;
-
-    private long instRunningCount;
-
     public ProjectListingVO(@NonNull Project project) {
         this.id = project.getId();
         this.userId = project.getUserId();
-        this.userName = project.getUserName();
         this.code = project.getCode();
         this.name = project.getName();
         this.description = project.getDescription();

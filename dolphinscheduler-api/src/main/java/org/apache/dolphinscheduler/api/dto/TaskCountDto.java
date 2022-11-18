@@ -17,18 +17,18 @@
 
 package org.apache.dolphinscheduler.api.dto;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.dolphinscheduler.dao.entity.ExecuteStatusCount;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * task count dto
- */
+@Data
+@NoArgsConstructor
 public class TaskCountDto {
 
     /**
@@ -41,9 +41,14 @@ public class TaskCountDto {
      */
     private List<TaskStateCount> taskCountDtos;
 
-    public TaskCountDto() {
-        this.totalCount = 0;
-        this.taskCountDtos = Collections.emptyList();
+    public static TaskCountDto empty() {
+        List<TaskStateCount> taskStateCounts = Arrays.stream(ExecutionStatus.values())
+                .map(executionStatus -> new TaskStateCount(executionStatus, 0))
+                .collect(Collectors.toList());
+        TaskCountDto taskCountDto = new TaskCountDto();
+        taskCountDto.setTotalCount(0);
+        taskCountDto.setTaskCountDtos(taskStateCounts);
+        return taskCountDto;
     }
 
     public TaskCountDto(List<ExecuteStatusCount> taskInstanceStateCounts) {
@@ -74,19 +79,4 @@ public class TaskCountDto {
         }
     }
 
-    public List<TaskStateCount> getTaskCountDtos() {
-        return taskCountDtos;
-    }
-
-    public void setTaskCountDtos(List<TaskStateCount> taskCountDtos) {
-        this.taskCountDtos = taskCountDtos;
-    }
-
-    public int getTotalCount() {
-        return totalCount;
-    }
-
-    public void setTotalCount(int totalCount) {
-        this.totalCount = totalCount;
-    }
 }
