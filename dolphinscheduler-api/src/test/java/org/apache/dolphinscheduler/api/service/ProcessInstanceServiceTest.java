@@ -238,7 +238,8 @@ public class ProcessInstanceServiceTest {
         // Assert.assertEquals(Status.SUCCESS.getCode(), (int) executorExistRes.getCode());
 
         // executor name empty
-        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Lists.newArrayList(project.getCode()),
+        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class),
+                Lists.newArrayList(project.getCode()),
                 eq(1L), eq(""), eq(0), Mockito.any(),
                 eq("192.168.xx.xx"), eq(start), eq(end))).thenReturn(pageReturn);
 
