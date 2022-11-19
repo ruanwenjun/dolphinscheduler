@@ -1456,17 +1456,6 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
 
             // check whether the process definition json is normal
             for (TaskNode taskNode : taskNodes) {
-                if (!taskPluginManager.checkTaskParameters(ParametersNode.builder()
-                        .taskType(taskNode.getType())
-                        .taskParams(taskNode.getTaskParams())
-                        .dependence(taskNode.getDependence())
-                        .switchResult(taskNode.getSwitchResult())
-                        .build())) {
-                    logger.error("task node {} parameter invalid", taskNode.getName());
-                    putMsg(result, Status.PROCESS_NODE_S_PARAMETER_INVALID, taskNode.getName());
-                    return result;
-                }
-
                 // check extra params
                 CheckUtils.checkOtherParams(taskNode.getExtras());
             }
