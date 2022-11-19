@@ -221,7 +221,9 @@ public interface ProcessDefinitionService {
      * @param codes
      * @return
      */
-    Map<String, Object> batchDeleteProcessDefinitionByCodes(User loginUser, long projectCode, String codes);
+    Map<String, Object> batchDeleteProcessDefinitionByCodes(User loginUser,
+                                                      long projectCode,
+                                                      String codes);
 
     /**
      * release process definition: online / offline
