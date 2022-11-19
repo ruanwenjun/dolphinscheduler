@@ -37,6 +37,7 @@ import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.ResUploadType;
 import org.apache.dolphinscheduler.common.storage.StorageOperate;
 import org.apache.dolphinscheduler.spi.enums.ResourceType;
+import org.jets3t.service.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +128,7 @@ public class S3Utils implements Closeable, StorageOperate {
     }
 
     @Override
-    public void createTenantDirIfNotExists(String tenantCode) {
+    public void createTenantDirIfNotExists(String tenantCode) throws ServiceException {
         createFolder(tenantCode + FOLDER_SEPARATOR + RESOURCE_TYPE_UDF);
         createFolder(tenantCode + FOLDER_SEPARATOR + RESOURCE_TYPE_FILE);
     }
