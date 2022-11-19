@@ -17,7 +17,9 @@
 
 package org.apache.dolphinscheduler.api.service;
 
+import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.api.utils.Result;
+import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 
@@ -44,19 +46,19 @@ public interface TaskInstanceService {
      * @param pageSize page size
      * @return task list page
      */
-    Result queryTaskListPaging(User loginUser,
-                               long projectCode,
-                               Integer processInstanceId,
-                               String processInstanceName,
-                               String taskName,
-                               String executorName,
-                               String startDate,
-                               String endDate,
-                               String searchVal,
-                               ExecutionStatus stateType,
-                               String host,
-                               Integer pageNo,
-                               Integer pageSize);
+    PageInfo<TaskInstance> queryTaskListPaging(User loginUser,
+                                               long projectCode,
+                                               Integer processInstanceId,
+                                               String processInstanceName,
+                                               String taskName,
+                                               String executorName,
+                                               String startDate,
+                                               String endDate,
+                                               String searchVal,
+                                               ExecutionStatus stateType,
+                                               String host,
+                                               Integer pageNo,
+                                               Integer pageSize);
 
     /**
      * change one task instance's state from failure to forced success

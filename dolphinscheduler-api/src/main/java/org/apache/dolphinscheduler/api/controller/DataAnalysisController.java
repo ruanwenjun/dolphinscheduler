@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.dolphinscheduler.api.aspect.AccessLogAnnotation;
+import org.apache.dolphinscheduler.api.dto.TaskCountDto;
 import org.apache.dolphinscheduler.api.exceptions.ApiException;
 import org.apache.dolphinscheduler.api.service.DataAnalysisService;
 import org.apache.dolphinscheduler.api.utils.Result;
@@ -75,14 +76,13 @@ public class DataAnalysisController extends BaseController {
     @ResponseStatus(HttpStatus.OK)
     @ApiException(TASK_INSTANCE_STATE_COUNT_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
-    public Result countTaskState(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
-                                 @RequestParam(value = "startDate", required = false) String startDate,
-                                 @RequestParam(value = "endDate", required = false) String endDate,
-                                 @RequestParam(value = "projectCode", required = false, defaultValue = "0") long projectCode) {
+    public Result<TaskCountDto> countTaskState(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                                               @RequestParam(value = "startDate", required = false) String startDate,
+                                               @RequestParam(value = "endDate", required = false) String endDate,
+                                               // todo: We need to set projectCode to null rather than 0
+                                               @RequestParam(value = "projectCode", required = false, defaultValue = "0") long projectCode) {
 
-        Map<String, Object> result =
-                dataAnalysisService.countTaskStateByProject(loginUser, projectCode, startDate, endDate);
-        return returnDataList(result);
+        return Result.success(dataAnalysisService.countTaskStateByProject(loginUser, projectCode, startDate, endDate));
     }
 
     /**
@@ -104,14 +104,13 @@ public class DataAnalysisController extends BaseController {
     @ResponseStatus(HttpStatus.OK)
     @ApiException(COUNT_PROCESS_INSTANCE_STATE_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
-    public Result countProcessInstanceState(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
-                                            @RequestParam(value = "startDate", required = false) String startDate,
-                                            @RequestParam(value = "endDate", required = false) String endDate,
-                                            @RequestParam(value = "projectCode", required = false, defaultValue = "0") long projectCode) {
+    public Result<TaskCountDto> countProcessInstanceState(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                                                          @RequestParam(value = "startDate", required = false) String startDate,
+                                                          @RequestParam(value = "endDate", required = false) String endDate,
+                                                          @RequestParam(value = "projectCode", required = false, defaultValue = "0") long projectCode) {
 
-        Map<String, Object> result =
-                dataAnalysisService.countProcessInstanceStateByProject(loginUser, projectCode, startDate, endDate);
-        return returnDataList(result);
+        return Result.success(
+                dataAnalysisService.countProcessInstanceStateByProject(loginUser, projectCode, startDate, endDate));
     }
 
     /**

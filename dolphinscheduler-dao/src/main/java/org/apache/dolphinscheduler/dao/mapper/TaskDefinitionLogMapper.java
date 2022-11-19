@@ -93,4 +93,6 @@ public interface TaskDefinitionLogMapper extends BaseMapper<TaskDefinitionLog> {
      */
     IPage<TaskDefinitionLog> queryTaskDefinitionVersionsPaging(Page<TaskDefinitionLog> page, @Param("code") long code,
                                                                @Param("projectCode") long projectCode);
+
+    List<Long> queryTaskDefinitionCodesByProjectCodes(@Param("projectCode") long projectCode);
 }

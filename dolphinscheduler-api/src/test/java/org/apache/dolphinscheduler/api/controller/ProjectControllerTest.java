@@ -21,6 +21,7 @@ import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.service.impl.ProjectServiceImpl;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.api.utils.Result;
+import org.apache.dolphinscheduler.api.vo.project.ProjectListingVO;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.UserType;
 import org.apache.dolphinscheduler.dao.entity.Project;
@@ -98,9 +99,10 @@ public class ProjectControllerTest {
         int pageSize = 10;
         String searchVal = "";
 
-        Result result = Result.success(new PageInfo<Resource>(1, 10));
+        Result result = Result.success(new PageInfo<ProjectListingVO>(1, 10));
 
-        Mockito.when(projectService.queryProjectListPaging(user, pageSize, pageNo, searchVal)).thenReturn(result);
+        Mockito.when(projectService.queryProjectListPaging(user, pageSize, pageNo, searchVal))
+                .thenReturn(new PageInfo<>(1, 10));
         Result response = projectController.queryProjectListPaging(user, searchVal, pageSize, pageNo);
 
         Assert.assertTrue(response != null && response.isSuccess());

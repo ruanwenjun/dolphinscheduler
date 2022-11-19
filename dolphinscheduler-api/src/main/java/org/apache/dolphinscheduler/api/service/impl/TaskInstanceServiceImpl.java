@@ -17,18 +17,17 @@
 
 package org.apache.dolphinscheduler.api.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.service.ProcessInstanceService;
 import org.apache.dolphinscheduler.api.service.ProjectService;
 import org.apache.dolphinscheduler.api.service.TaskInstanceService;
 import org.apache.dolphinscheduler.api.service.UsersService;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
-import org.apache.dolphinscheduler.api.utils.Result;
-import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.common.utils.CollectionUtils;
 import org.apache.dolphinscheduler.common.utils.DateUtils;
+import org.apache.dolphinscheduler.dao.dto.ListingItem;
 import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinition;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
@@ -36,17 +35,20 @@ import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskInstanceMapper;
+import org.apache.dolphinscheduler.dao.repository.ProcessDefinitionLogDao;
+import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
+import org.apache.dolphinscheduler.dao.repository.TaskDefinitionLogDao;
+import org.apache.dolphinscheduler.dao.repository.TaskInstanceDao;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.FORCED_SUCCESS;
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.TASK_INSTANCE;
@@ -78,83 +80,92 @@ public class TaskInstanceServiceImpl extends BaseServiceImpl implements TaskInst
     @Autowired
     TaskDefinitionMapper taskDefinitionMapper;
 
+    @Autowired
+    private TaskInstanceDao taskInstanceDao;
+
+    @Autowired
+    private ProcessInstanceDao processInstanceDao;
+
+    @Autowired
+    private ProcessDefinitionLogDao processDefinitionLogDao;
+
+    @Autowired
+    private TaskDefinitionLogDao taskDefinitionLogDao;
+
     /**
      * query task list by project, process instance, task name, task start time, task end time, task status, keyword paging
      *
-     * @param loginUser login user
-     * @param projectCode project code
+     * @param loginUser         login user
+     * @param projectCode       project code
      * @param processInstanceId process instance id
-     * @param searchVal search value
-     * @param taskName task name
-     * @param stateType state type
-     * @param host host
-     * @param startDate start time
-     * @param endDate end time
-     * @param pageNo page number
-     * @param pageSize page size
+     * @param searchVal         search value
+     * @param taskName          task name
+     * @param stateType         state type
+     * @param host              host
+     * @param startDate         start time
+     * @param endDate           end time
+     * @param pageNo            page number
+     * @param pageSize          page size
      * @return task list page
      */
     @Override
-    public Result queryTaskListPaging(User loginUser,
-                                      long projectCode,
-                                      Integer processInstanceId,
-                                      String processInstanceName,
-                                      String taskName,
-                                      String executorName,
-                                      String startDate,
-                                      String endDate,
-                                      String searchVal,
-                                      ExecutionStatus stateType,
-                                      String host,
-                                      Integer pageNo,
-                                      Integer pageSize) {
-        Result result = new Result();
+    public PageInfo<TaskInstance> queryTaskListPaging(User loginUser,
+                                                      long projectCode,
+                                                      Integer processInstanceId,
+                                                      String processInstanceName,
+                                                      String taskName,
+                                                      String executorName,
+                                                      String startDate,
+                                                      String endDate,
+                                                      String searchVal,
+                                                      ExecutionStatus stateType,
+                                                      String host,
+                                                      Integer pageNo,
+                                                      Integer pageSize) {
+        PageInfo<TaskInstance> result = new PageInfo<>(pageNo, pageSize);
+
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> checkResult =
-                projectService.checkProjectAndAuth(loginUser, project, projectCode, TASK_INSTANCE);
-        Status status = (Status) checkResult.get(Constants.STATUS);
-        if (status != Status.SUCCESS) {
-            putMsg(result, status);
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, TASK_INSTANCE);
+        List<Long> processDefinitionCodes =
+                processDefinitionLogDao.queryProcessDefinitionCodeByProjectCode(projectCode);
+        if (CollectionUtils.isEmpty(processDefinitionCodes)) {
             return result;
         }
-        int[] statusArray = null;
-        if (stateType != null) {
-            statusArray = new int[]{stateType.ordinal()};
-        }
-        Map<String, Object> checkAndParseDateResult = checkAndParseDateParameters(startDate, endDate);
-        status = (Status) checkAndParseDateResult.get(Constants.STATUS);
-        if (status != Status.SUCCESS) {
-            putMsg(result, status);
-            return result;
-        }
-        Date start = (Date) checkAndParseDateResult.get(Constants.START_TIME);
-        Date end = (Date) checkAndParseDateResult.get(Constants.END_TIME);
-        Page<TaskInstance> page = new Page<>(pageNo, pageSize);
-        PageInfo<Map<String, Object>> pageInfo = new PageInfo<>(pageNo, pageSize);
+        Date start = getTimeFormStringWithException(startDate);
+        Date end = getTimeFormStringWithException(endDate);
+        List<Integer> statusCondition =
+                stateType != null ? Lists.newArrayList(stateType.getCode()) : Collections.emptyList();
+        List<Long> taskDefinitionCodes = taskDefinitionLogDao.queryTaskDefinitionCodesByProjectCodes(projectCode);
         int executorId = usersService.getUserIdByName(executorName);
-        IPage<TaskInstance> taskInstanceIPage = taskInstanceMapper.queryTaskInstanceListPaging(
-                page, project.getCode(), processInstanceId, processInstanceName, searchVal, taskName, executorId,
-                statusArray, host, start, end);
-        Set<String> exclusionSet = new HashSet<>();
-        exclusionSet.add(Constants.CLASS);
-        exclusionSet.add("taskJson");
-        List<TaskInstance> taskInstanceList = taskInstanceIPage.getRecords();
-        List<Integer> executorIds =
-                taskInstanceList.stream().map(TaskInstance::getExecutorId).distinct().collect(Collectors.toList());
-        List<User> users = usersService.queryUser(executorIds);
-        Map<Integer, User> userMap = users.stream().collect(Collectors.toMap(User::getId, v -> v));
+
+        ListingItem<TaskInstance> taskInstanceIPage = taskInstanceDao.queryTaskListPaging(
+                new Page<>(pageNo, pageSize),
+                taskDefinitionCodes,
+                processInstanceId,
+                processInstanceName,
+                searchVal,
+                taskName,
+                executorId,
+                statusCondition,
+                host,
+                start,
+                end);
+
+        List<TaskInstance> taskInstanceList = taskInstanceIPage.getItems();
         for (TaskInstance taskInstance : taskInstanceList) {
             taskInstance.setDuration(DateUtils.format2Duration(taskInstance.getStartTime(), taskInstance.getEndTime()));
-            User user = userMap.get(taskInstance.getExecutorId());
+            User user = usersService.queryUser(taskInstance.getExecutorId());
             if (user != null) {
                 taskInstance.setExecutorName(user.getUserName());
             }
+            processInstanceDao.queryProcessInstanceById(taskInstance.getProcessInstanceId())
+                    .ifPresent(processInstance -> {
+                        taskInstance.setProcessInstanceName(processInstance.getName());
+                    });
         }
-        pageInfo.setTotal((int) taskInstanceIPage.getTotal());
-        pageInfo.setTotalList(CollectionUtils.getListByExclusion(taskInstanceIPage.getRecords(), exclusionSet));
-        result.setData(pageInfo);
-        putMsg(result, Status.SUCCESS);
+        result.setTotal((int) taskInstanceIPage.getTotalCount());
+        result.setTotalList(taskInstanceList);
         return result;
     }
 
@@ -169,12 +180,9 @@ public class TaskInstanceServiceImpl extends BaseServiceImpl implements TaskInst
     @Override
     public Map<String, Object> forceTaskSuccess(User loginUser, long projectCode, Integer taskInstanceId) {
         Project project = projectMapper.queryByCode(projectCode);
+        Map<String, Object> result = new HashMap<>();
         // check user access for project
-        Map<String, Object> result =
-                projectService.checkProjectAndAuth(loginUser, project, projectCode, FORCED_SUCCESS);
-        if (result.get(Constants.STATUS) != Status.SUCCESS) {
-            return result;
-        }
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, FORCED_SUCCESS);
 
         // check whether the task instance can be found
         TaskInstance task = taskInstanceMapper.selectById(taskInstanceId);

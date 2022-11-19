@@ -28,6 +28,7 @@ import org.apache.dolphinscheduler.dao.entity.ProcessDefinitionLog;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
+import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,7 +183,7 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
 
         IPage<ProcessInstance> processInstanceIPage = processInstanceMapper.queryProcessInstanceListPaging(
                 page,
-                processDefinitionLog.getProjectCode(),
+                Lists.emptyList(),
                 processInstance.getProcessDefinitionCode(),
                 processInstance.getName(),
                 0,
