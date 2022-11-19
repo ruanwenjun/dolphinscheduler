@@ -263,7 +263,7 @@ public class ProjectServiceImpl extends BaseServiceImpl implements ProjectServic
                 .stream()
                 .map(project -> {
                     ProjectListingVO projectListingVO = new ProjectListingVO(project);
-                    User user = userMapper.selectById(project.getId());
+                    User user = userMapper.selectById(project.getUserId());
                     projectListingVO.setUserName(user == null ? null : user.getUserName());
                     // todo: if we add project code in process instance then we can directly query by projectCode
                     if (loginUser.getUserType() != UserType.ADMIN_USER) {
