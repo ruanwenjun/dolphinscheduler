@@ -100,39 +100,42 @@
     </select>
 
     <select id="queryProcessInstanceListPaging" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
-        select instance.id, instance.command_type, instance.executor_id, instance.process_definition_version,
-        instance.process_definition_code, instance.name, instance.state, instance.schedule_time, instance.start_time,
-        instance.end_time, instance.run_times, instance.recovery, instance.host, instance.dry_run ,instance.next_process_instance_id,
-        restart_time, instance.state_history
-        from t_ds_process_instance instance
-        left join t_ds_process_definition_log pdl ON instance.process_definition_code = pdl.code and instance.process_definition_version = pdl.version
-        where instance.is_sub_process=0
-        and pdl.project_code = #{projectCode}
+        select
+        <include refid="baseSql"/>
+        from t_ds_process_instance
+        where is_sub_process=0
         <if test="processDefinitionCode != 0">
-            and instance.process_definition_code = #{processDefinitionCode}
+            and process_definition_code = #{processDefinitionCode}
         </if>
+        <if test="currentProjectProcessDefinitionCodes != null and currentProjectProcessDefinitionCodes.size() != 0">
+            and process_definition_code in
+            <foreach collection="currentProjectProcessDefinitionCodes" item="i" open="(" close=")" separator=",">
+                #{i}
+            </foreach>
+        </if>
+
         <if test="searchVal != null and searchVal != ''">
-            and instance.name like concat('%', #{searchVal}, '%')
+            and name like concat('%', #{searchVal}, '%')
         </if>
         <if test="startTime != null and endTime != null ">
-            and instance.start_time <![CDATA[ >=]]> #{startTime}
+            and start_time <![CDATA[ >=]]> #{startTime}
         </if>
         <if test="endTime != null">
-            and instance.start_time <![CDATA[ <=]]> #{endTime}
+            and start_time <![CDATA[ <=]]> #{endTime}
         </if>
         <if test="states != null and states.length > 0">
-            and instance.state in
+            and state in
             <foreach collection="states" index="index" item="i" open="(" separator="," close=")">
                 #{i}
             </foreach>
         </if>
         <if test="host != null and host != ''">
-            and instance.host like concat('%', #{host}, '%')
+            and host like concat('%', #{host}, '%')
         </if>
         <if test="executorId != 0">
-            and instance.executor_id = #{executorId}
+            and executor_id = #{executorId}
         </if>
-        order by instance.start_time desc,instance.end_time desc
+        order by start_time desc,end_time desc
     </select>
     <update id="setFailoverByHostAndStateArray">
         update t_ds_process_instance
@@ -234,6 +237,12 @@
         </foreach>
         order by id asc
     </select>
+    <select id="queryByStatus" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
+        select
+        <include refid="baseSql"/>
+        from t_ds_process_instance
+        where state = #{state}
+    </select>
     <select id="queryByProcessDefineCodeAndProcessDefinitionVersionAndStatusAndNextId" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
         select
         <include refid="baseSql"/>
@@ -248,6 +257,18 @@
         and id <![CDATA[ < ]]> #{id}
         order by id desc
     </select>
+
+    <select id="countByProcessDefinitionCodes" resultType="java.lang.Long">
+        select count(*) from t_ds_process_instance
+        where state = #{status}
+        <if test="processDefinitionCodes != null and processDefinitionCodes.size() != 0">
+            and process_definition_code in
+            <foreach collection="processDefinitionCodes" index="index" item="i" open="(" close=")" separator=",">
+                #{i}
+            </foreach>
+        </if>
+    </select>
+
     <select id="loadNextProcess4Serial" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
         select
         <include refid="baseSql"/>

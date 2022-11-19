@@ -78,4 +78,11 @@
         </if>
         order by version desc
     </select>
+
+    <select id="queryTaskDefinitionCodesByProjectCodes" resultType="java.lang.Long">
+        select
+        code
+        from t_ds_task_definition_log
+        where project_code = #{projectCode}
+    </select>
 </mapper>

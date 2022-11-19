@@ -17,9 +17,10 @@
 
 package org.apache.dolphinscheduler.api.service;
 
+import lombok.NonNull;
+import org.apache.dolphinscheduler.api.dto.TaskCountDto;
 import org.apache.dolphinscheduler.dao.entity.ExecuteStatusCount;
 import org.apache.dolphinscheduler.dao.entity.User;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
@@ -39,7 +40,7 @@ public interface DataAnalysisService {
      * @param endDate     end date
      * @return task state count data
      */
-    Map<String, Object> countTaskStateByProject(User loginUser, long projectCode, String startDate, String endDate);
+    TaskCountDto countTaskStateByProject(@NonNull User loginUser, long projectCode, String startDate, String endDate);
 
     /**
      * statistical process instance status data
@@ -50,8 +51,10 @@ public interface DataAnalysisService {
      * @param endDate     end date
      * @return process instance state count data
      */
-    Map<String, Object> countProcessInstanceStateByProject(User loginUser, long projectCode, String startDate,
-                                                           String endDate);
+    TaskCountDto countProcessInstanceStateByProject(@NonNull User loginUser,
+                                                    long projectCode,
+                                                    String startDate,
+                                                    String endDate);
 
     /**
      * statistics the process definition quantities of a certain person
@@ -90,7 +93,7 @@ public interface DataAnalysisService {
      * @param projectCodes Project codes list to filter
      * @return List of ExecuteStatusCount
      */
-    List<ExecuteStatusCount> countTaskInstanceAllStatesByProjectCodes(@Param("startTime") Date startTime,
-                                                                      @Param("endTime") Date endTime,
-                                                                      @Param("projectCodes") Long[] projectCodes);
+    List<ExecuteStatusCount> countTaskInstanceAllStatesByProjectCodes(Date startTime,
+                                                                      Date endTime,
+                                                                      List<Long> projectCodes);
 }

@@ -91,4 +91,6 @@ public interface ProcessDefinitionLogMapper extends BaseMapper<ProcessDefinition
      * @return delete result
      */
     int deleteByProcessDefinitionCodeAndVersion(@Param("code") long code, @Param("version") int version);
+
+    List<Long> queryProcessDefinitionCodeByProjectCode(@Param("projectCode") long projectCode);
 }

@@ -93,19 +93,19 @@ public interface ProcessInstanceMapper extends BaseMapper<ProcessInstance> {
     /**
      * process instance page
      *
-     * @param page                  page
-     * @param projectCode           projectCode
-     * @param processDefinitionCode processDefinitionCode
-     * @param searchVal             searchVal
-     * @param executorId            executorId
-     * @param statusArray           statusArray
-     * @param host                  host
-     * @param startTime             startTime
-     * @param endTime               endTime
+     * @param page                                 page
+     * @param currentProjectProcessDefinitionCodes currentProjectProcessDefinitionCodes
+     * @param processDefinitionCode                processDefinitionCode
+     * @param searchVal                            searchVal
+     * @param executorId                           executorId
+     * @param statusArray                          statusArray
+     * @param host                                 host
+     * @param startTime                            startTime
+     * @param endTime                              endTime
      * @return process instance page
      */
     IPage<ProcessInstance> queryProcessInstanceListPaging(Page<ProcessInstance> page,
-                                                          @Param("projectCode") Long projectCode,
+                                                          @Param("currentProjectProcessDefinitionCodes") List<Long> currentProjectProcessDefinitionCodes,
                                                           @Param("processDefinitionCode") Long processDefinitionCode,
                                                           @Param("searchVal") String searchVal,
                                                           @Param("executorId") Integer executorId,
@@ -258,4 +258,9 @@ public interface ProcessInstanceMapper extends BaseMapper<ProcessInstance> {
 
     ProcessInstance loadNextProcess4Serial(@Param("processDefinitionCode") Long processDefinitionCode,
                                            @Param("state") int state, @Param("id") int id);
+
+    List<ProcessInstance> queryByStatus(@Param("state") int code);
+
+    long countByProcessDefinitionCodes(@Param("processDefinitionCodes") List<Long> processDefinitionCodes,
+                                       @Param("status") int status);
 }
