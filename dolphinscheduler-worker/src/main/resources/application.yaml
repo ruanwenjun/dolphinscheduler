@@ -108,9 +108,6 @@ management:
 metrics:
   enabled: true
 
-task:
-  log:
-    base: logs
 
 # Override by profile
 

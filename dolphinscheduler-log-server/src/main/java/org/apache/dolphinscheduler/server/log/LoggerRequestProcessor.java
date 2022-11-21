@@ -19,8 +19,10 @@ package org.apache.dolphinscheduler.server.log;
 
 import io.netty.channel.Channel;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.common.utils.LoggerUtils;
+import org.apache.dolphinscheduler.common.utils.PropertyUtils;
 import org.apache.dolphinscheduler.plugin.task.api.utils.LogUtils;
 import org.apache.dolphinscheduler.remote.command.Command;
 import org.apache.dolphinscheduler.remote.command.CommandType;
@@ -35,10 +37,8 @@ import org.apache.dolphinscheduler.remote.command.log.RollViewLogResponseCommand
 import org.apache.dolphinscheduler.remote.command.log.ViewLogRequestCommand;
 import org.apache.dolphinscheduler.remote.command.log.ViewLogResponseCommand;
 import org.apache.dolphinscheduler.remote.processor.NettyRequestProcessor;
-import org.apache.dolphinscheduler.remote.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -61,13 +61,12 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(LoggerRequestProcessor.class);
 
-    @Value("task.log.base")
-    private String taskLogBase;
+    private String dataBaseDir = PropertyUtils.getString(Constants.DATA_BASEDIR_PATH);
 
     private final ExecutorService executor;
 
     public LoggerRequestProcessor() {
-        this.executor = Executors.newFixedThreadPool(Constants.CPUS * 2 + 1);
+        this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
     }
 
     @Override
@@ -143,14 +142,14 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
      * @return
      */
     private boolean checkPathSecurity(String path) {
-        if (StringUtils.isBlank(taskLogBase)) {
-            taskLogBase = System.getProperty("user.dir");
+        if (StringUtils.isBlank(dataBaseDir)) {
+            dataBaseDir = System.getProperty("user.dir");
         }
         if (StringUtils.isBlank(path)) {
             logger.warn("path is null");
             return false;
         } else {
-            return path.startsWith(taskLogBase) && !path.contains("../") && path.endsWith(".log");
+            return path.startsWith(dataBaseDir) && !path.contains("../") && path.endsWith(".log");
         }
     }
 

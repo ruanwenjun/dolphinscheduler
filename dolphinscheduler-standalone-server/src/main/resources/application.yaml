@@ -194,9 +194,6 @@ rpc:
   master-url-prefix: /dolphinscheduler/master
   worker-url-prefix: /dolphinscheduler/worker
 
-task:
-  log:
-    base: logs
 
 # Override by profile
 ---
