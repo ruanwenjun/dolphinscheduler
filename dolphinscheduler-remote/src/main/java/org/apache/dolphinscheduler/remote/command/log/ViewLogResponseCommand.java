@@ -17,36 +17,21 @@
 
 package org.apache.dolphinscheduler.remote.command.log;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.remote.command.Command;
 import org.apache.dolphinscheduler.remote.command.CommandType;
 
 import java.io.Serializable;
 
-/**
- *  view log response command
- */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ViewLogResponseCommand implements Serializable {
 
-    /**
-     *  response data
-     */
     private String msg;
-
-    public ViewLogResponseCommand() {
-    }
-
-    public ViewLogResponseCommand(String msg) {
-        this.msg = msg;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
 
     /**
      * package response command

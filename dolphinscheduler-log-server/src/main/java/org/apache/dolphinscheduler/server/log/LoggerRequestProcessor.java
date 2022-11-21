@@ -76,12 +76,7 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
             case GET_LOG_BYTES_REQUEST:
                 GetLogBytesRequestCommand getLogRequest = JSONUtils.parseObject(
                         command.getBody(), GetLogBytesRequestCommand.class);
-                String path = getLogRequest.getPath();
-                if (!checkPathSecurity(path)) {
-                    throw new IllegalArgumentException("Illegal path");
-                }
-                byte[] bytes = getFileContentBytes(path);
-                GetLogBytesResponseCommand getLogResponse = new GetLogBytesResponseCommand(bytes);
+                GetLogBytesResponseCommand getLogResponse = getFileContentBytes(getLogRequest);
                 channel.writeAndFlush(getLogResponse.convert2Command(command.getOpaque()));
                 break;
             case VIEW_WHOLE_LOG_REQUEST:
@@ -163,23 +158,31 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
     /**
      * get files content bytes for download file
      *
-     * @param filePath file path
+     * @param logBytesRequestCommand logBytesRequestCommand
      * @return byte array of file
      */
-    private byte[] getFileContentBytes(String filePath) {
+    private GetLogBytesResponseCommand getFileContentBytes(GetLogBytesRequestCommand logBytesRequestCommand) {
+        if (logBytesRequestCommand == null) {
+            return GetLogBytesResponseCommand.error(GetLogBytesResponseCommand.Status.COMMAND_IS_NULL);
+        }
+        String path = logBytesRequestCommand.getPath();
+        if (!checkPathSecurity(path)) {
+            logger.error("Log file path: {} is not a security path", path);
+            return GetLogBytesResponseCommand.error(GetLogBytesResponseCommand.Status.LOG_PATH_IS_NOT_SECURITY);
+        }
         try (
-                InputStream in = new FileInputStream(filePath);
+                InputStream in = new FileInputStream(path);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) != -1) {
                 bos.write(buf, 0, len);
             }
-            return bos.toByteArray();
+            return GetLogBytesResponseCommand.success(bos.toByteArray());
         } catch (IOException e) {
-            logger.error("get file bytes error", e);
+            logger.error("Get file bytes error, meet an unknown exception", e);
+            return GetLogBytesResponseCommand.error(GetLogBytesResponseCommand.Status.UNKNOWN_ERROR);
         }
-        return new byte[0];
     }
 
     protected RollViewLogResponseCommand readPartFileContent(RollViewLogRequestCommand rollViewLogRequest) {
