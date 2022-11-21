@@ -39,7 +39,6 @@ import org.apache.dolphinscheduler.remote.command.log.ViewLogResponseCommand;
 import org.apache.dolphinscheduler.remote.processor.NettyRequestProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
