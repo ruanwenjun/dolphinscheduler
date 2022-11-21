@@ -18,7 +18,7 @@
 
 <configuration scan="true" scanPeriod="120 seconds">
     <property name="log.base" value="logs"/>
-    <property name="task.log.base" value="logs"/>
+    <springProperty name="task.log.base" source="${task.log.base:-task-logs}"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

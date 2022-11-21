@@ -47,7 +47,7 @@ spring:
     jdbc:
       initialize-schema: never
     properties:
-      org.quartz.threadPool:threadPriority: 5
+      org.quartz.threadPool.threadPriority: 5
       org.quartz.jobStore.isClustered: true
       org.quartz.jobStore.class: org.quartz.impl.jdbcjobstore.JobStoreTX
       org.quartz.scheduler.instanceId: AUTO
@@ -193,6 +193,10 @@ rpc:
   rpc-prefix: http://
   master-url-prefix: /dolphinscheduler/master
   worker-url-prefix: /dolphinscheduler/worker
+
+task:
+  log:
+    base: logs
 
 # Override by profile
 ---

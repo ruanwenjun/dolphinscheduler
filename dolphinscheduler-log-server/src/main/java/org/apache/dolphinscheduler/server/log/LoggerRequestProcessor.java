@@ -38,6 +38,7 @@ import org.apache.dolphinscheduler.remote.processor.NettyRequestProcessor;
 import org.apache.dolphinscheduler.remote.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -59,6 +60,9 @@ import java.util.stream.Stream;
 public class LoggerRequestProcessor implements NettyRequestProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(LoggerRequestProcessor.class);
+
+    @Value("task.log.base")
+    private String taskLogBase;
 
     private final ExecutorService executor;
 
@@ -139,7 +143,6 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
      * @return
      */
     private boolean checkPathSecurity(String path) {
-        String taskLogBase = System.getProperty("task.log.base");
         if (StringUtils.isBlank(taskLogBase)) {
             taskLogBase = System.getProperty("user.dir");
         }
