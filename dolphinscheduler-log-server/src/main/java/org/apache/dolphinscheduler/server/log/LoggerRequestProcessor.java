@@ -139,15 +139,15 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
      * @return
      */
     private boolean checkPathSecurity(String path) {
-        String dsHome = System.getProperty("DOLPHINSCHEDULER_WORKER_HOME");
-        if (StringUtils.isBlank(dsHome)) {
-            dsHome = System.getProperty("user.dir");
+        String taskLogBase = System.getProperty("task.log.base");
+        if (StringUtils.isBlank(taskLogBase)) {
+            taskLogBase = System.getProperty("user.dir");
         }
         if (StringUtils.isBlank(path)) {
             logger.warn("path is null");
             return false;
         } else {
-            return path.startsWith(dsHome) && !path.contains("../") && path.endsWith(".log");
+            return path.startsWith(taskLogBase) && !path.contains("../") && path.endsWith(".log");
         }
     }
 
