@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -131,14 +132,20 @@ public class LogClient implements AutoCloseable {
             Command command = request.convert2Command();
             Command response = this.client.sendSync(address, command, LOG_REQUEST_TIMEOUT);
             if (response != null) {
-                GetLogBytesResponseCommand getLog =
+                GetLogBytesResponseCommand getLogBytesResponse =
                         JSONUtils.parseObject(response.getBody(), GetLogBytesResponseCommand.class);
-                return getLog.getData() == null ? ByteUtils.EMPTY_BYTE_ARRAY : getLog.getData();
+                GetLogBytesResponseCommand.Status responseStatus = getLogBytesResponse.getResponseStatus();
+                if (responseStatus == GetLogBytesResponseCommand.Status.SUCCESS) {
+                    return getLogBytesResponse.getData();
+                }
+                return getLogBytesResponse.getResponseStatus().getDesc().getBytes(StandardCharsets.UTF_8);
             }
+            logger.error("Get logByte from host: {}, port: {}, logPath: {} error, the response is null", host, port,
+                    path);
             return ByteUtils.EMPTY_BYTE_ARRAY;
         } catch (Exception e) {
-            logger.error("Get logSize from host: {}, port: {}, logPath: {} error", host, port, path, e);
-            return ByteUtils.EMPTY_BYTE_ARRAY;
+            logger.error("Get logByte from host: {}, port: {}, logPath: {} error", host, port, path, e);
+            return GetLogBytesResponseCommand.Status.UNKNOWN_ERROR.getDesc().getBytes(StandardCharsets.UTF_8);
         }
     }
 

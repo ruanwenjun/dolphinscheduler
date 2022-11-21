@@ -18,6 +18,7 @@
 
 <configuration scan="true" scanPeriod="120 seconds">
     <property name="log.base" value="logs"/>
+    <property name="task.log.base" value="/tmp/dolphinscheduler/task-logs"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -50,9 +51,9 @@
         </sift>
     </appender>
     <appender name="WORKERLOGFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.base}/dolphinscheduler-worker.log</file>
+        <file>${task.log.base}/dolphinscheduler-worker.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${log.base}/dolphinscheduler-worker.%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
+            <fileNamePattern>${task.log.base}/dolphinscheduler-worker.%d{yyyy-MM-dd_HH}.%i.log</fileNamePattern>
             <maxHistory>168</maxHistory>
             <maxFileSize>200MB</maxFileSize>
         </rollingPolicy>

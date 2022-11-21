@@ -194,6 +194,7 @@ rpc:
   master-url-prefix: /dolphinscheduler/master
   worker-url-prefix: /dolphinscheduler/worker
 
+
 # Override by profile
 ---
 spring:

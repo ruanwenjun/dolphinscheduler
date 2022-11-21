@@ -116,7 +116,7 @@ public class LogClientTest {
 
         Command command = new Command();
         command.setBody(
-                JSONUtils.toJsonByteArray(new GetLogBytesResponseCommand("log".getBytes(StandardCharsets.UTF_8))));
+                JSONUtils.toJsonByteArray(GetLogBytesResponseCommand.success("log".getBytes(StandardCharsets.UTF_8))));
         PowerMockito
                 .when(remotingClient.sendSync(Mockito.any(Host.class), Mockito.any(Command.class), Mockito.anyLong()))
                 .thenReturn(command);

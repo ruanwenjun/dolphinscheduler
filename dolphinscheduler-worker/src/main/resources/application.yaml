@@ -108,6 +108,7 @@ management:
 metrics:
   enabled: true
 
+
 # Override by profile
 
 ---
