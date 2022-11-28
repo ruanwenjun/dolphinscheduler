@@ -1,7 +1,7 @@
 package org.apache.dolphinscheduler.alert.registry;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dolphinscheduler.alert.AlertConfig;
+import org.apache.dolphinscheduler.alert.config.AlertConfig;
 import org.apache.dolphinscheduler.alert.task.AlertHeartbeatTask;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.NodeType;

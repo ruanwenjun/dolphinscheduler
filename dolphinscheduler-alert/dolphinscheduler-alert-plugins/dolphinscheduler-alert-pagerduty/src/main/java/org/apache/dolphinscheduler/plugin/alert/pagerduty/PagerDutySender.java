@@ -44,7 +44,7 @@ public final class PagerDutySender {
 
     public AlertResult sendPagerDutyAlter(String title, String content) {
         AlertResult alertResult = new AlertResult();
-        alertResult.setStatus("false");
+        alertResult.setSuccess(false);
         alertResult.setMessage("send pager duty alert fail.");
 
         try {
@@ -71,7 +71,7 @@ public final class PagerDutySender {
             int statusCode = response.getStatusLine().getStatusCode();
             try {
                 if (statusCode == HttpStatus.SC_OK || statusCode == HttpStatus.SC_ACCEPTED) {
-                    alertResult.setStatus("true");
+                    alertResult.setSuccess(true);
                     alertResult.setMessage("send pager duty alert success");
                 } else {
                     log.info("send pager duty alert fail, statusCode : {}", statusCode);

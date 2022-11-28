@@ -74,6 +74,9 @@ alert:
   # Define value is (0 = infinite), and alert server would be waiting alert result.
   wait-timeout: 0
   heartbeat-Interval: 60s
+  template:
+    enable: true
+    file: "alert-template.properties"
 
 metrics:
   enabled: true

@@ -80,6 +80,8 @@ public enum CommandType {
 
     PONG,
 
+    TASK_RESULT_ALERT_SEND_REQUEST,
+
     ALERT_SEND_REQUEST,
 
     ALERT_SEND_RESPONSE,

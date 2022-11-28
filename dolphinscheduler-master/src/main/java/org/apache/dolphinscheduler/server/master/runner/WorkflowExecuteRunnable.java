@@ -52,7 +52,6 @@ import org.apache.dolphinscheduler.dao.entity.Environment;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.ProcessTaskRelation;
-import org.apache.dolphinscheduler.dao.entity.ProjectUser;
 import org.apache.dolphinscheduler.dao.entity.Schedule;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinitionLog;
 import org.apache.dolphinscheduler.dao.entity.TaskGroupQueue;
@@ -76,7 +75,7 @@ import org.apache.dolphinscheduler.server.master.metrics.TaskMetrics;
 import org.apache.dolphinscheduler.server.master.runner.task.ITaskProcessor;
 import org.apache.dolphinscheduler.server.master.runner.task.TaskAction;
 import org.apache.dolphinscheduler.server.master.runner.task.TaskProcessorFactory;
-import org.apache.dolphinscheduler.service.alert.ProcessAlertManager;
+import org.apache.dolphinscheduler.service.alert.AlertManager;
 import org.apache.dolphinscheduler.service.corn.CronUtils;
 import org.apache.dolphinscheduler.service.expand.CuringParamsService;
 import org.apache.dolphinscheduler.service.process.ProcessService;
@@ -124,7 +123,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
 
     private final ProcessInstanceDao processInstanceDao;
 
-    private final ProcessAlertManager processAlertManager;
+    private final AlertManager alertManager;
 
     private final NettyExecutorManager nettyExecutorManager;
 
@@ -222,7 +221,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
      * @param processService          processService
      * @param processInstanceDao      processInstanceDao
      * @param nettyExecutorManager    nettyExecutorManager
-     * @param processAlertManager     processAlertManager
+     * @param alertManager            alertManager
      * @param masterConfig            masterConfig
      * @param stateWheelExecuteThread stateWheelExecuteThread
      */
@@ -231,7 +230,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
                                    @NonNull ProcessService processService,
                                    @NonNull ProcessInstanceDao processInstanceDao,
                                    @NonNull NettyExecutorManager nettyExecutorManager,
-                                   @NonNull ProcessAlertManager processAlertManager,
+                                   @NonNull AlertManager alertManager,
                                    @NonNull MasterConfig masterConfig,
                                    @NonNull StateWheelExecuteThread stateWheelExecuteThread,
                                    @NonNull CuringParamsService curingParamsService) {
@@ -239,7 +238,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
         this.processInstanceDao = processInstanceDao;
         this.processInstance = processInstance;
         this.nettyExecutorManager = nettyExecutorManager;
-        this.processAlertManager = processAlertManager;
+        this.alertManager = alertManager;
         this.stateWheelExecuteThread = stateWheelExecuteThread;
         this.curingParamsService = curingParamsService;
         this.masterAddress = NetUtils.getAddr(masterConfig.getListenPort());
@@ -356,21 +355,11 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
     }
 
     public void processTimeout() {
-        try {
-            ProjectUser projectUser = processService.queryProjectWithUserByProcessInstanceId(processInstance.getId());
-            this.processAlertManager.sendProcessTimeoutAlert(this.processInstance, projectUser);
-        } catch (Exception ex) {
-            logger.error("Send workflow instance timeout alert error", ex);
-        }
+        alertManager.workflowInstanceTimeoutSendAlertIfNeeded(processInstance);
     }
 
-    public void taskTimeout(TaskInstance taskInstance) {
-        try {
-            ProjectUser projectUser = processService.queryProjectWithUserByProcessInstanceId(processInstance.getId());
-            processAlertManager.sendTaskTimeoutAlert(processInstance, taskInstance, projectUser);
-        } catch (Exception ex) {
-            logger.error("Send task instance timeout alert error", ex);
-        }
+    public void taskTimeout(@NonNull TaskInstance taskInstance) {
+        alertManager.taskTimeoutSendAlertIfNeeded(processInstance, taskInstance);
     }
 
     public void taskFinished(TaskInstance taskInstance) throws StateEventHandleException {
@@ -588,9 +577,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
     }
 
     public void processBlock() {
-        ProjectUser projectUser = processService.queryProjectWithUserByProcessInstanceId(processInstance.getId());
-        processAlertManager.sendProcessBlockingAlert(processInstance, projectUser);
-        logger.info("processInstance {} block alert send successful!", processInstance.getId());
+        alertManager.workflowInstanceBlockSendAlertIfNeeded(processInstance);
     }
 
     public boolean processComplementData() {
@@ -727,18 +714,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
         if (processInstance.getState().typeIsWaitingThread()) {
             processService.createRecoveryWaitingThreadCommand(null, processInstance);
         }
-        ProjectUser projectUser = processService.queryProjectWithUserByProcessInstanceId(processInstance.getId());
-        if (processAlertManager.isNeedToSendWarning(processInstance)) {
-            try {
-                processAlertManager.sendAlertProcessInstance(processInstance, getValidTaskList(), projectUser);
-            } catch (Exception ex) {
-                // the trace id has been set on upstream
-                logger.error("Send workflow instance alert failed");
-            }
-        }
-        if (processInstance.getState().typeIsSuccess()) {
-            processAlertManager.closeAlert(processInstance);
-        }
+        alertManager.workflowInstanceFinishedSendAlert(processInstance);
         if (checkTaskQueue()) {
             // release task group
             processService.releaseAllTaskGroup(processInstance.getId());

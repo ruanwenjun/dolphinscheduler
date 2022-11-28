@@ -2,7 +2,7 @@ package org.apache.dolphinscheduler.alert.task;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dolphinscheduler.alert.AlertConfig;
+import org.apache.dolphinscheduler.alert.config.AlertConfig;
 import org.apache.dolphinscheduler.alert.AlertServerMetrics;
 import org.apache.dolphinscheduler.common.lifecycle.ServerLifeCycleManager;
 import org.apache.dolphinscheduler.common.model.AlertServerHeartBeat;
@@ -69,7 +69,6 @@ public class AlertHeartbeatTask extends BaseHeartBeatTask<AlertServerHeartBeat> 
         return AlertServerHeartBeat.AlertConfigProperty.builder()
                 .databaseUrl(dataSourceProperties.getUrl())
                 .listenPort(alertConfig.getListenPort())
-                .waitTimeout(alertConfig.getWaitTimeout())
                 .heartbeatInterval(alertConfig.getHeartbeatInterval().toMillis())
                 .alertServerAddress(alertConfig.getAlertServerAddress())
                 .alertServerRegistryPath(alertConfig.getAlertServerRegistryPath())

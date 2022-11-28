@@ -49,8 +49,6 @@ public class WorkerHeartBeat implements HeartBeat {
         private int maxCpuLoadAvg;
         private double reservedMemory;
         private Set<String> groups;
-        private String alertListenHost;
-        private int alertListenPort;
         private String registryDisconnectStrategy;
         private String workerAddress;
         private Set<String> workerGroupRegistryPaths;

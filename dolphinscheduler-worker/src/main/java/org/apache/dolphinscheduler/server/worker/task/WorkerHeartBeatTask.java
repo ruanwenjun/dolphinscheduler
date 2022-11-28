@@ -116,8 +116,6 @@ public class WorkerHeartBeatTask extends BaseHeartBeatTask<WorkerHeartBeat> {
                 .maxCpuLoadAvg(workerConfig.getMaxCpuLoadAvg())
                 .reservedMemory(workerConfig.getReservedMemory())
                 .groups(workerConfig.getGroups())
-                .alertListenHost(workerConfig.getAlertListenHost())
-                .alertListenPort(workerConfig.getAlertListenPort())
                 .registryDisconnectStrategy(JSONUtils.toJsonString(workerConfig.getRegistryDisconnectStrategy()))
                 .workerAddress(workerConfig.getWorkerAddress())
                 .workerGroupRegistryPaths(workerConfig.getWorkerGroupRegistryPaths())

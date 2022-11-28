@@ -20,9 +20,9 @@ package org.apache.dolphinscheduler.alert.runner;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.dolphinscheduler.alert.AlertConfig;
+import org.apache.dolphinscheduler.alert.config.AlertConfig;
 import org.apache.dolphinscheduler.alert.AlertPluginManager;
-import org.apache.dolphinscheduler.alert.AlertSenderService;
+import org.apache.dolphinscheduler.alert.AlertSenderBootstrap;
 import org.apache.dolphinscheduler.alert.api.AlertChannel;
 import org.apache.dolphinscheduler.alert.api.AlertResult;
 import org.apache.dolphinscheduler.common.enums.WarningType;
@@ -61,7 +61,7 @@ public class AlertSenderServiceTest {
     private AlertConfig alertConfig;
 
     @InjectMocks
-    private AlertSenderService alertSenderService;
+    private AlertSenderBootstrap alertSenderService;
 
     @Before
     public void before() {

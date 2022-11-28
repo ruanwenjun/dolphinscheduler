@@ -17,18 +17,16 @@
 
 package org.apache.dolphinscheduler.alert;
 
+import org.apache.dolphinscheduler.alert.config.AlertConfig;
 import org.apache.dolphinscheduler.alert.registry.AlertRegistryClient;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.lifecycle.ServerLifeCycleManager;
 import org.apache.dolphinscheduler.common.thread.ThreadUtils;
 import org.apache.dolphinscheduler.dao.PluginDao;
-import org.apache.dolphinscheduler.remote.NettyRemotingServer;
-import org.apache.dolphinscheduler.remote.command.CommandType;
 import org.apache.dolphinscheduler.remote.config.NettyServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -53,15 +51,11 @@ public class AlertServer implements Closeable {
     @Autowired
     private PluginDao pluginDao;
     @Autowired
-    private AlertSenderService alertSenderService;
-    @Autowired
-    private AlertRequestProcessor alertRequestProcessor;
+    private AlertSenderBootstrap alertSenderService;
     @Autowired
     private AlertConfig alertConfig;
     @Autowired
     private AlertRegistryClient alertRegistryClient;
-
-    private NettyRemotingServer nettyRemotingServer;
 
     public static void main(String[] args) {
         Thread.currentThread().setName(Constants.THREAD_NAME_ALERT_SERVER);
@@ -105,8 +99,6 @@ public class AlertServer implements Closeable {
             // thread sleep 3 seconds for thread quietly stop
             ThreadUtils.sleep(Constants.SERVER_CLOSE_WAIT_TIME.toMillis());
 
-            // close
-            this.nettyRemotingServer.close();
             logger.info("Alter server stopped, cause: {}", cause);
         } catch (Exception e) {
             logger.error("Alert server stop failed, cause: {}", cause, e);
@@ -123,10 +115,6 @@ public class AlertServer implements Closeable {
     private void startServer() {
         NettyServerConfig serverConfig = new NettyServerConfig();
         serverConfig.setListenPort(alertConfig.getListenPort());
-
-        nettyRemotingServer = new NettyRemotingServer(serverConfig);
-        nettyRemotingServer.registerProcessor(CommandType.ALERT_SEND_REQUEST, alertRequestProcessor);
-        nettyRemotingServer.start();
     }
 
 }

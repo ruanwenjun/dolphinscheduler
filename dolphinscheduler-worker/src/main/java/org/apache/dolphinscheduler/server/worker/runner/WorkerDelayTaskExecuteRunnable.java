@@ -23,7 +23,7 @@ import org.apache.dolphinscheduler.common.utils.DateUtils;
 import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
 import org.apache.dolphinscheduler.server.worker.config.WorkerConfig;
 import org.apache.dolphinscheduler.server.worker.rpc.WorkerMessageSender;
-import org.apache.dolphinscheduler.service.alert.AlertClientService;
+import org.apache.dolphinscheduler.server.worker.rpc.WorkerRpcClient;
 import org.apache.dolphinscheduler.service.task.TaskPluginManager;
 
 import javax.annotation.Nullable;
@@ -36,10 +36,10 @@ public abstract class WorkerDelayTaskExecuteRunnable extends WorkerTaskExecuteRu
                                              @NonNull WorkerConfig workerConfig,
                                              @NonNull String masterAddress,
                                              @NonNull WorkerMessageSender workerMessageSender,
-                                             @NonNull AlertClientService alertClientService,
+                                             @NonNull WorkerRpcClient workerRpcClient,
                                              @NonNull TaskPluginManager taskPluginManager,
                                              @Nullable StorageOperate storageOperate) {
-        super(taskExecutionContext, workerConfig, masterAddress, workerMessageSender, alertClientService,
+        super(taskExecutionContext, workerConfig, masterAddress, workerMessageSender, workerRpcClient,
                 taskPluginManager, storageOperate);
     }
 

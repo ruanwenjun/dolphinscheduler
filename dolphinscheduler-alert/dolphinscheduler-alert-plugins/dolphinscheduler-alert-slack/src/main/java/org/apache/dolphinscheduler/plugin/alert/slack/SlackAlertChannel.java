@@ -31,10 +31,10 @@ public final class SlackAlertChannel implements AlertChannel {
         AlertData alertData = alertInfo.getAlertData();
         Map<String, String> alertParams = alertInfo.getAlertParams();
         if (alertParams == null || alertParams.size() == 0) {
-            return new AlertResult("false", "Slack alert params is empty");
+            return new AlertResult(false, "Slack alert params is empty");
         }
         SlackSender slackSender = new SlackSender(alertParams);
         String response = slackSender.sendMessage(alertData.getTitle(), alertData.getContent());
-        return new AlertResult("ok".equals(response) ? "true" : "false", response);
+        return new AlertResult("ok".equals(response), response);
     }
 }

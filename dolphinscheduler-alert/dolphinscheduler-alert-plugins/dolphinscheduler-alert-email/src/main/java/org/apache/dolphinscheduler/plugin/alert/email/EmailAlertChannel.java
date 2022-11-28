@@ -37,7 +37,7 @@ public final class EmailAlertChannel implements AlertChannel {
         AlertData alert = info.getAlertData();
         Map<String, String> paramsMap = info.getAlertParams();
         if (null == paramsMap) {
-            return new AlertResult("false", "mail params is null");
+            return AlertResult.error("mail params is null");
         }
         MailSender mailSender = new MailSender(paramsMap);
         AlertResult alertResult = mailSender.sendMails(alert.getTitle(), alert.getContent());
@@ -46,13 +46,13 @@ public final class EmailAlertChannel implements AlertChannel {
 
         if (alertResult == null) {
             alertResult = new AlertResult();
-            alertResult.setStatus("false");
+            alertResult.setSuccess(false);
             alertResult.setMessage("alert send error.");
             logger.info("alert send error : {}", alertResult.getMessage());
             return alertResult;
         }
 
-        flag = Boolean.parseBoolean(String.valueOf(alertResult.getStatus()));
+        flag = alertResult.isSuccess();
 
         if (flag) {
             logger.info("alert send success");

@@ -65,7 +65,7 @@ public final class WebexTeamsSender {
 
     public AlertResult sendWebexTeamsAlter(AlertData alertData) {
         AlertResult alertResult = new AlertResult();
-        alertResult.setStatus("false");
+        alertResult.setSuccess(false);
         alertResult.setMessage("send webex teams alert fail.");
 
         try {
@@ -87,7 +87,7 @@ public final class WebexTeamsSender {
             int statusCode = response.getStatusLine().getStatusCode();
             try {
                 if (statusCode == HttpStatus.SC_OK) {
-                    alertResult.setStatus("true");
+                    alertResult.setSuccess(true);
                     alertResult.setMessage("send webex teams alert success");
                 } else {
                     log.info("send webex teams alert fail, statusCode : {}", statusCode);

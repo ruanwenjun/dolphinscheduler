@@ -37,6 +37,6 @@ public class HttpSenderTest {
         paramsMap.put(HttpAlertConstants.NAME_CONTENT_FIELD, "content");
         HttpSender httpSender = new HttpSender(paramsMap);
         AlertResult alertResult = httpSender.send("Fault tolerance warning");
-        Assert.assertEquals("true", alertResult.getStatus());
+        Assert.assertEquals(true, alertResult.isSuccess());
     }
 }

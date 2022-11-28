@@ -57,7 +57,6 @@ public class EmailAlertChannelTest {
         AlertData alertData = AlertData.builder()
                 .id(10)
                 .content(mapjson)
-                .log("10")
                 .title("test")
                 .build();
         AlertInfo alertInfo = new AlertInfo();
@@ -67,7 +66,7 @@ public class EmailAlertChannelTest {
         alertInfo.setAlertParams(paramsMap);
         AlertResult alertResult = emailAlertChannel.process(alertInfo);
         Assert.assertNotNull(alertResult);
-        Assert.assertEquals("false", alertResult.getStatus());
+        Assert.assertFalse(alertResult.isSuccess());
     }
 
     public String getEmailAlertParams() {

@@ -51,7 +51,7 @@ public class TelegramSenderTest {
                 TelegramParamsConstants.NAME_TELEGRAM_BOT_TOKEN, "XXXXXXX");
         TelegramSender telegramSender = new TelegramSender(telegramConfig);
         AlertResult result = telegramSender.sendMessage(alertData);
-        Assert.assertEquals("false", result.getStatus());
+        Assert.assertEquals(false, result.isSuccess());
 
     }
 
@@ -64,7 +64,7 @@ public class TelegramSenderTest {
                 TelegramParamsConstants.NAME_TELEGRAM_CHAT_ID, "-XXXXXXX");
         TelegramSender telegramSender = new TelegramSender(telegramConfig);
         AlertResult result = telegramSender.sendMessage(alertData);
-        Assert.assertEquals("false", result.getStatus());
+        Assert.assertEquals(false, result.isSuccess());
     }
 
     @Test
@@ -74,7 +74,7 @@ public class TelegramSenderTest {
         alertData.setContent("telegram test content");
         TelegramSender telegramSender = new TelegramSender(telegramConfig);
         AlertResult result = telegramSender.sendMessage(alertData);
-        Assert.assertEquals("false", result.getStatus());
+        Assert.assertEquals(false, result.isSuccess());
 
     }
 
@@ -88,7 +88,7 @@ public class TelegramSenderTest {
                 TelegramParamsConstants.NAME_TELEGRAM_PARSE_MODE, TelegramAlertConstants.PARSE_MODE_MARKDOWN);
         TelegramSender telegramSender = new TelegramSender(telegramConfig);
         AlertResult result = telegramSender.sendMessage(alertData);
-        Assert.assertEquals("false", result.getStatus());
+        Assert.assertEquals(false, result.isSuccess());
 
     }
 
@@ -101,7 +101,7 @@ public class TelegramSenderTest {
                 TelegramParamsConstants.NAME_TELEGRAM_PARSE_MODE, TelegramAlertConstants.PARSE_MODE_HTML);
         TelegramSender telegramSender = new TelegramSender(telegramConfig);
         AlertResult result = telegramSender.sendMessage(alertData);
-        Assert.assertEquals("false", result.getStatus());
+        Assert.assertEquals(false, result.isSuccess());
 
     }
 
