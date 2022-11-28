@@ -32,7 +32,6 @@ import org.apache.dolphinscheduler.server.worker.registry.WorkerRegistryClient;
 import org.apache.dolphinscheduler.server.worker.rpc.WorkerRpcClient;
 import org.apache.dolphinscheduler.server.worker.rpc.WorkerRpcServer;
 import org.apache.dolphinscheduler.server.worker.runner.WorkerManagerThread;
-import org.apache.dolphinscheduler.service.alert.AlertClientService;
 import org.apache.dolphinscheduler.service.bean.SpringApplicationContext;
 import org.apache.dolphinscheduler.service.task.TaskPluginManager;
 import org.slf4j.Logger;
@@ -68,12 +67,6 @@ public class WorkerServer implements IStoppable {
      */
     @Autowired
     private SpringApplicationContext springApplicationContext;
-
-    /**
-     * alert model netty remote server
-     */
-    @Autowired
-    private AlertClientService alertClientService;
 
     @Autowired
     private WorkerManagerThread workerManagerThread;
@@ -144,7 +137,6 @@ public class WorkerServer implements IStoppable {
         try (
                 WorkerRpcServer closedWorkerRpcServer = workerRpcServer;
                 WorkerRegistryClient closedRegistryClient = workerRegistryClient;
-                AlertClientService closedAlertClientService = alertClientService;
                 SpringApplicationContext closedSpringContext = springApplicationContext;) {
             logger.info("Worker server is stopping, current cause : {}", cause);
             // kill running tasks

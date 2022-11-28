@@ -22,7 +22,7 @@ import org.apache.dolphinscheduler.common.storage.StorageOperate;
 import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
 import org.apache.dolphinscheduler.server.worker.config.WorkerConfig;
 import org.apache.dolphinscheduler.server.worker.rpc.WorkerMessageSender;
-import org.apache.dolphinscheduler.service.alert.AlertClientService;
+import org.apache.dolphinscheduler.server.worker.rpc.WorkerRpcClient;
 import org.apache.dolphinscheduler.service.task.TaskPluginManager;
 
 import javax.annotation.Nullable;
@@ -35,7 +35,7 @@ public abstract class WorkerDelayTaskExecuteRunnableFactory<T extends WorkerDela
     protected final @NonNull WorkerConfig workerConfig;
     protected final @NonNull String workflowMasterAddress;
     protected final @NonNull WorkerMessageSender workerMessageSender;
-    protected final @NonNull AlertClientService alertClientService;
+    protected final @NonNull WorkerRpcClient workerRpcClient;
     protected final @NonNull TaskPluginManager taskPluginManager;
     protected final @Nullable StorageOperate storageOperate;
 
@@ -44,14 +44,14 @@ public abstract class WorkerDelayTaskExecuteRunnableFactory<T extends WorkerDela
                                                     @NonNull WorkerConfig workerConfig,
                                                     @NonNull String workflowMasterAddress,
                                                     @NonNull WorkerMessageSender workerMessageSender,
-                                                    @NonNull AlertClientService alertClientService,
+                                                    @NonNull WorkerRpcClient workerRpcClient,
                                                     @NonNull TaskPluginManager taskPluginManager,
                                                     @Nullable StorageOperate storageOperate) {
         this.taskExecutionContext = taskExecutionContext;
         this.workerConfig = workerConfig;
         this.workflowMasterAddress = workflowMasterAddress;
         this.workerMessageSender = workerMessageSender;
-        this.alertClientService = alertClientService;
+        this.workerRpcClient = workerRpcClient;
         this.taskPluginManager = taskPluginManager;
         this.storageOperate = storageOperate;
     }

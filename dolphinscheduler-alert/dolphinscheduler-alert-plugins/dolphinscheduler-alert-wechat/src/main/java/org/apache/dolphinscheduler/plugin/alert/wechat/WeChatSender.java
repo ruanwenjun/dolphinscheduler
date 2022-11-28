@@ -167,7 +167,7 @@ public final class WeChatSender {
 
     private static AlertResult checkWeChatSendMsgResult(String result) {
         AlertResult alertResult = new AlertResult();
-        alertResult.setStatus(ALERT_STATUS);
+        alertResult.setSuccess(false);
 
         if (null == result) {
             alertResult.setMessage("we chat send fail");
@@ -181,11 +181,11 @@ public final class WeChatSender {
             return alertResult;
         }
         if (sendMsgResponse.errcode == 0) {
-            alertResult.setStatus("true");
+            alertResult.setSuccess(true);
             alertResult.setMessage("we chat alert send success");
             return alertResult;
         }
-        alertResult.setStatus(ALERT_STATUS);
+        alertResult.setSuccess(false);
         alertResult.setMessage(sendMsgResponse.getErrmsg());
         return alertResult;
     }
@@ -201,7 +201,7 @@ public final class WeChatSender {
         if (null == weChatToken) {
             alertResult = new AlertResult();
             alertResult.setMessage("send we chat alert fail,get weChat token error");
-            alertResult.setStatus(ALERT_STATUS);
+            alertResult.setSuccess(false);
             return alertResult;
         }
         String enterpriseWeChatPushUrlReplace = "";
@@ -228,7 +228,7 @@ public final class WeChatSender {
             logger.info("send we chat alert msg  exception : {}", e.getMessage());
             alertResult = new AlertResult();
             alertResult.setMessage("send we chat alert fail");
-            alertResult.setStatus(ALERT_STATUS);
+            alertResult.setSuccess(false);
         }
         return alertResult;
     }

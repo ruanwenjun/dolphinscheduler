@@ -37,11 +37,13 @@ import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.plugin.task.api.model.TaskAlertInfo;
 import org.apache.dolphinscheduler.plugin.task.api.utils.LogUtils;
 import org.apache.dolphinscheduler.remote.command.CommandType;
+import org.apache.dolphinscheduler.remote.command.alert.TaskAlertRequestCommand;
+import org.apache.dolphinscheduler.remote.utils.Host;
 import org.apache.dolphinscheduler.server.utils.ProcessUtils;
 import org.apache.dolphinscheduler.server.worker.config.WorkerConfig;
 import org.apache.dolphinscheduler.server.worker.rpc.WorkerMessageSender;
+import org.apache.dolphinscheduler.server.worker.rpc.WorkerRpcClient;
 import org.apache.dolphinscheduler.server.worker.utils.Checker;
-import org.apache.dolphinscheduler.service.alert.AlertClientService;
 import org.apache.dolphinscheduler.service.task.TaskPluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,25 +66,25 @@ public abstract class WorkerTaskExecuteRunnable implements Runnable {
     protected final @NonNull WorkerConfig workerConfig;
     protected final @NonNull String masterAddress;
     protected final @NonNull WorkerMessageSender workerMessageSender;
-    protected final @NonNull AlertClientService alertClientService;
+    protected final @NonNull WorkerRpcClient workerRpcClient;
     protected final @NonNull TaskPluginManager taskPluginManager;
     protected final @Nullable StorageOperate storageOperate;
 
-    protected @Nullable AbstractTask task;
+    protected AbstractTask task;
 
     protected WorkerTaskExecuteRunnable(
                                         @NonNull TaskExecutionContext taskExecutionContext,
                                         @NonNull WorkerConfig workerConfig,
                                         @NonNull String masterAddress,
                                         @NonNull WorkerMessageSender workerMessageSender,
-                                        @NonNull AlertClientService alertClientService,
+                                        @NonNull WorkerRpcClient workerRpcClient,
                                         @NonNull TaskPluginManager taskPluginManager,
                                         @Nullable StorageOperate storageOperate) {
         this.taskExecutionContext = taskExecutionContext;
         this.workerConfig = workerConfig;
         this.masterAddress = masterAddress;
         this.workerMessageSender = workerMessageSender;
-        this.alertClientService = alertClientService;
+        this.workerRpcClient = workerRpcClient;
         this.taskPluginManager = taskPluginManager;
         this.storageOperate = storageOperate;
         String taskLogName = LoggerUtils.buildTaskId(taskExecutionContext.getFirstSubmitTime(),
@@ -231,16 +233,26 @@ public abstract class WorkerTaskExecuteRunnable implements Runnable {
         logger.info("The current task need to send alert, begin to send alert");
         ExecutionStatus status = task.getExitStatus();
         TaskAlertInfo taskAlertInfo = task.getTaskAlertInfo();
-        int strategy =
-                status == ExecutionStatus.SUCCESS ? WarningType.SUCCESS.getCode() : WarningType.FAILURE.getCode();
-        alertClientService.sendAlert(taskAlertInfo.getAlertGroupId(), taskAlertInfo.getTitle(),
-                taskAlertInfo.getContent(), strategy);
-        logger.info("Success send alert");
+        TaskAlertRequestCommand taskAlertRequestCommand = TaskAlertRequestCommand.builder()
+                .warningType(status == ExecutionStatus.SUCCESS ? WarningType.SUCCESS : WarningType.FAILURE)
+                .taskName(taskExecutionContext.getTaskName())
+                .workflowInstanceId(taskExecutionContext.getProcessInstanceId())
+                .workflowInstanceName(taskExecutionContext.getProcessInstanceName())
+                .groupId(taskAlertInfo.getAlertGroupId())
+                .title(taskAlertInfo.getTitle())
+                .content(taskAlertInfo.getContent())
+                .build();
+        try {
+            workerRpcClient.send(Host.of(taskExecutionContext.getHost()), taskAlertRequestCommand.convert2Command());
+            logger.info("Success send task alert request to master, request: {}", taskAlertRequestCommand);
+        } catch (Exception e) {
+            logger.error("Send task alert request to master error, e");
+        }
     }
 
     protected void sendTaskResult() {
         taskExecutionContext.setCurrentExecutionStatus(task.getExitStatus());
-        taskExecutionContext.setEndTime(System.currentTimeMillis());
+        taskExecutionContext.setEndTime(new Date());
         taskExecutionContext.setProcessId(task.getProcessId());
         taskExecutionContext.setAppIds(task.getAppIds());
         taskExecutionContext.setVarPool(JSONUtils.toJsonString(task.getParameters().getVarPool()));

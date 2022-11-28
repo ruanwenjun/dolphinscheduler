@@ -33,37 +33,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AlertData {
 
-    /**
-     * alert id
-     */
     private int id;
 
-    /**
-     * alert tile
-     */
     private String title;
 
-    /**
-     * alert content
-     */
     private String content;
-
-    /**
-     * alert log
-     */
-    private String log;
-
-    /**
-     * 0 do not send warning;
-     * 1 send if process success;
-     * 2 send if process failed;
-     * 3 send if process ends, whatever the result;
-     */
-    private int warnType;
-
-    /**
-     * AlertType#code
-     */
-    private int alertType;
 
 }

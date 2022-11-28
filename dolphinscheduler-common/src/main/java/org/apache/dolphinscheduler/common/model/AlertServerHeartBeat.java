@@ -28,7 +28,6 @@ public class AlertServerHeartBeat implements HeartBeat {
 
         private String databaseUrl;
         private int listenPort;
-        private int waitTimeout;
         private long heartbeatInterval;
         private String alertServerAddress;
         private String alertServerRegistryPath;

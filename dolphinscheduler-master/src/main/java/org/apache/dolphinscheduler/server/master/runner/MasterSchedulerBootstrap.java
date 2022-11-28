@@ -45,7 +45,7 @@ import org.apache.dolphinscheduler.server.master.exception.MasterException;
 import org.apache.dolphinscheduler.server.master.metrics.MasterServerMetrics;
 import org.apache.dolphinscheduler.server.master.metrics.ProcessInstanceMetrics;
 import org.apache.dolphinscheduler.server.master.registry.ServerNodeManager;
-import org.apache.dolphinscheduler.service.alert.ProcessAlertManager;
+import org.apache.dolphinscheduler.service.alert.AlertManager;
 import org.apache.dolphinscheduler.service.expand.CuringParamsService;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 import org.slf4j.Logger;
@@ -77,7 +77,7 @@ public class MasterSchedulerBootstrap extends BaseDaemonThread implements AutoCl
     private MasterConfig masterConfig;
 
     @Autowired
-    private ProcessAlertManager processAlertManager;
+    private AlertManager processAlertManager;
 
     @Autowired
     private NettyExecutorManager nettyExecutorManager;

@@ -58,7 +58,7 @@ public class HttpAlertChannelTest {
         Map<String, String> paramsMap = PluginParamsTransfer.getPluginParamsMap(getParams());
         alertInfo.setAlertParams(paramsMap);
         AlertResult alertResult = alertChannel.process(alertInfo);
-        Assert.assertEquals("true", alertResult.getStatus());
+        Assert.assertEquals(true, alertResult.isSuccess());
     }
 
     /**

@@ -37,11 +37,18 @@ public class AlertResult {
      * todo: use enum
      * false or true
      */
-    private String status;
+    private boolean success;
 
     /**
      * alert result message, each plugin can have its own message
      */
     private String message;
+
+    public static AlertResult error(String message) {
+        return AlertResult.builder()
+                .success(false)
+                .message(message)
+                .build();
+    }
 
 }

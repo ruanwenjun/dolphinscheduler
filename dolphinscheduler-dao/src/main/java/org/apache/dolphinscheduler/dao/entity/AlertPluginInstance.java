@@ -22,48 +22,29 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.util.Date;
 
-/**
- * t_ds_alert_plugin_instance
- */
+@Data
 @TableName("t_ds_alert_plugin_instance")
 public class AlertPluginInstance {
 
-    /**
-     * id
-     */
     @TableId(value = "id", type = IdType.AUTO)
     private int id;
 
-    /**
-     * plugin_define_id
-     */
     @TableField(value = "plugin_define_id", updateStrategy = FieldStrategy.NEVER)
     private int pluginDefineId;
 
-    /**
-     * alert plugin instance name
-     */
     @TableField("instance_name")
     private String instanceName;
 
-    /**
-     * plugin_instance_params
-     */
     @TableField("plugin_instance_params")
     private String pluginInstanceParams;
 
-    /**
-     * create_time
-     */
     @TableField("create_time")
     private Date createTime;
 
-    /**
-     * update_time
-     */
     @TableField("update_time")
     private Date updateTime;
 
@@ -87,51 +68,4 @@ public class AlertPluginInstance {
         this.instanceName = instanceName;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getPluginDefineId() {
-        return pluginDefineId;
-    }
-
-    public void setPluginDefineId(int pluginDefineId) {
-        this.pluginDefineId = pluginDefineId;
-    }
-
-    public String getPluginInstanceParams() {
-        return pluginInstanceParams;
-    }
-
-    public void setPluginInstanceParams(String pluginInstanceParams) {
-        this.pluginInstanceParams = pluginInstanceParams;
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public String getInstanceName() {
-        return instanceName;
-    }
-
-    public void setInstanceName(String instanceName) {
-        this.instanceName = instanceName;
-    }
 }
