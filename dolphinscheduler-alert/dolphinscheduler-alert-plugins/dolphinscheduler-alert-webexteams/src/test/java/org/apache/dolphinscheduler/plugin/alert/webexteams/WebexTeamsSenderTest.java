@@ -85,6 +85,6 @@ public class WebexTeamsSenderTest {
     public void testSend() {
         WebexTeamsSender webexTeamsSender = new WebexTeamsSender(webexTeamsConfig);
         AlertResult alertResult = webexTeamsSender.sendWebexTeamsAlter(alertData);
-        Assert.assertEquals("false", alertResult.getStatus());
+        Assert.assertEquals(false, alertResult.isSuccess());
     }
 }

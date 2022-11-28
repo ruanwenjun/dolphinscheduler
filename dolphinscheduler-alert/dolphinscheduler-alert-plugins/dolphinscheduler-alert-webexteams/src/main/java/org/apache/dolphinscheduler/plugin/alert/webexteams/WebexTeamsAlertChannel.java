@@ -31,7 +31,7 @@ public final class WebexTeamsAlertChannel implements AlertChannel {
         AlertData alertData = alertInfo.getAlertData();
         Map<String, String> alertParams = alertInfo.getAlertParams();
         if (alertParams == null || alertParams.size() == 0) {
-            return new AlertResult("false", "WebexTeams alert params is empty");
+            return AlertResult.error("WebexTeams alert params is empty");
         }
 
         return new WebexTeamsSender(alertParams).sendWebexTeamsAlter(alertData);

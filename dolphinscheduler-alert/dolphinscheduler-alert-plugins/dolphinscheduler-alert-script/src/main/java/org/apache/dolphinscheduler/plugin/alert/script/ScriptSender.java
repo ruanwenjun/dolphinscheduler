@@ -50,7 +50,7 @@ public final class ScriptSender {
 
     private AlertResult executeShellScript(String title, String content) {
         AlertResult alertResult = new AlertResult();
-        alertResult.setStatus("false");
+        alertResult.setSuccess(false);
         if (Boolean.TRUE.equals(OSUtils.isWindows())) {
             alertResult.setMessage("shell script not support windows os");
             return alertResult;
@@ -75,7 +75,7 @@ public final class ScriptSender {
         int exitCode = ProcessUtils.executeScript(cmd);
 
         if (exitCode == 0) {
-            alertResult.setStatus("true");
+            alertResult.setSuccess(true);
             alertResult.setMessage("send script alert msg success");
             return alertResult;
         }

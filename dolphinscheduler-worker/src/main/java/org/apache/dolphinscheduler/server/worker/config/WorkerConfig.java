@@ -52,8 +52,6 @@ public class WorkerConfig implements Validator {
     private int maxCpuLoadAvg = -1;
     private double reservedMemory = 0.3;
     private Set<String> groups = Sets.newHashSet("default");
-    private String alertListenHost = "localhost";
-    private int alertListenPort = 50052;
     private ConnectStrategyProperties registryDisconnectStrategy = new ConnectStrategyProperties();
 
     /**
@@ -107,8 +105,6 @@ public class WorkerConfig implements Validator {
         logger.info("Worker config: maxCpuLoadAvg -> {}", maxCpuLoadAvg);
         logger.info("Worker config: reservedMemory -> {}", reservedMemory);
         logger.info("Worker config: groups -> {}", groups);
-        logger.info("Worker config: alertListenHost -> {}", alertListenHost);
-        logger.info("Worker config: alertListenPort -> {}", alertListenPort);
         logger.info("Worker config: registryDisconnectStrategy -> {}", registryDisconnectStrategy);
         logger.info("Worker config: workerAddress -> {}", registryDisconnectStrategy);
         logger.info("Worker config: workerGroupRegistrypaths -> {}", workerGroupRegistryPaths);

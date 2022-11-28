@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -73,7 +74,8 @@ public class JSONUtils {
             .configure(READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
             .configure(REQUIRE_SETTERS_FOR_GETTERS, true)
             .setTimeZone(TimeZone.getDefault())
-            .setDateFormat(new SimpleDateFormat(Constants.YYYY_MM_DD_HH_MM_SS));
+            .setDateFormat(new SimpleDateFormat(Constants.YYYY_MM_DD_HH_MM_SS))
+            .setDefaultPrettyPrinter(new DefaultPrettyPrinter());
 
     public static ArrayNode createArrayNode() {
         return objectMapper.createArrayNode();
@@ -302,6 +304,14 @@ public class JSONUtils {
             return objectMapper.writeValueAsString(object);
         } catch (Exception e) {
             throw new RuntimeException("Object json deserialization exception. obj: " + object, e);
+        }
+    }
+
+    public static String writeAsPrettyString(Object object) {
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+        } catch (Exception ex) {
+            throw new RuntimeException("Object json write as pretty string error, obj: " + object);
         }
     }
 

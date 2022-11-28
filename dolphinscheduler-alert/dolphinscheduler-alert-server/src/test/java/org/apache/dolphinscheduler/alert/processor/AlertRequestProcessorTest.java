@@ -19,8 +19,8 @@ package org.apache.dolphinscheduler.alert.processor;
 
 import static org.mockito.Mockito.mock;
 
+import org.apache.dolphinscheduler.alert.AlertSenderBootstrap;
 import org.apache.dolphinscheduler.alert.AlertRequestProcessor;
-import org.apache.dolphinscheduler.alert.AlertSenderService;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.remote.command.Command;
 import org.apache.dolphinscheduler.remote.command.CommandType;
@@ -44,7 +44,7 @@ public class AlertRequestProcessorTest {
     private AlertRequestProcessor alertRequestProcessor;
 
     @Mock
-    private AlertSenderService alertSenderService;
+    private AlertSenderBootstrap alertSenderService;
 
     @Test
     public void testProcess() {

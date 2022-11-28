@@ -18,9 +18,8 @@
 package org.apache.dolphinscheduler.alert;
 
 import junit.framework.TestCase;
-import org.apache.dolphinscheduler.dao.AlertDao;
+import org.apache.dolphinscheduler.alert.config.AlertConfig;
 import org.apache.dolphinscheduler.dao.PluginDao;
-import org.apache.dolphinscheduler.dao.entity.Alert;
 import org.apache.dolphinscheduler.remote.NettyRemotingServer;
 import org.apache.dolphinscheduler.remote.config.NettyServerConfig;
 import org.junit.Assert;
@@ -29,12 +28,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.powermock.reflect.Whitebox;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AlertServerTest extends TestCase {
@@ -49,7 +44,7 @@ public class AlertServerTest extends TestCase {
     private AlertConfig alertConfig;
 
     @Mock
-    private AlertSenderService alertSenderService;
+    private AlertSenderBootstrap alertSenderService;
 
     @Test
     public void testStart() {

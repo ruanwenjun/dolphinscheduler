@@ -36,10 +36,10 @@ import org.apache.dolphinscheduler.server.utils.LogUtils;
 import org.apache.dolphinscheduler.server.worker.config.WorkerConfig;
 import org.apache.dolphinscheduler.server.worker.metrics.TaskMetrics;
 import org.apache.dolphinscheduler.server.worker.rpc.WorkerMessageSender;
+import org.apache.dolphinscheduler.server.worker.rpc.WorkerRpcClient;
 import org.apache.dolphinscheduler.server.worker.runner.WorkerDelayTaskExecuteRunnable;
 import org.apache.dolphinscheduler.server.worker.runner.WorkerManagerThread;
 import org.apache.dolphinscheduler.server.worker.runner.WorkerTaskExecuteRunnableFactoryBuilder;
-import org.apache.dolphinscheduler.service.alert.AlertClientService;
 import org.apache.dolphinscheduler.service.task.TaskPluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,11 +63,8 @@ public class TaskDispatchProcessor implements NettyRequestProcessor {
     @Autowired
     private WorkerMessageSender workerMessageSender;
 
-    /**
-     * alert client service
-     */
     @Autowired
-    private AlertClientService alertClientService;
+    private WorkerRpcClient workerRpcClient;
 
     @Autowired
     private TaskPluginManager taskPluginManager;
@@ -128,7 +125,7 @@ public class TaskDispatchProcessor implements NettyRequestProcessor {
                             workerConfig,
                             workflowMasterAddress,
                             workerMessageSender,
-                            alertClientService,
+                            workerRpcClient,
                             taskPluginManager,
                             storageOperate)
                     .createWorkerTaskExecuteRunnable();

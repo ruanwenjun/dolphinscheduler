@@ -141,6 +141,9 @@ alert:
   # Mark each alert of alert server if late after x milliseconds as failed.
   # Define value is (0 = infinite), and alert server would be waiting alert result.
   wait-timeout: 0
+  template:
+    enable: true
+    file: "alert-template.properties"
 
 python-gateway:
   # Weather enable python gateway server or not. The default value is true.
@@ -200,7 +203,12 @@ rpc:
 spring:
   config:
     activate:
-      on-profile: postgresql
+      on-profile: mysql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/dolphinscheduler
+    username: root
+    password: root
   quartz:
     properties:
-      org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+      org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate

@@ -17,6 +17,9 @@
 
 package org.apache.dolphinscheduler.plugin.task.sql;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.plugin.DataSourceClientProvider;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.CommonUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.DataSourceUtils;
@@ -39,8 +42,7 @@ import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
-
-import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -57,11 +59,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class SqlTask extends AbstractTaskExecutor {
 
@@ -268,27 +265,24 @@ public class SqlTask extends AbstractTaskExecutor {
             }
         }
         String result = JSONUtils.toJsonString(resultJSONArray);
-        if (sqlParameters.getSendEmail() == null || sqlParameters.getSendEmail()) {
-            sendAttachment(sqlParameters.getGroupId(), StringUtils.isNotEmpty(sqlParameters.getTitle())
-                    ? sqlParameters.getTitle()
-                    : taskExecutionContext.getTaskName() + " query result sets", result);
+        if (Boolean.TRUE.equals(sqlParameters.getSendEmail())) {
+            sendSqlResultToAlert(resultJSONArray);
         }
         logger.debug("execute sql result : {}", result);
         return result;
     }
 
-    /**
-     * send alert as an attachment
-     *
-     * @param title title
-     * @param content content
-     */
-    private void sendAttachment(int groupId, String title, String content) {
+    private void sendSqlResultToAlert(ArrayNode resultJSONArray) {
         setNeedAlert(Boolean.TRUE);
-        TaskAlertInfo taskAlertInfo = new TaskAlertInfo();
-        taskAlertInfo.setAlertGroupId(groupId);
-        taskAlertInfo.setContent(content);
-        taskAlertInfo.setTitle(title);
+        // todo: update the alert info
+        TaskAlertInfo taskAlertInfo = TaskAlertInfo.builder()
+                .alertGroupId(sqlParameters.getGroupId())
+                .workflowInstanceName(taskExecutionContext.getProcessInstanceName())
+                .taskName(taskExecutionContext.getTaskName())
+                .title(StringUtils.isNotEmpty(sqlParameters.getTitle()) ? sqlParameters.getTitle()
+                        : taskExecutionContext.getTaskName() + "result")
+                .content(resultJSONArray)
+                .build();
         setTaskAlertInfo(taskAlertInfo);
     }
 

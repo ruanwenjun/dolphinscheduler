@@ -29,14 +29,11 @@ import org.apache.dolphinscheduler.common.enums.AlertType;
 import org.apache.dolphinscheduler.common.enums.AlertWarnLevel;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
+import org.apache.dolphinscheduler.dao.dto.AlertPluginInstanceDTO;
 import org.apache.dolphinscheduler.dao.entity.Alert;
 import org.apache.dolphinscheduler.dao.entity.AlertPluginInstance;
 import org.apache.dolphinscheduler.dao.entity.AlertSendStatus;
-import org.apache.dolphinscheduler.dao.entity.ProcessAlertContent;
-import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
-import org.apache.dolphinscheduler.dao.entity.ProjectUser;
 import org.apache.dolphinscheduler.dao.entity.ServerAlertContent;
-import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.dao.mapper.AlertGroupMapper;
 import org.apache.dolphinscheduler.dao.mapper.AlertMapper;
 import org.apache.dolphinscheduler.dao.mapper.AlertPluginInstanceMapper;
@@ -47,8 +44,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -175,88 +172,6 @@ public class AlertDao {
     }
 
     /**
-     * process time out alert
-     *
-     * @param processInstance processInstance
-     * @param projectUser projectUser
-     */
-    public void sendProcessTimeoutAlert(ProcessInstance processInstance, ProjectUser projectUser) {
-        int alertGroupId = processInstance.getWarningGroupId();
-        Alert alert = new Alert();
-        List<ProcessAlertContent> processAlertContentList = new ArrayList<>(1);
-        ProcessAlertContent processAlertContent = ProcessAlertContent.newBuilder()
-                .projectCode(projectUser.getProjectCode())
-                .projectName(projectUser.getProjectName())
-                .owner(projectUser.getUserName())
-                .processId(processInstance.getId())
-                .processDefinitionCode(processInstance.getProcessDefinitionCode())
-                .processName(processInstance.getName())
-                .processType(processInstance.getCommandType())
-                .processState(processInstance.getState())
-                .runTimes(processInstance.getRunTimes())
-                .processStartTime(processInstance.getStartTime())
-                .processHost(processInstance.getHost())
-                .event(AlertEvent.TIME_OUT)
-                .warningLevel(AlertWarnLevel.MIDDLE)
-                .build();
-        processAlertContentList.add(processAlertContent);
-        String content = JSONUtils.toJsonString(processAlertContentList);
-        alert.setTitle("Process Timeout Warn");
-        alert.setProjectCode(projectUser.getProjectCode());
-        alert.setProcessDefinitionCode(processInstance.getProcessDefinitionCode());
-        alert.setProcessInstanceId(processInstance.getId());
-        alert.setAlertType(AlertType.PROCESS_INSTANCE_TIMEOUT);
-        saveTaskTimeoutAlert(alert, content, alertGroupId);
-    }
-
-    private void saveTaskTimeoutAlert(Alert alert, String content, int alertGroupId) {
-        alert.setAlertGroupId(alertGroupId);
-        alert.setWarningType(WarningType.FAILURE);
-        alert.setContent(content);
-        alert.setCreateTime(new Date());
-        alert.setUpdateTime(new Date());
-        String sign = generateSign(alert);
-        alert.setSign(sign);
-        alertMapper.insert(alert);
-    }
-
-    /**
-     * task timeout warn
-     *
-     * @param processInstance processInstanceId
-     * @param taskInstance taskInstance
-     * @param projectUser projectUser
-     */
-    public void sendTaskTimeoutAlert(ProcessInstance processInstance, TaskInstance taskInstance,
-                                     ProjectUser projectUser) {
-        Alert alert = new Alert();
-        List<ProcessAlertContent> processAlertContentList = new ArrayList<>(1);
-        ProcessAlertContent processAlertContent = ProcessAlertContent.newBuilder()
-                .projectCode(projectUser.getProjectCode())
-                .projectName(projectUser.getProjectName())
-                .owner(projectUser.getUserName())
-                .processId(processInstance.getId())
-                .processDefinitionCode(processInstance.getProcessDefinitionCode())
-                .processName(processInstance.getName())
-                .taskCode(taskInstance.getTaskCode())
-                .taskName(taskInstance.getName())
-                .taskType(taskInstance.getTaskType())
-                .taskStartTime(taskInstance.getStartTime())
-                .taskHost(taskInstance.getHost())
-                .event(AlertEvent.TIME_OUT)
-                .warningLevel(AlertWarnLevel.MIDDLE)
-                .build();
-        processAlertContentList.add(processAlertContent);
-        String content = JSONUtils.toJsonString(processAlertContentList);
-        alert.setTitle("Task Timeout Warn");
-        alert.setProjectCode(projectUser.getProjectCode());
-        alert.setProcessDefinitionCode(processInstance.getProcessDefinitionCode());
-        alert.setProcessInstanceId(processInstance.getId());
-        alert.setAlertType(AlertType.TASK_TIMEOUT);
-        saveTaskTimeoutAlert(alert, content, processInstance.getWarningGroupId());
-    }
-
-    /**
      * List alerts that are pending for execution
      */
     public List<Alert> listPendingAlerts() {
@@ -298,6 +213,16 @@ public class AlertDao {
             return alertPluginInstanceMapper.queryByIds(ids);
         }
         return null;
+    }
+
+    public List<AlertPluginInstanceDTO> listInstanceDTOByAlertGroupId(int alertGroupId) {
+        List<AlertPluginInstance> alertPluginInstances = listInstanceByAlertGroupId(alertGroupId);
+        if (CollectionUtils.isEmpty(alertPluginInstances)) {
+            return Collections.emptyList();
+        }
+        return alertPluginInstances.stream()
+                .map(AlertPluginInstanceDTO::new)
+                .collect(Collectors.toList());
     }
 
     public AlertPluginInstanceMapper getAlertPluginInstanceMapper() {

@@ -23,7 +23,7 @@ import org.apache.dolphinscheduler.plugin.task.api.TaskException;
 import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
 import org.apache.dolphinscheduler.server.worker.config.WorkerConfig;
 import org.apache.dolphinscheduler.server.worker.rpc.WorkerMessageSender;
-import org.apache.dolphinscheduler.service.alert.AlertClientService;
+import org.apache.dolphinscheduler.server.worker.rpc.WorkerRpcClient;
 import org.apache.dolphinscheduler.service.task.TaskPluginManager;
 
 import javax.annotation.Nullable;
@@ -34,10 +34,10 @@ public class SyncWorkerDelayTaskExecuteRunnable extends WorkerDelayTaskExecuteRu
                                               @NonNull WorkerConfig workerConfig,
                                               @NonNull String workflowMaster,
                                               @NonNull WorkerMessageSender workerMessageSender,
-                                              @NonNull AlertClientService alertClientService,
+                                              @NonNull WorkerRpcClient workerRpcClient,
                                               @NonNull TaskPluginManager taskPluginManager,
                                               @Nullable StorageOperate storageOperate) {
-        super(taskExecutionContext, workerConfig, workflowMaster, workerMessageSender, alertClientService,
+        super(taskExecutionContext, workerConfig, workflowMaster, workerMessageSender, workerRpcClient,
                 taskPluginManager, storageOperate);
     }
 

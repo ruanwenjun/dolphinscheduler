@@ -246,4 +246,9 @@ public class TaskExecutionContext implements Serializable {
      * max memory
      */
     private Integer memoryMax;
+
+    /**
+     * process instance name
+     */
+    private String processInstanceName;
 }

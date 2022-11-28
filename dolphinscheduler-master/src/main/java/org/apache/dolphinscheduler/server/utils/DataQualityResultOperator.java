@@ -28,7 +28,7 @@ import org.apache.dolphinscheduler.plugin.task.api.enums.dp.DqFailureStrategy;
 import org.apache.dolphinscheduler.plugin.task.api.enums.dp.DqTaskState;
 import org.apache.dolphinscheduler.plugin.task.api.enums.dp.OperatorType;
 import org.apache.dolphinscheduler.server.master.processor.queue.TaskEvent;
-import org.apache.dolphinscheduler.service.alert.ProcessAlertManager;
+import org.apache.dolphinscheduler.service.alert.AlertManager;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 
 import java.math.BigDecimal;
@@ -50,7 +50,7 @@ public class DataQualityResultOperator {
     private ProcessService processService;
 
     @Autowired
-    private ProcessAlertManager alertManager;
+    private AlertManager alertManager;
 
     /**
      * When the task type is data quality, it will get the statistics value、comparison value、
@@ -169,7 +169,7 @@ public class DataQualityResultOperator {
     }
 
     private void sendDqTaskErrorAlert(TaskInstance taskInstance, ProcessInstance processInstance) {
-        alertManager.sendTaskErrorAlert(taskInstance, processInstance);
+        alertManager.taskFailedSendAlertIfNeeded(processInstance, taskInstance);
     }
 
     private boolean getCompareResult(OperatorType operatorType, double srcValue, double targetValue) {

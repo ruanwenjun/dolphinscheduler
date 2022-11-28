@@ -28,16 +28,28 @@ public enum AlertType {
      * 0 process instance failure, 1 process instance success, 2 process instance blocked, 3 process instance timeout, 4 fault tolerance warning,
      * 5 task failure, 6 task success, 7 task timeout, 8 close alert
       */
-    PROCESS_INSTANCE_FAILURE(0, "process instance failure"),
-    PROCESS_INSTANCE_SUCCESS(1, "process instance success"),
-    PROCESS_INSTANCE_BLOCKED(2, "process instance blocked"),
-    PROCESS_INSTANCE_TIMEOUT(3, "process instance timeout"),
-    FAULT_TOLERANCE_WARNING(4, "fault tolerance warning"),
-    TASK_FAILURE(5, "task failure"),
-    TASK_SUCCESS(6, "task success"),
-    TASK_TIMEOUT(7, "task timeout"),
+    PROCESS_INSTANCE_FAILURE(0, "WorkflowInstanceFailure"),
+    PROCESS_INSTANCE_SUCCESS(1, "WorkflowInstanceSuccess"),
+    PROCESS_INSTANCE_BLOCKED(2, "WorkflowInstanceBlocked"),
+    PROCESS_INSTANCE_TIMEOUT(3, "WorkflowInstanceTimeout"),
+    @Deprecated
+    FAULT_TOLERANCE_WARNING(4, "FaultToleranceWarning"),
+    TASK_FAILURE(5, "TaskFailure"),
+    TASK_SUCCESS(6, "TaskSuccess"),
+    TASK_TIMEOUT(7, "TaskTimeout"),
 
-    CLOSE_ALERT(8, "the process instance success, can close the before alert");
+    CLOSE_ALERT(8, "The workflow instance success, can close the before alert"),
+
+    WORKFLOW_FAULT_TOLERANCE(9, "WorkflowFaultTolerance"),
+    TASK_FAULT_TOLERANCE(10, "TaskFaultTolerance"),
+
+    TASK_RESULT(11, "TaskResult"),
+
+    DATA_QUALITY_TASK_RESULT(12, "DataQualityTaskResult"),
+
+    WORKFLOW_TIME_CHECK_NOT_RUN_ALERT(13, "WorkflowTimeCheckNotRunAlert"),
+    WORKFLOW_TIME_CHECK_STILL_RUNNING_ALERT(14, "WorkflowTimeCheckStillRunningRunAlert"),
+    ;
 
     AlertType(int code, String descp) {
         this.code = code;

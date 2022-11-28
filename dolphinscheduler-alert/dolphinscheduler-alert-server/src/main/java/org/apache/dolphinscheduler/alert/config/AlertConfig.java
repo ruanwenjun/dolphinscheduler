@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.dolphinscheduler.alert;
+package org.apache.dolphinscheduler.alert.config;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.common.enums.NodeType;
 import org.apache.dolphinscheduler.common.utils.NetUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -38,12 +39,11 @@ public class AlertConfig implements Validator {
 
     private int listenPort;
 
-    private int waitTimeout;
-
     private Duration heartbeatInterval = Duration.ofSeconds(60);
 
     private String alertServerAddress;
     private String alertServerRegistryPath;
+    private AlertTemplateConfiguration template = new AlertTemplateConfiguration();
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -58,6 +58,10 @@ public class AlertConfig implements Validator {
             errors.rejectValue("heartbeat-interval", null, "should be a valid duration");
         }
 
+        if (template.isEnable() && StringUtils.isEmpty(template.getFile())) {
+            errors.rejectValue("template", null, "should not empty when you open template");
+        }
+
         alertConfig.setAlertServerAddress(NetUtils.getAddr(listenPort));
         alertConfig.setAlertServerRegistryPath(
                 NodeType.ALERT_SERVER.getRegistryPath() + "/" + alertConfig.alertServerAddress);
@@ -66,8 +70,9 @@ public class AlertConfig implements Validator {
 
     private void printConfig() {
         log.info("Alert config: listenPort -> {}", listenPort);
-        log.info("Alert config: waitTimeout -> {}", waitTimeout);
         log.info("Alert config: alertServerAddress -> {}", alertServerAddress);
         log.info("Alert config: alertServerRegistryPath -> {}", alertServerRegistryPath);
+        log.info("Alert config: templateEnable -> {}", template.isEnable());
+        log.info("Alert config: templateFile -> {}", template.getFile());
     }
 }

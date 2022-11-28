@@ -79,7 +79,7 @@ public final class FeiShuSender {
 
     public static AlertResult checkSendFeiShuSendMsgResult(String result) {
         AlertResult alertResult = new AlertResult();
-        alertResult.setStatus("false");
+        alertResult.setSuccess(false);
 
         if (org.apache.dolphinscheduler.spi.utils.StringUtils.isBlank(result)) {
             alertResult.setMessage("send fei shu msg error");
@@ -94,7 +94,7 @@ public final class FeiShuSender {
             return alertResult;
         }
         if (sendMsgResponse.statusCode == 0) {
-            alertResult.setStatus("true");
+            alertResult.setSuccess(true);
             alertResult.setMessage("send fei shu msg success");
             return alertResult;
         }
@@ -107,21 +107,9 @@ public final class FeiShuSender {
     public static String formatContent(AlertData alertData) {
         if (alertData.getContent() != null) {
 
-            List<Map> list = JSONUtils.toList(alertData.getContent(), Map.class);
-            if (list.isEmpty()) {
-                return alertData.getTitle() + alertData.getContent();
-            }
-
             StringBuilder contents = new StringBuilder(100);
-            contents.append(String.format("`%s`%n", alertData.getTitle()));
-            for (Map map : list) {
-                for (Entry<String, Object> entry : (Iterable<Entry<String, Object>>) map.entrySet()) {
-                    String key = entry.getKey();
-                    String value = entry.getValue().toString();
-                    contents.append(key + ":" + value);
-                    contents.append("\n");
-                }
-            }
+            contents.append(String.format("%s%n", alertData.getTitle()));
+            contents.append(alertData.getContent());
             return contents.toString();
         }
         return null;
@@ -135,7 +123,7 @@ public final class FeiShuSender {
         } catch (Exception e) {
             logger.info("send fei shu alert msg  exception : {}", e.getMessage());
             alertResult = new AlertResult();
-            alertResult.setStatus("false");
+            alertResult.setSuccess(false);
             alertResult.setMessage("send fei shu alert fail.");
         }
         return alertResult;

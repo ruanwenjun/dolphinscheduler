@@ -31,7 +31,7 @@ public final class PagerDutyAlertChannel implements AlertChannel {
         AlertData alertData = alertInfo.getAlertData();
         Map<String, String> alertParams = alertInfo.getAlertParams();
         if (alertParams == null || alertParams.size() == 0) {
-            return new AlertResult("false", "PagerDuty alert params is empty");
+            return AlertResult.error("PagerDuty alert params is empty");
         }
 
         return new PagerDutySender(alertParams).sendPagerDutyAlter(alertData.getTitle(), alertData.getContent());

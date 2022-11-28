@@ -46,7 +46,7 @@ public class ProcessAlertManagerTest {
     private static final Logger logger = LoggerFactory.getLogger(ProcessAlertManagerTest.class);
 
     @InjectMocks
-    ProcessAlertManager processAlertManager = new ProcessAlertManager();
+    AlertManager processAlertManager = new AlertManager();
 
     @Mock
     private AlertDao alertDao;

@@ -81,7 +81,7 @@ public final class HttpSender {
         }
 
         if (httpRequest == null) {
-            alertResult.setStatus("false");
+            alertResult.setSuccess(false);
             alertResult.setMessage("Request types are not supported");
             return alertResult;
         }
@@ -91,11 +91,11 @@ public final class HttpSender {
             CloseableHttpResponse response = httpClient.execute(httpRequest);
             HttpEntity entity = response.getEntity();
             String resp = EntityUtils.toString(entity, DEFAULT_CHARSET);
-            alertResult.setStatus("true");
+            alertResult.setSuccess(true);
             alertResult.setMessage(resp);
         } catch (Exception e) {
             logger.error("send http alert msg  exception : {}", e.getMessage());
-            alertResult.setStatus("false");
+            alertResult.setSuccess(false);
             alertResult.setMessage("send http request  alert fail.");
         }
 
