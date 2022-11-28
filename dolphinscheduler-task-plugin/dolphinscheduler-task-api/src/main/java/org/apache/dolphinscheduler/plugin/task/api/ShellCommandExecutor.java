@@ -91,10 +91,6 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
                 sb.append("cd /d %~dp0\n");
                 if (StringUtils.isNotBlank(taskRequest.getEnvironmentConfig())) {
                     sb.append(taskRequest.getEnvironmentConfig()).append("\n");
-                } else {
-                    if (taskRequest.getEnvFile() != null) {
-                        sb.append("call ").append(taskRequest.getEnvFile()).append("\n");
-                    }
                 }
             } else {
                 sb.append("#!/bin/sh\n");
@@ -102,14 +98,10 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
                 sb.append("cd $BASEDIR\n");
                 if (StringUtils.isNotBlank(taskRequest.getEnvironmentConfig())) {
                     sb.append(taskRequest.getEnvironmentConfig()).append("\n");
-                } else {
-                    if (taskRequest.getEnvFile() != null) {
-                        sb.append("source ").append(taskRequest.getEnvFile()).append("\n");
-                    }
                 }
             }
             sb.append(execCommand);
-            logger.info("command : {}", sb);
+            String commandContent = sb.toString();
 
             // write data to file
             FileUtils.writeStringToFile(new File(commandFile), sb.toString(), StandardCharsets.UTF_8);
