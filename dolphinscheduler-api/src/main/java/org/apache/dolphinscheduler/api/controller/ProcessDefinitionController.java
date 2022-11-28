@@ -678,33 +678,8 @@ public class ProcessDefinitionController extends BaseController {
     public Result batchDeleteProcessDefinitionByCodes(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
                                                       @ApiParam(name = "projectCode", value = "PROJECT_CODE", required = true) @PathVariable long projectCode,
                                                       @RequestParam("codes") String codes) {
-        Map<String, Object> result = new HashMap<>();
-        List<String> deleteResultList = new ArrayList<>();
-        if (!StringUtils.isEmpty(codes)) {
-            String[] processDefinitionCodeArray = codes.split(",");
-            for (String strProcessDefinitionCode : processDefinitionCodeArray) {
-                long code = Long.parseLong(strProcessDefinitionCode);
-                try {
-                    Map<String, Object> deleteResult =
-                            processDefinitionService.deleteProcessDefinitionByCode(loginUser, projectCode, code);
-                    if (!Status.SUCCESS.equals(deleteResult.get(Constants.STATUS))) {
-                        deleteResultList.add((String) deleteResult.get(Constants.MSG));
-                    }
-                } catch (ServiceException e) {
-                    deleteResultList.add(e.getMessage());
-                } catch (Exception e) {
-                    logger.error("delete workflow by code error, code:{}", code, e);
-                    deleteResultList.add(MessageFormat.format(Status.DELETE_PROCESS_DEFINE_BY_CODES_ERROR.getMsg(),
-                            strProcessDefinitionCode));
-                }
-            }
-        }
-
-        if (deleteResultList.isEmpty()) {
-            putMsg(result, Status.SUCCESS);
-        } else {
-            putMsg(result, BATCH_DELETE_PROCESS_DEFINE_BY_CODES_ERROR, String.join("\n", deleteResultList));
-        }
+        Map<String, Object> result =
+                processDefinitionService.batchDeleteProcessDefinitionByCodes(loginUser, projectCode, codes);
         return returnDataList(result);
     }
 

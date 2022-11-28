@@ -67,7 +67,7 @@ public interface TaskInstanceMapper extends BaseMapper<TaskInstance> {
      */
     List<ExecuteStatusCount> countTaskInstanceStateByProjectCodes(@Param("startTime") Date startTime,
                                                                   @Param("endTime") Date endTime,
-                                                                  @Param("projectCodes") Long[] projectCodes);
+                                                                  @Param("projectCodes") List<Long> projectCodes);
 
     /**
      * Statistics task instance group by given project codes list by submit time
@@ -81,9 +81,10 @@ public interface TaskInstanceMapper extends BaseMapper<TaskInstance> {
      */
     List<ExecuteStatusCount> countTaskInstanceStateByProjectCodesAndStatesBySubmitTime(@Param("startTime") Date startTime,
                                                                                        @Param("endTime") Date endTime,
-                                                                                       @Param("projectCodes") Long[] projectCodes,
+                                                                                       @Param("projectCodes") List<Long> projectCodes,
                                                                                        @Param("states") List<ExecutionStatus> states);
 
+    @Deprecated
     IPage<TaskInstance> queryTaskInstanceListPaging(IPage<TaskInstance> page,
                                                     @Param("projectCode") Long projectCode,
                                                     @Param("processInstanceId") Integer processInstanceId,
@@ -98,4 +99,17 @@ public interface TaskInstanceMapper extends BaseMapper<TaskInstance> {
 
     List<TaskInstance> loadAllInfosNoRelease(@Param("processInstanceId") int processInstanceId,
                                              @Param("status") int status);
+
+    IPage<TaskInstance> queryTaskListPaging(IPage<TaskInstance> page,
+                                            @Param("taskDefinitionCodes") List<Long> taskDefinitionCodes,
+                                            @Param("processInstanceId") Integer processInstanceId,
+                                            @Param("processInstanceName") String processInstanceName,
+                                            @Param("searchVal") String searchVal,
+                                            @Param("taskName") String taskName,
+                                            @Param("executorId") int executorId,
+                                            @Param("states") List<Integer> statusCondition,
+                                            @Param("host") String host,
+                                            @Param("startTime") Date start,
+                                            @Param("endTime") Date end);
+
 }

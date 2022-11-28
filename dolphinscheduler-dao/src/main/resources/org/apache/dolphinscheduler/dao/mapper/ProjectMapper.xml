@@ -82,30 +82,21 @@
     </select>
     <select id="queryProjectListPaging" resultType="org.apache.dolphinscheduler.dao.entity.Project">
         select
-        <include refid="baseSqlV2">
-            <property name="alias" value="p"/>
-        </include>
-        ,
-        u.user_name as user_name,
-        (SELECT COUNT(*) FROM t_ds_process_definition AS def WHERE def.project_code = p.code) AS def_count,
-        (SELECT COUNT(*) FROM t_ds_process_definition_log def, t_ds_process_instance inst WHERE def.code =
-        inst.process_definition_code and def.version = inst.process_definition_version AND def.project_code = p.code
-        AND inst.state=1 ) as inst_running_count
-        from t_ds_project p
-        left join t_ds_user u on u.id=p.user_id
+        <include refid="baseSql"/>
+        from t_ds_project
         where 1=1
         <if test="projectsIds != null and projectsIds.size() > 0">
-            and p.id  in
-            <foreach item="id" index="index" collection="projectsIds" open="(" separator="," close=")">
-                #{id}
+            and id in
+            <foreach item="projectId" index="index" collection="projectsIds" open="(" separator="," close=")">
+                #{projectId}
             </foreach>
         </if>
         <if test="searchName!=null and searchName != ''">
-            AND (p.name LIKE concat('%', #{searchName}, '%')
-            OR p.description LIKE concat('%', #{searchName}, '%')
+            AND (name LIKE concat('%', #{searchName}, '%')
+            OR description LIKE concat('%', #{searchName}, '%')
             )
         </if>
-        order by p.create_time desc, p.id desc
+        order by update_time desc, id desc
     </select>
     <select id="queryAuthedProjectListByUserId" resultType="org.apache.dolphinscheduler.dao.entity.Project">
         select
@@ -178,6 +169,18 @@
         <if test="userId != 0">
             and  dp.id in (select project_id from t_ds_relation_project_user  where user_id=#{userId}
             union select id as project_id  from t_ds_project where user_id=#{userId})
+        </if>
+    </select>
+
+    <select id="queryProjectCodeByIds" resultType="java.lang.Long">
+        select code
+        from t_ds_project
+        where 1=1
+        <if test="projectIds != null and projectIds.size() > 0">
+            and id in
+            <foreach item="projectId" index="index" collection="projectIds" open="(" separator="," close=")">
+                #{projectId}
+            </foreach>
         </if>
     </select>
 </mapper>

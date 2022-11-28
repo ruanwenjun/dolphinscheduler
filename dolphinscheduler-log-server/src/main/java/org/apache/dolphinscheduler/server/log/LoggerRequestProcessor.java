@@ -19,8 +19,10 @@ package org.apache.dolphinscheduler.server.log;
 
 import io.netty.channel.Channel;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.common.utils.LoggerUtils;
+import org.apache.dolphinscheduler.common.utils.PropertyUtils;
 import org.apache.dolphinscheduler.plugin.task.api.utils.LogUtils;
 import org.apache.dolphinscheduler.remote.command.Command;
 import org.apache.dolphinscheduler.remote.command.CommandType;
@@ -35,7 +37,6 @@ import org.apache.dolphinscheduler.remote.command.log.RollViewLogResponseCommand
 import org.apache.dolphinscheduler.remote.command.log.ViewLogRequestCommand;
 import org.apache.dolphinscheduler.remote.command.log.ViewLogResponseCommand;
 import org.apache.dolphinscheduler.remote.processor.NettyRequestProcessor;
-import org.apache.dolphinscheduler.remote.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -60,10 +61,12 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(LoggerRequestProcessor.class);
 
+    private String dataBaseDir = PropertyUtils.getString(Constants.DATA_BASEDIR_PATH);
+
     private final ExecutorService executor;
 
     public LoggerRequestProcessor() {
-        this.executor = Executors.newFixedThreadPool(Constants.CPUS * 2 + 1);
+        this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2 + 1);
     }
 
     @Override
@@ -76,12 +79,7 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
             case GET_LOG_BYTES_REQUEST:
                 GetLogBytesRequestCommand getLogRequest = JSONUtils.parseObject(
                         command.getBody(), GetLogBytesRequestCommand.class);
-                String path = getLogRequest.getPath();
-                if (!checkPathSecurity(path)) {
-                    throw new IllegalArgumentException("Illegal path");
-                }
-                byte[] bytes = getFileContentBytes(path);
-                GetLogBytesResponseCommand getLogResponse = new GetLogBytesResponseCommand(bytes);
+                GetLogBytesResponseCommand getLogResponse = getFileContentBytes(getLogRequest);
                 channel.writeAndFlush(getLogResponse.convert2Command(command.getOpaque()));
                 break;
             case VIEW_WHOLE_LOG_REQUEST:
@@ -144,15 +142,14 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
      * @return
      */
     private boolean checkPathSecurity(String path) {
-        String dsHome = System.getProperty("DOLPHINSCHEDULER_WORKER_HOME");
-        if (StringUtils.isBlank(dsHome)) {
-            dsHome = System.getProperty("user.dir");
+        if (StringUtils.isBlank(dataBaseDir)) {
+            dataBaseDir = System.getProperty("user.dir");
         }
         if (StringUtils.isBlank(path)) {
             logger.warn("path is null");
             return false;
         } else {
-            return path.startsWith(dsHome) && !path.contains("../") && path.endsWith(".log");
+            return path.startsWith(dataBaseDir) && !path.contains("../") && path.endsWith(".log");
         }
     }
 
@@ -163,23 +160,31 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
     /**
      * get files content bytes for download file
      *
-     * @param filePath file path
+     * @param logBytesRequestCommand logBytesRequestCommand
      * @return byte array of file
      */
-    private byte[] getFileContentBytes(String filePath) {
+    private GetLogBytesResponseCommand getFileContentBytes(GetLogBytesRequestCommand logBytesRequestCommand) {
+        if (logBytesRequestCommand == null) {
+            return GetLogBytesResponseCommand.error(GetLogBytesResponseCommand.Status.COMMAND_IS_NULL);
+        }
+        String path = logBytesRequestCommand.getPath();
+        if (!checkPathSecurity(path)) {
+            logger.error("Log file path: {} is not a security path", path);
+            return GetLogBytesResponseCommand.error(GetLogBytesResponseCommand.Status.LOG_PATH_IS_NOT_SECURITY);
+        }
         try (
-                InputStream in = new FileInputStream(filePath);
+                InputStream in = new FileInputStream(path);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) != -1) {
                 bos.write(buf, 0, len);
             }
-            return bos.toByteArray();
+            return GetLogBytesResponseCommand.success(bos.toByteArray());
         } catch (IOException e) {
-            logger.error("get file bytes error", e);
+            logger.error("Get file bytes error, meet an unknown exception", e);
+            return GetLogBytesResponseCommand.error(GetLogBytesResponseCommand.Status.UNKNOWN_ERROR);
         }
-        return new byte[0];
     }
 
     protected RollViewLogResponseCommand readPartFileContent(RollViewLogRequestCommand rollViewLogRequest) {

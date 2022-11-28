@@ -49,7 +49,7 @@ spring:
     properties:
       org.quartz.threadPool.threadPriority: 5
       org.quartz.jobStore.isClustered: true
-      org.quartz.jobStore.class: org.springframework.scheduling.quartz.LocalDataSourceJobStore
+      org.quartz.jobStore.class: org.quartz.impl.jdbcjobstore.JobStoreTX
       org.quartz.scheduler.instanceId: AUTO
       org.quartz.jobStore.tablePrefix: QRTZ_
       org.quartz.jobStore.acquireTriggersWithinLock: true
@@ -193,6 +193,7 @@ rpc:
   rpc-prefix: http://
   master-url-prefix: /dolphinscheduler/master
   worker-url-prefix: /dolphinscheduler/worker
+
 
 # Override by profile
 ---

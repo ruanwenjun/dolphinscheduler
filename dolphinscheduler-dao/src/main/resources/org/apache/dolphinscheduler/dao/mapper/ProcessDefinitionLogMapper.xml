@@ -76,6 +76,12 @@
         order by version desc
     </select>
 
+    <select id="queryProcessDefinitionCodeByProjectCode" resultType="java.lang.Long">
+        select code
+        from t_ds_process_definition_log
+        where project_code = #{projectCode}
+    </select>
+
     <delete id="deleteByProcessDefinitionCodeAndVersion">
         delete
         from t_ds_process_definition_log

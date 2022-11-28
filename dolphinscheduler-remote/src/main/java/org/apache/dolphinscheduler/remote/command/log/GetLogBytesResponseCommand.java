@@ -17,35 +17,38 @@
 
 package org.apache.dolphinscheduler.remote.command.log;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.remote.command.Command;
 import org.apache.dolphinscheduler.remote.command.CommandType;
 
 import java.io.Serializable;
 
-/**
- *  get log bytes response command
- */
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class GetLogBytesResponseCommand implements Serializable {
 
-    /**
-     *  log byte data
-     */
     private byte[] data;
 
-    public GetLogBytesResponseCommand() {
+    private GetLogBytesResponseCommand.Status responseStatus;
+
+    public static GetLogBytesResponseCommand error(@NonNull Status status) {
+        return GetLogBytesResponseCommand.builder()
+                .responseStatus(status)
+                .build();
     }
 
-    public GetLogBytesResponseCommand(byte[] data) {
-        this.data = data;
-    }
-
-    public byte[] getData() {
-        return data;
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
+    public static GetLogBytesResponseCommand success(byte[] logBytes) {
+        return GetLogBytesResponseCommand.builder()
+                .responseStatus(Status.SUCCESS)
+                .data(logBytes)
+                .build();
     }
 
     /**
@@ -60,6 +63,26 @@ public class GetLogBytesResponseCommand implements Serializable {
         byte[] body = JSONUtils.toJsonByteArray(this);
         command.setBody(body);
         return command;
+    }
+
+    public enum Status {
+
+        SUCCESS("success"),
+        COMMAND_IS_NULL("RPC command is null"),
+        LOG_PATH_IS_NOT_SECURITY("Log file path is not at a security directory"),
+        LOG_FILE_NOT_FOUND("Log file doesn't exist"),
+        UNKNOWN_ERROR("Meet an unknown exception"),
+        ;
+
+        private final String desc;
+
+        Status(String desc) {
+            this.desc = desc;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
     }
 
 }

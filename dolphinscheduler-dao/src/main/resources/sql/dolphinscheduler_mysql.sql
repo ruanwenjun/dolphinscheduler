@@ -426,6 +426,7 @@ CREATE TABLE `t_ds_process_definition` (
   `create_time` datetime NOT NULL COMMENT 'create time',
   `update_time` datetime NOT NULL COMMENT 'update time',
   PRIMARY KEY (`id`,`code`),
+  KEY `project_idx` (`project_code`),
   UNIQUE KEY `process_unique` (`name`,`project_code`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -620,7 +621,8 @@ CREATE TABLE `t_ds_process_instance` (
   `restart_time` datetime DEFAULT NULL COMMENT 'process instance restart time',
   PRIMARY KEY (`id`),
   KEY `process_instance_index` (`process_definition_code`,`id`) USING BTREE,
-  KEY `start_time_index` (`start_time`,`end_time`) USING BTREE
+  KEY `start_time_index` (`start_time`) USING BTREE,
+  KEY `state_host_index` (`state`, `host`) USING BTREE,
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -862,6 +864,8 @@ CREATE TABLE `t_ds_task_instance` (
   PRIMARY KEY (`id`),
   KEY `process_instance_id` (`process_instance_id`) USING BTREE,
   KEY `idx_code_version` (`task_code`, `task_definition_version`) USING BTREE,
+  KEY `idx_state` (`state`) USING BTREE,
+  KEY `idx_start_time` (`start_time`) USING BTREE,
   CONSTRAINT `foreign_key_instance_id` FOREIGN KEY (`process_instance_id`) REFERENCES `t_ds_process_instance` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
@@ -957,9 +961,6 @@ CREATE TABLE `t_ds_worker_group` (
 -- ----------------------------
 -- Records of t_ds_worker_group
 -- ----------------------------
-INSERT  INTO `t_ds_worker_group`
-VALUES (1, 'default', null, current_timestamp, current_timestamp, null, null);
-
 
 -- ----------------------------
 -- Table structure for t_ds_version
