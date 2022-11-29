@@ -92,7 +92,7 @@
         <include refid="baseSql"/>
         from t_ds_process_definition
         where project_code = #{projectCode}
-        order by create_time desc
+        order by create_time desc, id desc
     </select>
     <select id="queryDefinitionListByProjectCodeAndProcessDefinitionCodes" resultType="org.apache.dolphinscheduler.dao.entity.DependentSimplifyDefinition">
         select
