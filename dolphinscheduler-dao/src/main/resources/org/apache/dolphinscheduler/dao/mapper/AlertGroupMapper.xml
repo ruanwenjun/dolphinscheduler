@@ -30,7 +30,7 @@
         <if test="groupName != null and groupName != ''">
             and group_name like concat('%', #{groupName}, '%')
         </if>
-        order by update_time desc
+        order by update_time desc, id desc
     </select>
 
     <select id="queryAlertGroupPageByIds" resultType="org.apache.dolphinscheduler.dao.entity.AlertGroup">
@@ -47,7 +47,7 @@
                 #{id}
             </foreach>
         </if>
-        order by update_time desc
+        order by update_time desc, id desc
     </select>
 
     <select id="queryByGroupName" resultType="org.apache.dolphinscheduler.dao.entity.AlertGroup">
@@ -74,14 +74,14 @@
         select
         <include refid="baseSql"/>
         from t_ds_alertgroup
-        order by update_time desc
+        order by update_time desc, id desc
     </select>
 
     <select id="queryInstanceIdsList" resultType="String">
         select
         alert_instance_ids
         from t_ds_alertgroup
-        order by update_time desc
+        order by update_time desc, id desc
     </select>
 
     <select id="queryAlertGroupInstanceIdsById" resultType="String">

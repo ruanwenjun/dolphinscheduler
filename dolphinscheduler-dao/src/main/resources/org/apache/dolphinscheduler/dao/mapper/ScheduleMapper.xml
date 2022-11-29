@@ -41,7 +41,7 @@
         <if test="processDefinitionCode != 0">
             and s.process_definition_code = #{processDefinitionCode}
         </if>
-        order by s.update_time desc
+        order by s.update_time desc, s.id desc
     </select>
     <select id="querySchedulerListByProjectName" resultType="org.apache.dolphinscheduler.dao.entity.Schedule">
         select p_f.name as process_definition_name, p_f.description as definition_description, p.name as project_name,u.user_name,s.*

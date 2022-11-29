@@ -32,7 +32,7 @@
                 #{id}
             </foreach>
         </if>
-        order by t.update_time desc
+        order by t.update_time desc, t.id desc
     </select>
 
     <select id="queryAccessTokenByUser" resultType="org.apache.dolphinscheduler.dao.entity.AccessToken">

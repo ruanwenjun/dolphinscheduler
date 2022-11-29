@@ -21,7 +21,7 @@
     <select id="queryAllWorkerGroup" resultType="org.apache.dolphinscheduler.dao.entity.WorkerGroup">
         select *
         from t_ds_worker_group
-        order by update_time desc
+        order by update_time desc, id desc
     </select>
     <select id="queryWorkerGroupByName" resultType="org.apache.dolphinscheduler.dao.entity.WorkerGroup">
         select *

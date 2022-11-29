@@ -35,7 +35,7 @@
         <include refid="baseSql"/>
         from t_ds_task_definition
         where project_code = #{projectCode}
-        order by create_time desc
+        order by create_time desc, id desc
     </select>
 
     <select id="countDefinitionGroupByUser" resultType="org.apache.dolphinscheduler.dao.entity.DefinitionGroupByUser">
@@ -104,7 +104,7 @@
         <if test="searchTaskName != null and searchTaskName != ''">
             and td.name like concat('%', #{searchTaskName}, '%')
         </if>
-        order by td.update_time desc
+        order by td.update_time desc, td.id desc
     </select>
     <select id="queryByCodeList" resultType="org.apache.dolphinscheduler.dao.entity.TaskDefinition">
         select
