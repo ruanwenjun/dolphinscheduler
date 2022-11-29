@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.dolphinscheduler.alert.config.AlertConfig;
 import org.apache.dolphinscheduler.alert.content.TemplateInjectedAlertContentWrapper;
 import org.apache.dolphinscheduler.common.enums.AlertType;
+import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.dto.alert.AlertContent;
 import org.apache.dolphinscheduler.dao.dto.alert.TaskResultAlertContent;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -36,7 +37,8 @@ public class TaskResultTemplateAlertContentInjector extends BaseAlertTemplateInj
                 .replaceAll(TemplateInjectUtils.PROJECT_NAME_TEMPLATE, taskResultAlertContent.getProjectName())
                 .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_NAME_TEMPLATE,
                         taskResultAlertContent.getWorkflowInstanceName())
-                .replaceAll(TemplateInjectUtils.RESULT_TEMPLATE, taskResultAlertContent.getResult());
+                .replaceAll(TemplateInjectUtils.RESULT_TEMPLATE,
+                        JSONUtils.writeAsPrettyString(taskResultAlertContent.getResult()));
 
         return TemplateInjectedAlertContentWrapper.builder()
                 .alertTitle(title)
