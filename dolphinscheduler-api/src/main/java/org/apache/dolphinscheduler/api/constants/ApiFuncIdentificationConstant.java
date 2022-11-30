@@ -153,6 +153,8 @@ public class ApiFuncIdentificationConstant {
     public static final String MONITOR_MASTER_VIEW = "monitor:masters:view";
     public static final String MONITOR_WORKER_VIEW = "monitor:workers:view";
     public static final String MONITOR_DATABASES_VIEW = "monitor:databases:view";
+    public static final String MONITOR_ALERT_VIEW = "monitor:apis:view";
+    public static final String MONITOR_API_VIEW = "monitor:alerts:view";
 
     public static final String MONITOR_STATISTICS_VIEW = "monitor:statistics:view";
 

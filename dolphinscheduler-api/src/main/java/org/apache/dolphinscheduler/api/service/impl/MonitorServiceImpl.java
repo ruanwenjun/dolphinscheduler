@@ -18,14 +18,18 @@
 package org.apache.dolphinscheduler.api.service.impl;
 
 import com.google.common.collect.Sets;
+
+import org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant;
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.service.MonitorService;
 import org.apache.dolphinscheduler.common.Constants;
+import org.apache.dolphinscheduler.common.enums.AuthorizationType;
 import org.apache.dolphinscheduler.common.enums.NodeType;
 import org.apache.dolphinscheduler.common.model.Server;
 import org.apache.dolphinscheduler.common.model.WorkerServerModel;
 import org.apache.dolphinscheduler.dao.MonitorDBDao;
 import org.apache.dolphinscheduler.dao.entity.MonitorRecord;
+import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.service.registry.RegistryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,8 +57,14 @@ public class MonitorServiceImpl extends BaseServiceImpl implements MonitorServic
     private RegistryClient registryClient;
 
     @Override
-    public Map<String, Object> queryDatabaseState() {
+    public Map<String, Object> queryDatabaseState(User loginUser) {
         Map<String, Object> result = new HashMap<>();
+        boolean canOperatorPermissions = canOperatorPermissions(loginUser, null, AuthorizationType.MONITOR,
+                ApiFuncIdentificationConstant.MONITOR_DATABASES_VIEW);
+        if (!canOperatorPermissions) {
+            putMsg(result, Status.NO_CURRENT_OPERATING_PERMISSION);
+            return result;
+        }
         List<MonitorRecord> monitorRecordList = monitorDBDao.queryDatabaseState();
         result.put(Constants.DATA_LIST, monitorRecordList);
         putMsg(result, Status.SUCCESS);
@@ -62,8 +72,14 @@ public class MonitorServiceImpl extends BaseServiceImpl implements MonitorServic
     }
 
     @Override
-    public Map<String, Object> queryMaster() {
+    public Map<String, Object> queryMaster(User loginUser) {
         Map<String, Object> result = new HashMap<>();
+        boolean canOperatorPermissions = canOperatorPermissions(loginUser, null, AuthorizationType.MONITOR,
+                ApiFuncIdentificationConstant.MONITOR_MASTER_VIEW);
+        if (!canOperatorPermissions) {
+            putMsg(result, Status.NO_CURRENT_OPERATING_PERMISSION);
+            return result;
+        }
         List<Server> masterServers = getServerListFromRegistry(NodeType.MASTER);
         result.put(Constants.DATA_LIST, masterServers);
         putMsg(result, Status.SUCCESS);
@@ -72,9 +88,16 @@ public class MonitorServiceImpl extends BaseServiceImpl implements MonitorServic
     }
 
     @Override
-    public Map<String, Object> queryWorker() {
+    public Map<String, Object> queryWorker(User loginUser) {
 
         Map<String, Object> result = new HashMap<>();
+        boolean canOperatorPermissions = canOperatorPermissions(loginUser, null, AuthorizationType.MONITOR,
+                ApiFuncIdentificationConstant.MONITOR_WORKER_VIEW);
+        if (!canOperatorPermissions) {
+            putMsg(result, Status.NO_CURRENT_OPERATING_PERMISSION);
+            return result;
+        }
+
         List<WorkerServerModel> workerServers = getServerListFromRegistry(NodeType.WORKER)
                 .stream()
                 .map((Server server) -> {
@@ -108,8 +131,14 @@ public class MonitorServiceImpl extends BaseServiceImpl implements MonitorServic
     }
 
     @Override
-    public Map<String, Object> queryAlertServer() {
+    public Map<String, Object> queryAlertServer(User loginUser) {
         Map<String, Object> result = new HashMap<>();
+        boolean canOperatorPermissions = canOperatorPermissions(loginUser, null, AuthorizationType.MONITOR,
+                ApiFuncIdentificationConstant.MONITOR_ALERT_VIEW);
+        if (!canOperatorPermissions) {
+            putMsg(result, Status.NO_CURRENT_OPERATING_PERMISSION);
+            return result;
+        }
         List<Server> alertServer = getServerListFromRegistry(NodeType.ALERT_SERVER);
         result.put(Constants.DATA_LIST, alertServer);
         putMsg(result, Status.SUCCESS);
@@ -117,8 +146,14 @@ public class MonitorServiceImpl extends BaseServiceImpl implements MonitorServic
     }
 
     @Override
-    public Map<String, Object> queryApiServer() {
+    public Map<String, Object> queryApiServer(User loginUser) {
         Map<String, Object> result = new HashMap<>();
+        boolean canOperatorPermissions = canOperatorPermissions(loginUser, null, AuthorizationType.MONITOR,
+                ApiFuncIdentificationConstant.MONITOR_API_VIEW);
+        if (!canOperatorPermissions) {
+            putMsg(result, Status.NO_CURRENT_OPERATING_PERMISSION);
+            return result;
+        }
         List<Server> alertServer = getServerListFromRegistry(NodeType.API_SERVER);
         result.put(Constants.DATA_LIST, alertServer);
         putMsg(result, Status.SUCCESS);
