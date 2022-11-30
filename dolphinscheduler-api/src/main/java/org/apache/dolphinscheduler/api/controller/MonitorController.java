@@ -59,7 +59,7 @@ public class MonitorController extends BaseController {
     @ApiException(LIST_MASTERS_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
     public Result listMaster(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
-        Map<String, Object> result = monitorService.queryMaster();
+        Map<String, Object> result = monitorService.queryMaster(loginUser);
         return returnDataList(result);
     }
 
@@ -69,7 +69,7 @@ public class MonitorController extends BaseController {
     @ApiException(LIST_WORKERS_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
     public Result listWorker(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
-        Map<String, Object> result = monitorService.queryWorker();
+        Map<String, Object> result = monitorService.queryWorker(loginUser);
         return returnDataList(result);
     }
 
@@ -79,7 +79,7 @@ public class MonitorController extends BaseController {
     @ApiException(LIST_ALERT_SERVERS_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
     public Result listAlertServers(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
-        Map<String, Object> result = monitorService.queryAlertServer();
+        Map<String, Object> result = monitorService.queryAlertServer(loginUser);
         return returnDataList(result);
     }
 
@@ -89,7 +89,7 @@ public class MonitorController extends BaseController {
     @ApiException(LIST_API_SERVERS_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
     public Result listApiServers(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
-        Map<String, Object> result = monitorService.queryApiServer();
+        Map<String, Object> result = monitorService.queryApiServer(loginUser);
         return returnDataList(result);
     }
 
@@ -99,7 +99,7 @@ public class MonitorController extends BaseController {
     @ApiException(QUERY_DATABASE_STATE_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
     public Result queryDatabaseState(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser) {
-        Map<String, Object> result = monitorService.queryDatabaseState();
+        Map<String, Object> result = monitorService.queryDatabaseState(loginUser);
         return returnDataList(result);
     }
 

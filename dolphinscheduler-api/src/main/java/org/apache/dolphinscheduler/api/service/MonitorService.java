@@ -29,15 +29,15 @@ import java.util.Map;
  */
 public interface MonitorService {
 
-    Map<String, Object> queryDatabaseState();
+    Map<String, Object> queryDatabaseState(User loginUser);
 
-    Map<String, Object> queryMaster();
+    Map<String, Object> queryMaster(User loginUser);
 
-    Map<String, Object> queryWorker();
+    Map<String, Object> queryWorker(User loginUser);
 
-    Map<String, Object> queryAlertServer();
+    Map<String, Object> queryAlertServer(User loginUser);
 
-    Map<String, Object> queryApiServer();
+    Map<String, Object> queryApiServer(User loginUser);
 
     List<Server> getServerListFromRegistry(NodeType nodeType);
 }
