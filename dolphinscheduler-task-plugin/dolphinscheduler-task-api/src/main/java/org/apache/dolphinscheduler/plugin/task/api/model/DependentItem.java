@@ -27,15 +27,17 @@ public class DependentItem {
     private long projectCode;
     private long definitionCode;
     private long depTaskCode;
+    private String timeType;
     private String cycle;
     private String dateValue;
     private DependResult dependResult;
     private ExecutionStatus status;
 
     public String getKey() {
-        return String.format("%d-%d-%s-%s",
+        return String.format("%d-%d-%s-%s-%s",
                 getDefinitionCode(),
                 getDepTaskCode(),
+                getTimeType(),
                 getCycle(),
                 getDateValue());
     }
