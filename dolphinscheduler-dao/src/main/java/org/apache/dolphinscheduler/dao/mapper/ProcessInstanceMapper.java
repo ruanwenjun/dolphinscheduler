@@ -263,4 +263,6 @@ public interface ProcessInstanceMapper extends BaseMapper<ProcessInstance> {
 
     long countByProcessDefinitionCodes(@Param("processDefinitionCodes") List<Long> processDefinitionCodes,
                                        @Param("status") int status);
+
+    ProcessInstance queryByProcessInstanceName(@Param("processInstanceName") String processInstanceName);
 }

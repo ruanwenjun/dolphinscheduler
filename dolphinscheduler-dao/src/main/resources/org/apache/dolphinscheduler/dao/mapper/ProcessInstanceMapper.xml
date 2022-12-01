@@ -269,6 +269,13 @@
         </if>
     </select>
 
+    <select id="queryByProcessInstanceName" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
+        select
+        <include refid="baseSql"/>
+        from t_ds_process_instance
+        where process_instance_name = #{processInstanceName}
+    </select>
+
     <select id="loadNextProcess4Serial" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
         select
         <include refid="baseSql"/>

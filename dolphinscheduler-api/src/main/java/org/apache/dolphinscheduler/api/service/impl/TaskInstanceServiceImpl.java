@@ -20,6 +20,7 @@ package org.apache.dolphinscheduler.api.service.impl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.service.ProcessInstanceService;
 import org.apache.dolphinscheduler.api.service.ProjectService;
@@ -28,6 +29,7 @@ import org.apache.dolphinscheduler.api.service.UsersService;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.common.utils.DateUtils;
 import org.apache.dolphinscheduler.dao.dto.ListingItem;
+import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinition;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
@@ -49,6 +51,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.FORCED_SUCCESS;
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.TASK_INSTANCE;
@@ -138,6 +141,16 @@ public class TaskInstanceServiceImpl extends BaseServiceImpl implements TaskInst
                 stateType != null ? Lists.newArrayList(stateType.getCode()) : Collections.emptyList();
         List<Long> taskDefinitionCodes = taskDefinitionLogDao.queryTaskDefinitionCodesByProjectCodes(projectCode);
         int executorId = usersService.getUserIdByName(executorName);
+
+        if (StringUtils.isNotBlank(processInstanceName)) {
+            // due to the performance, we didn't support fuzzy query by process instance name
+            Optional<ProcessInstance> processInstanceOptional =
+                    processInstanceDao.queryProcessInstanceByName(processInstanceName);
+            if (!processInstanceOptional.isPresent()) {
+                return result;
+            }
+            processInstanceId = processInstanceOptional.get().getId();
+        }
 
         ListingItem<TaskInstance> taskInstanceIPage = taskInstanceDao.queryTaskListPaging(
                 new Page<>(pageNo, pageSize),
