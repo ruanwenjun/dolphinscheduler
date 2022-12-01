@@ -30,6 +30,8 @@ public interface ProcessInstanceDao {
 
     Optional<ProcessInstance> queryProcessInstanceById(@NonNull Integer processInstanceId);
 
+    Optional<ProcessInstance> queryProcessInstanceByName(String processInstanceName);
+
     int insertProcessInstance(ProcessInstance processInstance);
 
     int updateProcessInstance(ProcessInstance processInstance);

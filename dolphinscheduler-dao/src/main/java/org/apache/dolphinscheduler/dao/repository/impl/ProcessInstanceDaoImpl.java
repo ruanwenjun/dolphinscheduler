@@ -18,6 +18,7 @@
 package org.apache.dolphinscheduler.dao.repository.impl;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.mapper.ProcessInstanceMapper;
 import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
@@ -51,6 +52,15 @@ public class ProcessInstanceDaoImpl implements ProcessInstanceDao {
     @Override
     public Optional<ProcessInstance> queryProcessInstanceById(@NonNull Integer processInstanceId) {
         return Optional.ofNullable(processInstanceMapper.selectById(processInstanceId));
+    }
+
+    @Override
+    public Optional<ProcessInstance> queryProcessInstanceByName(String processInstanceName) {
+        if (StringUtils.isBlank(processInstanceName)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(
+                processInstanceMapper.queryByProcessInstanceName(processInstanceName));
     }
 
     @Override
