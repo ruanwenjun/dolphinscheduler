@@ -107,6 +107,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -806,18 +807,15 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
     public Map<String, Object> deleteProcessDefinitionByCode(User loginUser, long projectCode, long code) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
-        Map<String, Object> result = new HashMap<>();
         projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_DEFINITION_DELETE);
+        return baseDeleteProcessDefinitionByCode(project, code);
+    }
 
+    private Map<String, Object> baseDeleteProcessDefinitionByCode(Project project, long code) {
+        Map<String, Object> result = new HashMap<>();
         ProcessDefinition processDefinition = processDefinitionMapper.queryByCode(code);
-        if (processDefinition == null || projectCode != processDefinition.getProjectCode()) {
+        if (processDefinition == null || project.getCode() != processDefinition.getProjectCode()) {
             putMsg(result, Status.PROCESS_DEFINE_NOT_EXIST, String.valueOf(code));
-            return result;
-        }
-
-        // Determine if the login user is the owner of the process definition
-        if (loginUser.getId() != processDefinition.getUserId() && loginUser.getUserType() != UserType.ADMIN_USER) {
-            putMsg(result, Status.USER_NO_OPERATION_PERM);
             return result;
         }
 
@@ -853,6 +851,37 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         return result;
     }
 
+    @Override
+    @Transactional
+    public Map<String, Object> batchDeleteProcessDefinitionByCodes(User loginUser, long projectCode, String codes) {
+        Project project = projectMapper.queryByCode(projectCode);
+        // check user access for project
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_DEFINITION_BATCH_DELETE);
+        List<String> deleteResultList = new ArrayList<>();
+        if (!StringUtils.isEmpty(codes)) {
+            Arrays.stream(codes.split(Constants.COMMA)).forEach(code -> {
+                try {
+                    Map<String, Object> deleteResult = baseDeleteProcessDefinitionByCode(project, Long.parseLong(code));
+                    if (!SUCCESS.equals(deleteResult.get(Constants.STATUS))) {
+                        deleteResultList.add((String) deleteResult.get(Constants.MSG));
+                    }
+                } catch (ServiceException e) {
+                    deleteResultList.add(e.getMessage());
+                } catch (Exception e) {
+                    logger.error("delete workflow by code error, code:{}", code, e);
+                    deleteResultList.add(MessageFormat.format(Status.DELETE_PROCESS_DEFINE_BY_CODES_ERROR.getMsg(), code));
+                }
+            });
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        if (deleteResultList.isEmpty()) {
+            putMsg(result, SUCCESS);
+        } else {
+            putMsg(result, BATCH_DELETE_PROCESS_DEFINE_BY_CODES_ERROR, String.join("\n", deleteResultList));
+        }
+        return result;
+    }
 
     /**
      * release process definition: online / offline
