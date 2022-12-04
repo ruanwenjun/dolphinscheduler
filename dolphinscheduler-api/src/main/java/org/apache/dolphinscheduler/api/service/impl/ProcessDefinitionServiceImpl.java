@@ -869,7 +869,8 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
                     deleteResultList.add(e.getMessage());
                 } catch (Exception e) {
                     logger.error("delete workflow by code error, code:{}", code, e);
-                    deleteResultList.add(MessageFormat.format(Status.DELETE_PROCESS_DEFINE_BY_CODES_ERROR.getMsg(), code));
+                    deleteResultList
+                            .add(MessageFormat.format(Status.DELETE_PROCESS_DEFINE_BY_CODES_ERROR.getMsg(), code));
                 }
             });
         }
