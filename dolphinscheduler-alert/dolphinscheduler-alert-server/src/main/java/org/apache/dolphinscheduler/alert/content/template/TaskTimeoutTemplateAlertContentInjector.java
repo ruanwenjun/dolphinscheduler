@@ -40,6 +40,7 @@ public class TaskTimeoutTemplateAlertContentInjector extends BaseAlertTemplateIn
                 .replaceAll(TemplateInjectUtils.TASK_NAME_TEMPLATE, taskInstanceTimeoutAlertContent.getTaskName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

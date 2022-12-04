@@ -133,6 +133,7 @@ public class DefaultAlertSender implements AlertSender {
             }
             AlertData alertData = AlertData.builder()
                     .id(alert.getId())
+                    .projectName(alertContentAdaptor.getAlertContentPojo().getProjectName())
                     .title(alertContentAdaptor.getAlertTitle())
                     .content(alertContentAdaptor.getAlertContent())
                     .build();

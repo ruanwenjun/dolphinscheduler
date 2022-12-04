@@ -38,6 +38,7 @@ public class TaskFailureTemplateAlertContentInjector extends BaseAlertTemplateIn
                 .replaceAll(TemplateInjectUtils.TASK_NAME_TEMPLATE, taskFailureAlertContent.getTaskName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

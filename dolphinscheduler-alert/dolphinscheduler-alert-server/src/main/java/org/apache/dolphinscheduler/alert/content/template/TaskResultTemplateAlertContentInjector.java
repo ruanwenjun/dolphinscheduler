@@ -41,6 +41,7 @@ public class TaskResultTemplateAlertContentInjector extends BaseAlertTemplateInj
                         JSONUtils.writeAsPrettyString(taskResultAlertContent.getResult()));
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

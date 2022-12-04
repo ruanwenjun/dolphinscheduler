@@ -19,4 +19,9 @@ public class DefaultAlertContentWrapper implements AlertContentWrapper {
     public String getAlertContent() {
         return JSONUtils.writeAsPrettyString(alertContent);
     }
+
+    @Override
+    public AlertContent getAlertContentPojo() {
+        return alertContent;
+    }
 }

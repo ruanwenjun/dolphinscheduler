@@ -44,6 +44,7 @@ public class WorkflowTimeCheckStillRunningAlertTemplateInjector extends BaseAler
                         workflowTimeCheckStillRunningAlertContent.getWorkflowName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

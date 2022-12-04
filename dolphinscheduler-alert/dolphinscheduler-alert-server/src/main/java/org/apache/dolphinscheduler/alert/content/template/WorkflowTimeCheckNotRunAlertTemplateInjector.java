@@ -44,6 +44,7 @@ public class WorkflowTimeCheckNotRunAlertTemplateInjector extends BaseAlertTempl
                         workflowTimeCheckNotRunAlertContent.getWorkflowName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

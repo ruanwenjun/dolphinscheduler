@@ -38,6 +38,7 @@ public class TaskSuccessTemplateAlertContentInjector extends BaseAlertTemplateIn
                 .replaceAll(TemplateInjectUtils.TASK_NAME_TEMPLATE, taskSuccessAlert.getTaskName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

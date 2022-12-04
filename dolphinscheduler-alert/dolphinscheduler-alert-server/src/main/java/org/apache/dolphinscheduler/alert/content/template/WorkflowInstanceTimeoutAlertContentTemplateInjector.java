@@ -38,6 +38,7 @@ public class WorkflowInstanceTimeoutAlertContentTemplateInjector extends BaseAle
                         workflowTimeoutAlertContent.getWorkflowInstanceName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

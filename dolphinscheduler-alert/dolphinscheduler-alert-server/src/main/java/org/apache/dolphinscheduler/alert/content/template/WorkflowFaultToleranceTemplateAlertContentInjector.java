@@ -40,6 +40,7 @@ public class WorkflowFaultToleranceTemplateAlertContentInjector extends BaseAler
                         workflowFaultToleranceAlertContent.getWorkflowInstanceName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

@@ -37,6 +37,7 @@ public class WorkflowInstanceSuccessAlertContentTemplateInjector extends BaseAle
                         workflowSuccessAlertContent.getWorkflowInstanceName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

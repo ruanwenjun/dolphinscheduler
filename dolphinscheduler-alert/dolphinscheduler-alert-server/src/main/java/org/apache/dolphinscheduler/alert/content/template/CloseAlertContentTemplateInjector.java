@@ -36,6 +36,7 @@ public class CloseAlertContentTemplateInjector extends BaseAlertTemplateInjector
                         closeAlertContent.getWorkflowInstanceName());
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(closeAlertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

@@ -40,6 +40,7 @@ public class DataQualityTaskResultAlertContentTemplateInjector extends BaseAlert
                 .replaceAll(TemplateInjectUtils.RESULT_TEMPLATE, JSONUtils.writeAsPrettyString(alertContent));
 
         return TemplateInjectedAlertContentWrapper.builder()
+                .alertContentPojo(alertContent)
                 .alertTitle(title)
                 .alertContent(content)
                 .build();

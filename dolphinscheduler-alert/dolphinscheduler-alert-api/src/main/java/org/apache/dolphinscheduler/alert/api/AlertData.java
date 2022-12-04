@@ -35,6 +35,8 @@ public class AlertData {
 
     private int id;
 
+    private String projectName;
+
     private String title;
 
     private String content;
