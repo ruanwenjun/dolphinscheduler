@@ -56,7 +56,7 @@ public class OracleDataSourceProcessor extends AbstractDataSourceProcessor {
 
         oracleDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         oracleDatasourceParamDTO.setUserName(connectionParams.getUser());
-        oracleDatasourceParamDTO.setOther(parseOther(connectionParams.getOther()));
+        oracleDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
 
         String hostSeperator = Constants.DOUBLE_SLASH;
         if (DbConnectType.ORACLE_SID.equals(connectionParams.connectType)) {
@@ -95,7 +95,6 @@ public class OracleDataSourceProcessor extends AbstractDataSourceProcessor {
         oracleConnectionParam.setDriverClassName(getDatasourceDriver());
         oracleConnectionParam.setValidationQuery(getValidationQuery());
         oracleConnectionParam.setOther(transformOther(oracleParam.getOther()));
-        oracleConnectionParam.setProps(oracleParam.getOther());
 
         return oracleConnectionParam;
     }
@@ -151,15 +150,4 @@ public class OracleDataSourceProcessor extends AbstractDataSourceProcessor {
         return String.join("&", list);
     }
 
-    private Map<String, String> parseOther(String other) {
-        if (StringUtils.isEmpty(other)) {
-            return null;
-        }
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        String[] configs = other.split("&");
-        for (String config : configs) {
-            otherMap.put(config.split("=")[0], config.split("=")[1]);
-        }
-        return otherMap;
-    }
 }

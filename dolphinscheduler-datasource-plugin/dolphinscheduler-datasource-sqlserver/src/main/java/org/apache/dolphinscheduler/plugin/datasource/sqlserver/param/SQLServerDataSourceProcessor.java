@@ -55,7 +55,7 @@ public class SQLServerDataSourceProcessor extends AbstractDataSourceProcessor {
         SQLServerDataSourceParamDTO sqlServerDatasourceParamDTO = new SQLServerDataSourceParamDTO();
         sqlServerDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         sqlServerDatasourceParamDTO.setUserName(connectionParams.getUser());
-        sqlServerDatasourceParamDTO.setOther(parseOther(connectionParams.getOther()));
+        sqlServerDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
         sqlServerDatasourceParamDTO.setPort(Integer.parseInt(hostPortArray[0].split(Constants.COLON)[1]));
         sqlServerDatasourceParamDTO.setHost(hostPortArray[0].split(Constants.COLON)[0]);
         return sqlServerDatasourceParamDTO;
@@ -77,7 +77,6 @@ public class SQLServerDataSourceProcessor extends AbstractDataSourceProcessor {
         sqlServerConnectionParam.setPassword(PasswordUtils.encodePassword(sqlServerParam.getPassword()));
         sqlServerConnectionParam.setDriverClassName(getDatasourceDriver());
         sqlServerConnectionParam.setValidationQuery(getValidationQuery());
-        sqlServerConnectionParam.setProps(sqlServerParam.getOther());
         return sqlServerConnectionParam;
     }
 
@@ -133,14 +132,4 @@ public class SQLServerDataSourceProcessor extends AbstractDataSourceProcessor {
         return stringBuilder.toString();
     }
 
-    private Map<String, String> parseOther(String other) {
-        if (StringUtils.isEmpty(other)) {
-            return null;
-        }
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        for (String config : other.split(";")) {
-            otherMap.put(config.split("=")[0], config.split("=")[1]);
-        }
-        return otherMap;
-    }
 }

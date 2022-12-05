@@ -52,7 +52,7 @@ public class ClickHouseDataSourceProcessor extends AbstractDataSourceProcessor {
         ClickHouseDataSourceParamDTO clickHouseDatasourceParamDTO = new ClickHouseDataSourceParamDTO();
         clickHouseDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         clickHouseDatasourceParamDTO.setUserName(connectionParams.getUser());
-        clickHouseDatasourceParamDTO.setOther(parseOther(connectionParams.getOther()));
+        clickHouseDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
 
         String[] hostSeperator = connectionParams.getAddress().split(Constants.DOUBLE_SLASH);
         String[] hostPortArray = hostSeperator[hostSeperator.length - 1].split(Constants.COMMA);
@@ -78,7 +78,6 @@ public class ClickHouseDataSourceProcessor extends AbstractDataSourceProcessor {
         clickhouseConnectionParam.setDriverClassName(getDatasourceDriver());
         clickhouseConnectionParam.setValidationQuery(getValidationQuery());
         clickhouseConnectionParam.setOther(transformOther(clickHouseParam.getOther()));
-        clickhouseConnectionParam.setProps(clickHouseParam.getOther());
         return clickhouseConnectionParam;
     }
 
@@ -135,15 +134,4 @@ public class ClickHouseDataSourceProcessor extends AbstractDataSourceProcessor {
         return stringBuilder.toString();
     }
 
-    private Map<String, String> parseOther(String other) {
-        if (other == null) {
-            return null;
-        }
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        String[] configs = other.split("&");
-        for (String config : configs) {
-            otherMap.put(config.split("=")[0], config.split("=")[1]);
-        }
-        return otherMap;
-    }
 }

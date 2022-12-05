@@ -194,6 +194,9 @@ public class ServerNodeManager implements InitializingBean {
     protected Set<String> getWorkerAddressByWorkerGroup(Map<String, WorkerHeartBeat> newWorkerNodeInfo,
                                                         WorkerGroupDto wg) {
         Set<String> nodes = new HashSet<>();
+        if (StringUtils.isEmpty(wg.getAddrList())) {
+            return newWorkerNodeInfo.keySet();
+        }
         String[] addrs = wg.getAddrList().split(Constants.COMMA);
         for (String addr : addrs) {
             if (newWorkerNodeInfo.containsKey(addr)) {

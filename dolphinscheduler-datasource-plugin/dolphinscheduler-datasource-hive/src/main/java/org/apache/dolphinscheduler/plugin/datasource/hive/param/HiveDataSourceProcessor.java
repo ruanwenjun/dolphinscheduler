@@ -55,7 +55,7 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
 
         hiveDataSourceParamDTO.setDatabase(hiveConnectionParam.getDatabase());
         hiveDataSourceParamDTO.setUserName(hiveConnectionParam.getUser());
-        hiveDataSourceParamDTO.setOther(parseOther(hiveConnectionParam.getOther()));
+        hiveDataSourceParamDTO.setOther(transformOtherParamToMap(hiveConnectionParam.getOther()));
         hiveDataSourceParamDTO.setLoginUserKeytabUsername(hiveConnectionParam.getLoginUserKeytabUsername());
         hiveDataSourceParamDTO.setLoginUserKeytabPath(hiveConnectionParam.getLoginUserKeytabPath());
         hiveDataSourceParamDTO.setJavaSecurityKrb5Conf(hiveConnectionParam.getJavaSecurityKrb5Conf());
@@ -100,7 +100,6 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
             hiveConnectionParam.setLoginUserKeytabUsername(hiveParam.getLoginUserKeytabUsername());
         }
         hiveConnectionParam.setOther(transformOther(hiveParam.getOther()));
-        hiveConnectionParam.setProps(hiveParam.getOther());
         return hiveConnectionParam;
     }
 
@@ -184,17 +183,5 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
         }
 
         return sessionVarListSb.toString() + hiveConfListSb.toString();
-    }
-
-    private Map<String, String> parseOther(String other) {
-        if (other == null) {
-            return null;
-        }
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        String[] configs = other.split(";");
-        for (String config : configs) {
-            otherMap.put(config.split("=")[0], config.split("=")[1]);
-        }
-        return otherMap;
     }
 }

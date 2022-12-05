@@ -58,7 +58,7 @@ public class SparkDataSourceProcessor extends AbstractDataSourceProcessor {
         SparkDataSourceParamDTO sparkDatasourceParamDTO = new SparkDataSourceParamDTO();
         sparkDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         sparkDatasourceParamDTO.setUserName(connectionParams.getUser());
-        sparkDatasourceParamDTO.setOther(parseOther(connectionParams.getOther()));
+        sparkDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
         sparkDatasourceParamDTO.setJavaSecurityKrb5Conf(connectionParams.getJavaSecurityKrb5Conf());
         sparkDatasourceParamDTO.setLoginUserKeytabPath(connectionParams.getLoginUserKeytabPath());
         sparkDatasourceParamDTO.setLoginUserKeytabUsername(connectionParams.getLoginUserKeytabUsername());
@@ -97,7 +97,6 @@ public class SparkDataSourceProcessor extends AbstractDataSourceProcessor {
         sparkConnectionParam.setJdbcUrl(jdbcUrl);
         sparkConnectionParam.setDriverClassName(getDatasourceDriver());
         sparkConnectionParam.setValidationQuery(getValidationQuery());
-        sparkConnectionParam.setProps(sparkDatasourceParam.getOther());
 
         if (CommonUtils.getKerberosStartupState()) {
             sparkConnectionParam.setPrincipal(sparkDatasourceParam.getPrincipal());
@@ -162,15 +161,4 @@ public class SparkDataSourceProcessor extends AbstractDataSourceProcessor {
         return String.join(";", stringBuilder);
     }
 
-    private Map<String, String> parseOther(String other) {
-        if (StringUtils.isEmpty(other)) {
-            return null;
-        }
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        String[] configs = other.split(";");
-        for (String config : configs) {
-            otherMap.put(config.split("=")[0], config.split("=")[1]);
-        }
-        return otherMap;
-    }
 }

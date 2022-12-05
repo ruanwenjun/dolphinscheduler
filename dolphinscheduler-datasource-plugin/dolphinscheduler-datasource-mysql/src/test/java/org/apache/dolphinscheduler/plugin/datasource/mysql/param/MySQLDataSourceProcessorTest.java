@@ -17,6 +17,7 @@
 
 package org.apache.dolphinscheduler.plugin.datasource.mysql.param;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.plugin.DataSourceClientProvider;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.CommonUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.DataSourceUtils;
@@ -80,7 +81,10 @@ public class MySQLDataSourceProcessorTest {
     @Test
     public void testGetJdbcUrl() {
         MySQLConnectionParam mysqlConnectionParam = new MySQLConnectionParam();
+        Map<String, String> map = new HashMap<>();
+        map.put("useSSL", "false");
         mysqlConnectionParam.setJdbcUrl("jdbc:mysql://localhost:3306/default");
+
         Assert.assertEquals(
                 "jdbc:mysql://localhost:3306/default?allowLoadLocalInfile=false&autoDeserialize=false&allowLocalInfile=false&allowUrlInLocalInfile=false",
                 mysqlDatasourceProcessor.getJdbcUrl(mysqlConnectionParam));

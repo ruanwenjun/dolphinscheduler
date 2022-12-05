@@ -50,7 +50,7 @@ public class PostgreSQLDataSourceProcessor extends AbstractDataSourceProcessor {
         PostgreSQLDataSourceParamDTO postgreSqlDatasourceParamDTO = new PostgreSQLDataSourceParamDTO();
         postgreSqlDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         postgreSqlDatasourceParamDTO.setUserName(connectionParams.getUser());
-        postgreSqlDatasourceParamDTO.setOther(parseOther(connectionParams.getOther()));
+        postgreSqlDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
 
         String address = connectionParams.getAddress();
         String[] hostSeperator = address.split(Constants.DOUBLE_SLASH);
@@ -77,7 +77,6 @@ public class PostgreSQLDataSourceProcessor extends AbstractDataSourceProcessor {
         postgreSqlConnectionParam.setDriverClassName(getDatasourceDriver());
         postgreSqlConnectionParam.setValidationQuery(getValidationQuery());
         postgreSqlConnectionParam.setOther(transformOther(postgreSqlParam.getOther()));
-        postgreSqlConnectionParam.setProps(postgreSqlParam.getOther());
 
         return postgreSqlConnectionParam;
     }
@@ -134,15 +133,4 @@ public class PostgreSQLDataSourceProcessor extends AbstractDataSourceProcessor {
         return stringBuilder.toString();
     }
 
-    private Map<String, String> parseOther(String other) {
-        if (StringUtils.isEmpty(other)) {
-            return null;
-        }
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        for (String config : other.split("&")) {
-            String[] split = config.split("=");
-            otherMap.put(split[0], split[1]);
-        }
-        return otherMap;
-    }
 }

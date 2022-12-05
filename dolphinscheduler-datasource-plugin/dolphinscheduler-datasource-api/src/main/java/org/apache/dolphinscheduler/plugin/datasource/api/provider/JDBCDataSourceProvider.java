@@ -57,10 +57,6 @@ public class JDBCDataSourceProvider {
         dataSource.setMaximumPoolSize(PropertyUtils.getInt(Constants.SPRING_DATASOURCE_MAX_ACTIVE, 50));
         dataSource.setConnectionTestQuery(properties.getValidationQuery());
 
-        if (properties.getProps() != null) {
-            properties.getProps().forEach(dataSource::addDataSourceProperty);
-        }
-
         logger.info("Creating HikariDataSource pool success.");
         return dataSource;
     }
@@ -84,10 +80,6 @@ public class JDBCDataSourceProvider {
         dataSource.setMaximumPoolSize(
                 isOneSession ? 1 : PropertyUtils.getInt(Constants.SPRING_DATASOURCE_MAX_ACTIVE, 50));
         dataSource.setConnectionTestQuery(properties.getValidationQuery());
-
-        if (properties.getProps() != null) {
-            properties.getProps().forEach(dataSource::addDataSourceProperty);
-        }
 
         logger.info("Creating OneSession HikariDataSource pool success.");
         return dataSource;

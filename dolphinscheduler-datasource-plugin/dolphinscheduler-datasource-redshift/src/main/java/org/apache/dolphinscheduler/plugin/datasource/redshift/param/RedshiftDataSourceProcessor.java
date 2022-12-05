@@ -60,7 +60,7 @@ public class RedshiftDataSourceProcessor extends AbstractDataSourceProcessor {
         redshiftDatasourceParamDTO.setHost(hostPortArray[0].split(Constants.COLON)[0]);
         redshiftDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         redshiftDatasourceParamDTO.setUserName(connectionParams.getUser());
-        redshiftDatasourceParamDTO.setOther(parseOther(connectionParams.getOther()));
+        redshiftDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
 
         return redshiftDatasourceParamDTO;
     }
@@ -81,7 +81,6 @@ public class RedshiftDataSourceProcessor extends AbstractDataSourceProcessor {
         redshiftConnectionParam.setDatabase(redshiftParam.getDatabase());
         redshiftConnectionParam.setDriverClassName(getDatasourceDriver());
         redshiftConnectionParam.setValidationQuery(getValidationQuery());
-        redshiftConnectionParam.setProps(redshiftParam.getOther());
 
         return redshiftConnectionParam;
     }
@@ -137,15 +136,4 @@ public class RedshiftDataSourceProcessor extends AbstractDataSourceProcessor {
         return null;
     }
 
-    private Map<String, String> parseOther(String other) {
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        if (StringUtils.isEmpty(other)) {
-            return otherMap;
-        }
-        String[] configs = other.split(Constants.SEMICOLON);
-        for (String config : configs) {
-            otherMap.put(config.split(Constants.EQUAL_SIGN)[0], config.split(Constants.EQUAL_SIGN)[1]);
-        }
-        return otherMap;
-    }
 }

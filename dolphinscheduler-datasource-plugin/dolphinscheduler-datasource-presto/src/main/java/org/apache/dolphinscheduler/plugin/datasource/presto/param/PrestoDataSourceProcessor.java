@@ -60,7 +60,7 @@ public class PrestoDataSourceProcessor extends AbstractDataSourceProcessor {
         prestoDatasourceParamDTO.setHost(hostPortArray[0].split(Constants.COLON)[0]);
         prestoDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         prestoDatasourceParamDTO.setUserName(connectionParams.getUser());
-        prestoDatasourceParamDTO.setOther(parseOther(connectionParams.getOther()));
+        prestoDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
 
         return prestoDatasourceParamDTO;
     }
@@ -80,7 +80,6 @@ public class PrestoDataSourceProcessor extends AbstractDataSourceProcessor {
         prestoConnectionParam.setDatabase(prestoParam.getDatabase());
         prestoConnectionParam.setDriverClassName(getDatasourceDriver());
         prestoConnectionParam.setValidationQuery(getValidationQuery());
-        prestoConnectionParam.setProps(prestoParam.getOther());
 
         return prestoConnectionParam;
     }
@@ -136,15 +135,4 @@ public class PrestoDataSourceProcessor extends AbstractDataSourceProcessor {
         return null;
     }
 
-    private Map<String, String> parseOther(String other) {
-        if (StringUtils.isEmpty(other)) {
-            return null;
-        }
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        String[] configs = other.split("&");
-        for (String config : configs) {
-            otherMap.put(config.split("=")[0], config.split("=")[1]);
-        }
-        return otherMap;
-    }
 }

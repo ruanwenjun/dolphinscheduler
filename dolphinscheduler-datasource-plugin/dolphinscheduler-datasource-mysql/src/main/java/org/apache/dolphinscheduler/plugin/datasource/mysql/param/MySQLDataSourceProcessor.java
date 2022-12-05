@@ -17,6 +17,9 @@
 
 package org.apache.dolphinscheduler.plugin.datasource.mysql.param;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.auto.service.AutoService;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.AbstractDataSourceProcessor;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.BaseDataSourceParamDTO;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.DataSourceProcessor;
@@ -27,20 +30,15 @@ import org.apache.dolphinscheduler.spi.enums.DbType;
 import org.apache.dolphinscheduler.spi.utils.Constants;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
-
-import org.apache.commons.collections4.MapUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.auto.service.AutoService;
 
 @AutoService(DataSourceProcessor.class)
 public class MySQLDataSourceProcessor extends AbstractDataSourceProcessor {
@@ -70,7 +68,7 @@ public class MySQLDataSourceProcessor extends AbstractDataSourceProcessor {
 
         mysqlDatasourceParamDTO.setUserName(connectionParams.getUser());
         mysqlDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
-        mysqlDatasourceParamDTO.setOther(parseOther(connectionParams.getOther()));
+        mysqlDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
 
         String address = connectionParams.getAddress();
         String[] hostSeperator = address.split(Constants.DOUBLE_SLASH);
@@ -97,7 +95,6 @@ public class MySQLDataSourceProcessor extends AbstractDataSourceProcessor {
         mysqlConnectionParam.setDriverClassName(getDatasourceDriver());
         mysqlConnectionParam.setValidationQuery(getValidationQuery());
         mysqlConnectionParam.setOther(transformOther(mysqlDatasourceParam.getOther()));
-        mysqlConnectionParam.setProps(mysqlDatasourceParam.getOther());
 
         return mysqlConnectionParam;
     }
@@ -178,17 +175,6 @@ public class MySQLDataSourceProcessor extends AbstractDataSourceProcessor {
                 && !key.contains(AUTO_DESERIALIZE)
                 && !key.contains(ALLOW_LOCAL_IN_FILE_NAME)
                 && !key.contains(ALLOW_URL_IN_LOCAL_IN_FILE_NAME);
-    }
-
-    private Map<String, String> parseOther(String other) {
-        if (StringUtils.isEmpty(other)) {
-            return null;
-        }
-        Map<String, String> otherMap = new LinkedHashMap<>();
-        for (String config : other.split("&")) {
-            otherMap.put(config.split("=")[0], config.split("=")[1]);
-        }
-        return otherMap;
     }
 
 }
