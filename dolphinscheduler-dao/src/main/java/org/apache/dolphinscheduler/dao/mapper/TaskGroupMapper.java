@@ -39,7 +39,9 @@ public interface TaskGroupMapper extends BaseMapper<TaskGroup> {
      * @param id primary key
      * @return affected rows
      */
-    int updateTaskGroupResource(@Param("id") int id, @Param("queueId") int queueId,
+    int updateTaskGroupResource(@Param("id") int id,
+                                @Param("currentUseSize") int currentUseSize,
+                                @Param("queueId") int queueId,
                                 @Param("queueStatus") int queueStatus);
 
     /**

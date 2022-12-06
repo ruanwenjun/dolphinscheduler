@@ -269,9 +269,11 @@ public interface ProcessService {
 
     DqComparisonType getComparisonTypeById(int id);
 
-    boolean acquireTaskGroup(int taskId,
-                             String taskName, int groupId,
-                             int processId, int priority);
+    boolean acquireTaskGroup(int taskInstanceId,
+                             String taskName,
+                             int taskGroupId,
+                             int workflowInstanceId,
+                             int taskGroupPriority);
 
     boolean robTaskGroupResource(TaskGroupQueue taskGroupQueue);
 
