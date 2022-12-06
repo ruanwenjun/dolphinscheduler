@@ -23,12 +23,10 @@
         <artifactId>dolphinscheduler-task-plugin</artifactId>
         <version>dev-SNAPSHOT</version>
     </parent>
-
     <artifactId>dolphinscheduler-task-hivecli</artifactId>
     <packaging>jar</packaging>
-
     <dependencies>
-        <dependency>
+         <dependency>
             <groupId>org.apache.dolphinscheduler</groupId>
             <artifactId>dolphinscheduler-spi</artifactId>
         </dependency>
