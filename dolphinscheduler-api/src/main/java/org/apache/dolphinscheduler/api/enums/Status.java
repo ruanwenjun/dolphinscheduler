@@ -237,6 +237,10 @@ public enum Status {
             "未指定当前登录用户的租户"),
     REVOKE_PROJECT_ERROR(10182, "revoke project error", "撤销项目授权错误"),
     QUERY_AUTHORIZED_USER(10183, "query authorized user error", "查询拥有项目权限的用户错误"),
+
+    DATASOURCE_CONNECT_REJECT_KEYWORD(10184, "data source connection does not allow the [{0}] keyword",
+            "数据源连接参数不允许使用[{0}]关键字"),
+
     PROJECT_NOT_EXIST(10190, "This project was not found. Please refresh page.", "该项目不存在,请刷新页面"),
     TASK_INSTANCE_HOST_IS_NULL(10191, "task instance host is null", "任务实例host为空"),
     QUERY_EXECUTING_WORKFLOW_ERROR(10192, "query executing workflow error", "查询运行的工作流实例错误"),

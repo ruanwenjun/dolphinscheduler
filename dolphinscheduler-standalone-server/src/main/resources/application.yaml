@@ -72,6 +72,21 @@ spring:
     hibernate:
       ddl-auto: none
 
+api-server:
+  datasource-plugin-illegal-params:
+    MYSQL: [ "allowLoadLocalInfile" ]
+    POSTGRESQL: [ "allowLoadLocalInfile" ]
+    HIVE: [ "allowLoadLocalInfile" ]
+    SPARK: [ "allowLoadLocalInfile" ]
+    CLICKHOUSE: [ "allowLoadLocalInfile" ]
+    ORACLE: [ "allowLoadLocalInfile" ]
+    SQLSERVER: [ "allowLoadLocalInfile" ]
+    DB2: [ "allowLoadLocalInfile" ]
+    PRESTO: [ "allowLoadLocalInfile" ]
+    H2: [ "allowLoadLocalInfile" ]
+    REDSHIFT: [ "allowLoadLocalInfile" ]
+    DAMENG: [ "allowLoadLocalInfile" ]
+
 registry:
   type: zookeeper
   zookeeper:

@@ -108,6 +108,21 @@ audit:
 metrics:
   enabled: true
 
+api-server:
+  datasource-plugin-illegal-params:
+    MYSQL: [ "allowLoadLocalInfile" ]
+    POSTGRESQL: [ "allowLoadLocalInfile" ]
+    HIVE: [ "allowLoadLocalInfile" ]
+    SPARK: [ "allowLoadLocalInfile" ]
+    CLICKHOUSE: [ "allowLoadLocalInfile" ]
+    ORACLE: [ "allowLoadLocalInfile" ]
+    SQLSERVER: [ "allowLoadLocalInfile" ]
+    DB2: [ "allowLoadLocalInfile" ]
+    PRESTO: [ "allowLoadLocalInfile" ]
+    H2: [ "allowLoadLocalInfile" ]
+    REDSHIFT: [ "allowLoadLocalInfile" ]
+    DAMENG: [ "allowLoadLocalInfile" ]
+
 python-gateway:
   # Weather enable python gateway server or not. The default value is true.
   enabled: true

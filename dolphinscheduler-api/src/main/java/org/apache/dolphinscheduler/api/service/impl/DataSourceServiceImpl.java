@@ -20,8 +20,13 @@ package org.apache.dolphinscheduler.api.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.dolphinscheduler.api.configuration.ApiServerConfig;
 import org.apache.dolphinscheduler.api.enums.Status;
+import org.apache.dolphinscheduler.api.exceptions.ServiceException;
+import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
 import org.apache.dolphinscheduler.api.service.DataSourceService;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.api.utils.Result;
@@ -36,7 +41,6 @@ import org.apache.dolphinscheduler.dao.mapper.DataSourceUserMapper;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.BaseDataSourceParamDTO;
 import org.apache.dolphinscheduler.plugin.datasource.api.plugin.DataSourceClientProvider;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.DataSourceUtils;
-import org.apache.dolphinscheduler.api.permission.ResourcePermissionCheckService;
 import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.datasource.ConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
@@ -66,8 +70,8 @@ import java.util.stream.Collectors;
 
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.DATASOURCE_CREATE_DATASOURCE;
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.DATASOURCE_DELETE;
-import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.DATASOURCE_LIST;
 import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.DATASOURCE_UPDATE;
+import static org.apache.dolphinscheduler.api.enums.Status.DATASOURCE_CONNECT_REJECT_KEYWORD;
 
 /**
  * data source service impl
@@ -85,6 +89,9 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
 
     @Autowired
     private ResourcePermissionCheckService resourcePermissionCheckService;
+
+    @Autowired
+    private ApiServerConfig apiServerConfig;
 
     private static final String TABLE = "TABLE";
     private static final String VIEW = "VIEW";
@@ -117,6 +124,8 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
             putMsg(result, Status.DESCRIPTION_TOO_LONG_ERROR);
             return result;
         }
+        checkIfContainsIllegalParams(datasourceParam);
+
         ConnectionParam connectionParam = DataSourceUtils.buildConnectionParams(datasourceParam);
 
         // build datasource
@@ -661,6 +670,22 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
                 logger.error("ResultSet close error", e);
             }
         }
+    }
+
+    private void checkIfContainsIllegalParams(@NonNull BaseDataSourceParamDTO datasourceParam) {
+        Map<String, Set<String>> datasourcePluginIllegalParams = apiServerConfig.getDatasourcePluginIllegalParams();
+        if (MapUtils.isEmpty(datasourcePluginIllegalParams) || MapUtils.isEmpty(datasourceParam.getOther())) {
+            return;
+        }
+        Set<String> illegalParams = datasourcePluginIllegalParams.get(datasourceParam.getType().name());
+        if (CollectionUtils.isEmpty(illegalParams)) {
+            return;
+        }
+        datasourceParam.getOther().forEach((key, value) -> {
+            if (illegalParams.contains(key)) {
+                throw new ServiceException(DATASOURCE_CONNECT_REJECT_KEYWORD, key);
+            }
+        });
     }
 
 }
