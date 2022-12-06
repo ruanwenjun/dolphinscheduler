@@ -17,6 +17,8 @@
 
 package org.apache.dolphinscheduler.plugin.datasource.api.provider;
 
+import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.DataSourceUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.PasswordUtils;
 import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
@@ -24,13 +26,10 @@ import org.apache.dolphinscheduler.spi.enums.DbType;
 import org.apache.dolphinscheduler.spi.utils.Constants;
 import org.apache.dolphinscheduler.spi.utils.PropertyUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
-
-import java.sql.Driver;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Driver;
 
 /**
  * Jdbc Data Source Provider
@@ -57,6 +56,10 @@ public class JDBCDataSourceProvider {
         dataSource.setMaximumPoolSize(PropertyUtils.getInt(Constants.SPRING_DATASOURCE_MAX_ACTIVE, 50));
         dataSource.setConnectionTestQuery(properties.getValidationQuery());
 
+        if (MapUtils.isNotEmpty(properties.getOther())) {
+            properties.getOther().forEach(dataSource::addDataSourceProperty);
+        }
+
         logger.info("Creating HikariDataSource pool success.");
         return dataSource;
     }
@@ -80,6 +83,10 @@ public class JDBCDataSourceProvider {
         dataSource.setMaximumPoolSize(
                 isOneSession ? 1 : PropertyUtils.getInt(Constants.SPRING_DATASOURCE_MAX_ACTIVE, 50));
         dataSource.setConnectionTestQuery(properties.getValidationQuery());
+
+        if (MapUtils.isNotEmpty(properties.getOther())) {
+            properties.getOther().forEach(dataSource::addDataSourceProperty);
+        }
 
         logger.info("Creating OneSession HikariDataSource pool success.");
         return dataSource;
