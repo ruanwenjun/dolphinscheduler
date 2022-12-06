@@ -17,8 +17,10 @@
 
 package org.apache.dolphinscheduler.plugin.alert.email;
 
-import static java.util.Objects.requireNonNull;
-
+import com.sun.mail.smtp.SMTPProvider;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.HtmlEmail;
 import org.apache.dolphinscheduler.alert.api.AlertConstants;
 import org.apache.dolphinscheduler.alert.api.AlertResult;
 import org.apache.dolphinscheduler.alert.api.ShowType;
@@ -26,19 +28,8 @@ import org.apache.dolphinscheduler.plugin.alert.email.exception.AlertEmailExcept
 import org.apache.dolphinscheduler.plugin.alert.email.template.AlertTemplate;
 import org.apache.dolphinscheduler.plugin.alert.email.template.DefaultHTMLTemplate;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.activation.CommandMap;
 import javax.activation.MailcapCommandMap;
@@ -53,11 +44,16 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sun.mail.smtp.SMTPProvider;
+import static java.util.Objects.requireNonNull;
 
 public final class MailSender {
 
@@ -161,51 +157,86 @@ public final class MailSender {
 
         receivers.removeIf(StringUtils::isEmpty);
         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-
-        if (showType.equals(ShowType.TABLE.getDescp()) || showType.equals(ShowType.TEXT.getDescp())) {
-            // send email
-            HtmlEmail email = new HtmlEmail();
-
-            try {
-                Session session = getSession();
-                email.setMailSession(session);
-                email.setFrom(mailSenderEmail);
-                email.setCharset(EmailConstants.UTF_8);
-                if (CollectionUtils.isNotEmpty(receivers)) {
-                    // receivers mail
-                    for (String receiver : receivers) {
-                        email.addTo(receiver);
-                    }
+        HtmlEmail email = new HtmlEmail();
+        try {
+            Session session = getSession();
+            email.setMailSession(session);
+            email.setFrom(mailSenderEmail);
+            email.setCharset(EmailConstants.UTF_8);
+            if (CollectionUtils.isNotEmpty(receivers)) {
+                // receivers mail
+                for (String receiver : receivers) {
+                    email.addTo(receiver);
                 }
+            }
 
-                if (CollectionUtils.isNotEmpty(receiverCcs)) {
-                    // cc
-                    for (String receiverCc : receiverCcs) {
-                        email.addCc(receiverCc);
-                    }
+            if (CollectionUtils.isNotEmpty(receiverCcs)) {
+                // cc
+                for (String receiverCc : receiverCcs) {
+                    email.addCc(receiverCc);
                 }
-                // sender mail
-                return getStringObjectMap(title, content, alertResult, email);
-            } catch (Exception e) {
-                handleException(alertResult, e);
             }
-        } else if (showType.equals(ShowType.ATTACHMENT.getDescp())
-                || showType.equals(ShowType.TABLE_ATTACHMENT.getDescp())) {
-            try {
-
-                String partContent = (showType.equals(ShowType.ATTACHMENT.getDescp())
-                        ? "Please see the attachment " + title + EmailConstants.EXCEL_SUFFIX_XLSX
-                        : htmlTable(content, false));
-
-                attachment(title, content, partContent);
-
-                alertResult.setSuccess(true);
-                return alertResult;
-            } catch (Exception e) {
-                handleException(alertResult, e);
-                return alertResult;
-            }
+            /*
+             * the subject of the message to be sent
+             */
+            email.setSubject(title);
+            /*
+             * to send information, you can use HTML tags in mail content because of the use of HtmlEmail
+             */
+            email.setMsg(content);
+            // send
+            email.setDebug(true);
+            email.send();
+            alertResult.setSuccess(true);
+            return alertResult;
+        } catch (Exception e) {
+            handleException(alertResult, e);
         }
+        // todo: we didn't support xml format
+        // if (showType.equals(ShowType.TABLE.getDescp()) || showType.equals(ShowType.TEXT.getDescp())) {
+        // // send email
+        // HtmlEmail email = new HtmlEmail();
+        //
+        // try {
+        // Session session = getSession();
+        // email.setMailSession(session);
+        // email.setFrom(mailSenderEmail);
+        // email.setCharset(EmailConstants.UTF_8);
+        // if (CollectionUtils.isNotEmpty(receivers)) {
+        // // receivers mail
+        // for (String receiver : receivers) {
+        // email.addTo(receiver);
+        // }
+        // }
+        //
+        // if (CollectionUtils.isNotEmpty(receiverCcs)) {
+        // // cc
+        // for (String receiverCc : receiverCcs) {
+        // email.addCc(receiverCc);
+        // }
+        // }
+        // // sender mail
+        // return getStringObjectMap(title, content, alertResult, email);
+        // } catch (Exception e) {
+        // handleException(alertResult, e);
+        // }
+        // } else if (showType.equals(ShowType.ATTACHMENT.getDescp())
+        // || showType.equals(ShowType.TABLE_ATTACHMENT.getDescp())) {
+        // try {
+        //
+        // String partContent = (showType.equals(ShowType.ATTACHMENT.getDescp())
+        // ? "Please see the attachment " + title + EmailConstants.EXCEL_SUFFIX_XLSX
+        // : htmlTable(content, false));
+        //
+        // attachment(title, content, partContent);
+        //
+        // alertResult.setSuccess(true);
+        // return alertResult;
+        // } catch (Exception e) {
+        // handleException(alertResult, e);
+        // return alertResult;
+        // }
+        // }
         return alertResult;
 
     }
