@@ -84,9 +84,8 @@ public class Db2DataSourceProcessorTest {
     public void testGetJdbcUrl() {
         Db2ConnectionParam db2ConnectionParam = new Db2ConnectionParam();
         db2ConnectionParam.setJdbcUrl("jdbc:db2://localhost:5142/default");
-        db2ConnectionParam.setOther("other=other");
         String jdbcUrl = db2DatasourceProcessor.getJdbcUrl(db2ConnectionParam);
-        Assert.assertEquals("jdbc:db2://localhost:5142/default;other=other", jdbcUrl);
+        Assert.assertEquals("jdbc:db2://localhost:5142/default", jdbcUrl);
     }
 
     @Test

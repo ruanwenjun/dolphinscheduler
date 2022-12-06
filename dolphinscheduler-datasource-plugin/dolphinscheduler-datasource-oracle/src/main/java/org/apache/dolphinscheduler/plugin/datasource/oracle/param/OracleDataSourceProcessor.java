@@ -56,7 +56,7 @@ public class OracleDataSourceProcessor extends AbstractDataSourceProcessor {
 
         oracleDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         oracleDatasourceParamDTO.setUserName(connectionParams.getUser());
-        oracleDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
+        oracleDatasourceParamDTO.setOther(connectionParams.getOther());
 
         String hostSeperator = Constants.DOUBLE_SLASH;
         if (DbConnectType.ORACLE_SID.equals(connectionParams.connectType)) {
@@ -94,7 +94,7 @@ public class OracleDataSourceProcessor extends AbstractDataSourceProcessor {
         oracleConnectionParam.setConnectType(oracleParam.getConnectType());
         oracleConnectionParam.setDriverClassName(getDatasourceDriver());
         oracleConnectionParam.setValidationQuery(getValidationQuery());
-        oracleConnectionParam.setOther(transformOther(oracleParam.getOther()));
+        oracleConnectionParam.setOther(oracleParam.getOther());
 
         return oracleConnectionParam;
     }
@@ -117,8 +117,9 @@ public class OracleDataSourceProcessor extends AbstractDataSourceProcessor {
     @Override
     public String getJdbcUrl(ConnectionParam connectionParam) {
         OracleConnectionParam oracleConnectionParam = (OracleConnectionParam) connectionParam;
-        if (!StringUtils.isEmpty(oracleConnectionParam.getOther())) {
-            return String.format("%s?%s", oracleConnectionParam.getJdbcUrl(), oracleConnectionParam.getOther());
+        if (MapUtils.isNotEmpty(oracleConnectionParam.getOther())) {
+            return String.format("%s?%s", oracleConnectionParam.getJdbcUrl(),
+                    transformOther(oracleConnectionParam.getOther()));
         }
         return oracleConnectionParam.getJdbcUrl();
     }

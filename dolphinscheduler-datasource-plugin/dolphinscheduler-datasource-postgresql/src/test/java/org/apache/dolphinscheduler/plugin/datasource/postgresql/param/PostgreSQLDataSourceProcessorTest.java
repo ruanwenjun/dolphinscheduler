@@ -83,10 +83,9 @@ public class PostgreSQLDataSourceProcessorTest {
     public void testGetJdbcUrl() {
         PostgreSQLConnectionParam postgreSqlConnectionParam = new PostgreSQLConnectionParam();
         postgreSqlConnectionParam.setJdbcUrl("jdbc:postgresql://localhost:3308/default");
-        postgreSqlConnectionParam.setOther("other");
 
         String jdbcUrl = postgreSqlDatasourceProcessor.getJdbcUrl(postgreSqlConnectionParam);
-        Assert.assertEquals("jdbc:postgresql://localhost:3308/default?other", jdbcUrl);
+        Assert.assertEquals("jdbc:postgresql://localhost:3308/default", jdbcUrl);
 
     }
 

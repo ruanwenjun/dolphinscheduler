@@ -50,7 +50,7 @@ public class PostgreSQLDataSourceProcessor extends AbstractDataSourceProcessor {
         PostgreSQLDataSourceParamDTO postgreSqlDatasourceParamDTO = new PostgreSQLDataSourceParamDTO();
         postgreSqlDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         postgreSqlDatasourceParamDTO.setUserName(connectionParams.getUser());
-        postgreSqlDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
+        postgreSqlDatasourceParamDTO.setOther(connectionParams.getOther());
 
         String address = connectionParams.getAddress();
         String[] hostSeperator = address.split(Constants.DOUBLE_SLASH);
@@ -76,7 +76,7 @@ public class PostgreSQLDataSourceProcessor extends AbstractDataSourceProcessor {
         postgreSqlConnectionParam.setPassword(PasswordUtils.encodePassword(postgreSqlParam.getPassword()));
         postgreSqlConnectionParam.setDriverClassName(getDatasourceDriver());
         postgreSqlConnectionParam.setValidationQuery(getValidationQuery());
-        postgreSqlConnectionParam.setOther(transformOther(postgreSqlParam.getOther()));
+        postgreSqlConnectionParam.setOther(postgreSqlParam.getOther());
 
         return postgreSqlConnectionParam;
     }
@@ -99,8 +99,9 @@ public class PostgreSQLDataSourceProcessor extends AbstractDataSourceProcessor {
     @Override
     public String getJdbcUrl(ConnectionParam connectionParam) {
         PostgreSQLConnectionParam postgreSqlConnectionParam = (PostgreSQLConnectionParam) connectionParam;
-        if (!StringUtils.isEmpty(postgreSqlConnectionParam.getOther())) {
-            return String.format("%s?%s", postgreSqlConnectionParam.getJdbcUrl(), postgreSqlConnectionParam.getOther());
+        if (MapUtils.isNotEmpty(postgreSqlConnectionParam.getOther())) {
+            return String.format("%s?%s", postgreSqlConnectionParam.getJdbcUrl(),
+                    transformOther(postgreSqlConnectionParam.getOther()));
         }
         return postgreSqlConnectionParam.getJdbcUrl();
     }

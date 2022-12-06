@@ -52,7 +52,7 @@ public class Db2DataSourceProcessor extends AbstractDataSourceProcessor {
 
         Db2DataSourceParamDTO db2DatasourceParamDTO = new Db2DataSourceParamDTO();
         db2DatasourceParamDTO.setDatabase(connectionParams.getDatabase());
-        db2DatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
+        db2DatasourceParamDTO.setOther(connectionParams.getOther());
         db2DatasourceParamDTO.setUserName(db2DatasourceParamDTO.getUserName());
 
         String[] hostSeperator = connectionParams.getAddress().split(Constants.DOUBLE_SLASH);
@@ -77,7 +77,7 @@ public class Db2DataSourceProcessor extends AbstractDataSourceProcessor {
         db2ConnectionParam.setPassword(PasswordUtils.encodePassword(db2Param.getPassword()));
         db2ConnectionParam.setDriverClassName(getDatasourceDriver());
         db2ConnectionParam.setValidationQuery(getValidationQuery());
-        db2ConnectionParam.setOther(transformOther(db2Param.getOther()));
+        db2ConnectionParam.setOther(db2Param.getOther());
 
         return db2ConnectionParam;
     }
@@ -95,8 +95,9 @@ public class Db2DataSourceProcessor extends AbstractDataSourceProcessor {
     @Override
     public String getJdbcUrl(ConnectionParam connectionParam) {
         Db2ConnectionParam db2ConnectionParam = (Db2ConnectionParam) connectionParam;
-        if (!StringUtils.isEmpty(db2ConnectionParam.getOther())) {
-            return String.format("%s;%s", db2ConnectionParam.getJdbcUrl(), db2ConnectionParam.getOther());
+        if (!MapUtils.isEmpty(db2ConnectionParam.getOther())) {
+            return String.format("%s;%s", db2ConnectionParam.getJdbcUrl(),
+                    transformOther(db2ConnectionParam.getOther()));
         }
         return db2ConnectionParam.getJdbcUrl();
     }

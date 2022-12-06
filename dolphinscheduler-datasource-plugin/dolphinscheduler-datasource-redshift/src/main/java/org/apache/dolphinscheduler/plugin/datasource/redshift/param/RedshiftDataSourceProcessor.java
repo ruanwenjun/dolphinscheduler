@@ -60,7 +60,7 @@ public class RedshiftDataSourceProcessor extends AbstractDataSourceProcessor {
         redshiftDatasourceParamDTO.setHost(hostPortArray[0].split(Constants.COLON)[0]);
         redshiftDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         redshiftDatasourceParamDTO.setUserName(connectionParams.getUser());
-        redshiftDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
+        redshiftDatasourceParamDTO.setOther(connectionParams.getOther());
 
         return redshiftDatasourceParamDTO;
     }
@@ -75,7 +75,7 @@ public class RedshiftDataSourceProcessor extends AbstractDataSourceProcessor {
         RedshiftConnectionParam redshiftConnectionParam = new RedshiftConnectionParam();
         redshiftConnectionParam.setUser(redshiftParam.getUserName());
         redshiftConnectionParam.setPassword(PasswordUtils.encodePassword(redshiftParam.getPassword()));
-        redshiftConnectionParam.setOther(transformOther(redshiftParam.getOther()));
+        redshiftConnectionParam.setOther(redshiftParam.getOther());
         redshiftConnectionParam.setAddress(address);
         redshiftConnectionParam.setJdbcUrl(jdbcUrl);
         redshiftConnectionParam.setDatabase(redshiftParam.getDatabase());
@@ -103,8 +103,9 @@ public class RedshiftDataSourceProcessor extends AbstractDataSourceProcessor {
     @Override
     public String getJdbcUrl(ConnectionParam connectionParam) {
         RedshiftConnectionParam redshiftConnectionParam = (RedshiftConnectionParam) connectionParam;
-        if (!StringUtils.isEmpty(redshiftConnectionParam.getOther())) {
-            return String.format("%s?%s", redshiftConnectionParam.getJdbcUrl(), redshiftConnectionParam.getOther());
+        if (MapUtils.isNotEmpty(redshiftConnectionParam.getOther())) {
+            return String.format("%s?%s", redshiftConnectionParam.getJdbcUrl(),
+                    transformOther(redshiftConnectionParam.getOther()));
         }
         return redshiftConnectionParam.getJdbcUrl();
     }

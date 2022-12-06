@@ -82,8 +82,7 @@ public class RedshiftDataSourceProcessorTest {
     public void testGetJdbcUrl() {
         RedshiftConnectionParam redshiftConnectionParam = new RedshiftConnectionParam();
         redshiftConnectionParam.setJdbcUrl("jdbc:redshift://localhost:5439/default");
-        redshiftConnectionParam.setOther("DSILogLevel=6;defaultRowFetchSize=100");
-        Assert.assertEquals("jdbc:redshift://localhost:5439/default?DSILogLevel=6;defaultRowFetchSize=100",
+        Assert.assertEquals("jdbc:redshift://localhost:5439/default?DSILogLevel=6",
                 redshiftDatasourceProcessor.getJdbcUrl(redshiftConnectionParam));
 
     }

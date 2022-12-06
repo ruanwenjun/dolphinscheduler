@@ -21,6 +21,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 @JsonInclude(Include.NON_NULL)
 public abstract class BaseConnectionParam implements ConnectionParam {
@@ -41,6 +43,6 @@ public abstract class BaseConnectionParam implements ConnectionParam {
 
     protected String validationQuery;
 
-    protected String other;
+    protected Map<String, String> other;
 
 }

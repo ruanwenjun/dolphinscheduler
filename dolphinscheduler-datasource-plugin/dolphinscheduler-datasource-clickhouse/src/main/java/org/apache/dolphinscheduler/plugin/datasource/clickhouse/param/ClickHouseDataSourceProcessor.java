@@ -52,7 +52,7 @@ public class ClickHouseDataSourceProcessor extends AbstractDataSourceProcessor {
         ClickHouseDataSourceParamDTO clickHouseDatasourceParamDTO = new ClickHouseDataSourceParamDTO();
         clickHouseDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         clickHouseDatasourceParamDTO.setUserName(connectionParams.getUser());
-        clickHouseDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
+        clickHouseDatasourceParamDTO.setOther(connectionParams.getOther());
 
         String[] hostSeperator = connectionParams.getAddress().split(Constants.DOUBLE_SLASH);
         String[] hostPortArray = hostSeperator[hostSeperator.length - 1].split(Constants.COMMA);
@@ -77,7 +77,7 @@ public class ClickHouseDataSourceProcessor extends AbstractDataSourceProcessor {
         clickhouseConnectionParam.setPassword(PasswordUtils.encodePassword(clickHouseParam.getPassword()));
         clickhouseConnectionParam.setDriverClassName(getDatasourceDriver());
         clickhouseConnectionParam.setValidationQuery(getValidationQuery());
-        clickhouseConnectionParam.setOther(transformOther(clickHouseParam.getOther()));
+        clickhouseConnectionParam.setOther(clickHouseParam.getOther());
         return clickhouseConnectionParam;
     }
 
@@ -100,8 +100,8 @@ public class ClickHouseDataSourceProcessor extends AbstractDataSourceProcessor {
     public String getJdbcUrl(ConnectionParam connectionParam) {
         ClickHouseConnectionParam clickhouseConnectionParam = (ClickHouseConnectionParam) connectionParam;
         String jdbcUrl = clickhouseConnectionParam.getJdbcUrl();
-        if (!StringUtils.isEmpty(clickhouseConnectionParam.getOther())) {
-            jdbcUrl = String.format("%s?%s", jdbcUrl, clickhouseConnectionParam.getOther());
+        if (!MapUtils.isEmpty(clickhouseConnectionParam.getOther())) {
+            jdbcUrl = String.format("%s?%s", jdbcUrl, transformOther(clickhouseConnectionParam.getOther()));
         }
         return jdbcUrl;
     }

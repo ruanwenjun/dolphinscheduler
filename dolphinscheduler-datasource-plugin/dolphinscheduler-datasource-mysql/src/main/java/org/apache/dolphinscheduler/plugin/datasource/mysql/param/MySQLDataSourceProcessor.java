@@ -68,7 +68,7 @@ public class MySQLDataSourceProcessor extends AbstractDataSourceProcessor {
 
         mysqlDatasourceParamDTO.setUserName(connectionParams.getUser());
         mysqlDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
-        mysqlDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
+        mysqlDatasourceParamDTO.setOther(connectionParams.getOther());
 
         String address = connectionParams.getAddress();
         String[] hostSeperator = address.split(Constants.DOUBLE_SLASH);
@@ -94,7 +94,7 @@ public class MySQLDataSourceProcessor extends AbstractDataSourceProcessor {
         mysqlConnectionParam.setPassword(PasswordUtils.encodePassword(mysqlDatasourceParam.getPassword()));
         mysqlConnectionParam.setDriverClassName(getDatasourceDriver());
         mysqlConnectionParam.setValidationQuery(getValidationQuery());
-        mysqlConnectionParam.setOther(transformOther(mysqlDatasourceParam.getOther()));
+        mysqlConnectionParam.setOther(mysqlDatasourceParam.getOther());
 
         return mysqlConnectionParam;
     }
@@ -118,8 +118,8 @@ public class MySQLDataSourceProcessor extends AbstractDataSourceProcessor {
     public String getJdbcUrl(ConnectionParam connectionParam) {
         MySQLConnectionParam mysqlConnectionParam = (MySQLConnectionParam) connectionParam;
         String jdbcUrl = mysqlConnectionParam.getJdbcUrl();
-        if (!StringUtils.isEmpty(mysqlConnectionParam.getOther())) {
-            return String.format("%s?%s&%s", jdbcUrl, mysqlConnectionParam.getOther(), APPEND_PARAMS);
+        if (!MapUtils.isNotEmpty(mysqlConnectionParam.getOther())) {
+            return String.format("%s?%s&%s", jdbcUrl, transformOther(mysqlConnectionParam.getOther()), APPEND_PARAMS);
         }
         return String.format("%s?%s", jdbcUrl, APPEND_PARAMS);
     }

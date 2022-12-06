@@ -84,8 +84,7 @@ public class SQLServerDataSourceProcessorTest {
     public void testGetJdbcUrl() {
         SQLServerConnectionParam sqlServerConnectionParam = new SQLServerConnectionParam();
         sqlServerConnectionParam.setJdbcUrl("jdbc:sqlserver://localhost:1234;databaseName=default");
-        sqlServerConnectionParam.setOther("other");
-        Assert.assertEquals("jdbc:sqlserver://localhost:1234;databaseName=default;other",
+        Assert.assertEquals("jdbc:sqlserver://localhost:1234;databaseName=default",
                 sqlServerDatasourceProcessor.getJdbcUrl(sqlServerConnectionParam));
     }
 

@@ -58,7 +58,7 @@ public class SparkDataSourceProcessor extends AbstractDataSourceProcessor {
         SparkDataSourceParamDTO sparkDatasourceParamDTO = new SparkDataSourceParamDTO();
         sparkDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         sparkDatasourceParamDTO.setUserName(connectionParams.getUser());
-        sparkDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
+        sparkDatasourceParamDTO.setOther(connectionParams.getOther());
         sparkDatasourceParamDTO.setJavaSecurityKrb5Conf(connectionParams.getJavaSecurityKrb5Conf());
         sparkDatasourceParamDTO.setLoginUserKeytabPath(connectionParams.getLoginUserKeytabPath());
         sparkDatasourceParamDTO.setLoginUserKeytabUsername(connectionParams.getLoginUserKeytabUsername());
@@ -91,7 +91,7 @@ public class SparkDataSourceProcessor extends AbstractDataSourceProcessor {
         SparkConnectionParam sparkConnectionParam = new SparkConnectionParam();
         sparkConnectionParam.setPassword(PasswordUtils.encodePassword(sparkDatasourceParam.getPassword()));
         sparkConnectionParam.setUser(sparkDatasourceParam.getUserName());
-        sparkConnectionParam.setOther(transformOther(sparkDatasourceParam.getOther()));
+        sparkConnectionParam.setOther(sparkDatasourceParam.getOther());
         sparkConnectionParam.setDatabase(sparkDatasourceParam.getDatabase());
         sparkConnectionParam.setAddress(address.toString());
         sparkConnectionParam.setJdbcUrl(jdbcUrl);
@@ -126,8 +126,9 @@ public class SparkDataSourceProcessor extends AbstractDataSourceProcessor {
     @Override
     public String getJdbcUrl(ConnectionParam connectionParam) {
         SparkConnectionParam sparkConnectionParam = (SparkConnectionParam) connectionParam;
-        if (!StringUtils.isEmpty(sparkConnectionParam.getOther())) {
-            return String.format("%s;%s", sparkConnectionParam.getJdbcUrl(), sparkConnectionParam.getOther());
+        if (MapUtils.isNotEmpty(sparkConnectionParam.getOther())) {
+            return String.format("%s;%s", sparkConnectionParam.getJdbcUrl(),
+                    transformOther(sparkConnectionParam.getOther()));
         }
         return sparkConnectionParam.getJdbcUrl();
     }

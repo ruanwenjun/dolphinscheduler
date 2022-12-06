@@ -17,6 +17,8 @@
 
 package org.apache.dolphinscheduler.plugin.datasource.hive.param;
 
+import com.google.auto.service.AutoService;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.AbstractDataSourceProcessor;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.BaseDataSourceParamDTO;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.DataSourceProcessor;
@@ -27,18 +29,12 @@ import org.apache.dolphinscheduler.spi.datasource.ConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
 import org.apache.dolphinscheduler.spi.utils.Constants;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
-import org.apache.dolphinscheduler.spi.utils.StringUtils;
-
-import org.apache.commons.collections4.MapUtils;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.Map;
-
-import com.google.auto.service.AutoService;
 
 @AutoService(DataSourceProcessor.class)
 public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
@@ -55,7 +51,7 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
 
         hiveDataSourceParamDTO.setDatabase(hiveConnectionParam.getDatabase());
         hiveDataSourceParamDTO.setUserName(hiveConnectionParam.getUser());
-        hiveDataSourceParamDTO.setOther(transformOtherParamToMap(hiveConnectionParam.getOther()));
+        hiveDataSourceParamDTO.setOther(hiveConnectionParam.getOther());
         hiveDataSourceParamDTO.setLoginUserKeytabUsername(hiveConnectionParam.getLoginUserKeytabUsername());
         hiveDataSourceParamDTO.setLoginUserKeytabPath(hiveConnectionParam.getLoginUserKeytabPath());
         hiveDataSourceParamDTO.setJavaSecurityKrb5Conf(hiveConnectionParam.getJavaSecurityKrb5Conf());
@@ -99,7 +95,7 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
             hiveConnectionParam.setLoginUserKeytabPath(hiveParam.getLoginUserKeytabPath());
             hiveConnectionParam.setLoginUserKeytabUsername(hiveParam.getLoginUserKeytabUsername());
         }
-        hiveConnectionParam.setOther(transformOther(hiveParam.getOther()));
+        hiveConnectionParam.setOther(hiveParam.getOther());
         return hiveConnectionParam;
     }
 
@@ -122,11 +118,11 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
     public String getJdbcUrl(ConnectionParam connectionParam) {
         HiveConnectionParam hiveConnectionParam = (HiveConnectionParam) connectionParam;
         String jdbcUrl = hiveConnectionParam.getJdbcUrl();
-        String otherParams = filterOther(hiveConnectionParam.getOther());
-        if (StringUtils.isNotEmpty(otherParams) && !"?".equals(otherParams.substring(0, 1))) {
-            jdbcUrl += ";";
+
+        if (MapUtils.isNotEmpty(hiveConnectionParam.getOther())) {
+            return String.format("%s;%s", jdbcUrl, transformOther(hiveConnectionParam.getOther()));
         }
-        return jdbcUrl + otherParams;
+        return jdbcUrl;
     }
 
     @Override
@@ -158,30 +154,4 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
         return stringBuilder.toString();
     }
 
-    private String filterOther(String otherParams) {
-        if (StringUtils.isBlank(otherParams)) {
-            return "";
-        }
-
-        StringBuilder hiveConfListSb = new StringBuilder();
-        hiveConfListSb.append("?");
-        StringBuilder sessionVarListSb = new StringBuilder();
-
-        String[] otherArray = otherParams.split(";", -1);
-
-        for (String conf : otherArray) {
-            sessionVarListSb.append(conf).append(";");
-        }
-
-        // remove the last ";"
-        if (sessionVarListSb.length() > 0) {
-            sessionVarListSb.deleteCharAt(sessionVarListSb.length() - 1);
-        }
-
-        if (hiveConfListSb.length() > 0) {
-            hiveConfListSb.deleteCharAt(hiveConfListSb.length() - 1);
-        }
-
-        return sessionVarListSb.toString() + hiveConfListSb.toString();
-    }
 }

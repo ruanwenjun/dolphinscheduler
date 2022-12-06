@@ -85,8 +85,7 @@ public class OracleDataSourceProcessorTest {
     public void testGetJdbcUrl() {
         OracleConnectionParam oracleConnectionParam = new OracleConnectionParam();
         oracleConnectionParam.setJdbcUrl("jdbc:oracle:thin:@localhost:3308:default");
-        oracleConnectionParam.setOther("other=other");
-        Assert.assertEquals("jdbc:oracle:thin:@localhost:3308:default?other=other",
+        Assert.assertEquals("jdbc:oracle:thin:@localhost:3308:default",
                 oracleDatasourceProcessor.getJdbcUrl(oracleConnectionParam));
     }
 

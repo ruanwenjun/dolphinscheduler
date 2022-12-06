@@ -84,8 +84,7 @@ public class SparkDataSourceProcessorTest {
     public void testGetJdbcUrl() {
         SparkConnectionParam sparkConnectionParam = new SparkConnectionParam();
         sparkConnectionParam.setJdbcUrl("jdbc:hive2://localhost1:1234,localhost2:1234/default");
-        sparkConnectionParam.setOther("other");
-        Assert.assertEquals("jdbc:hive2://localhost1:1234,localhost2:1234/default;other",
+        Assert.assertEquals("jdbc:hive2://localhost1:1234,localhost2:1234/default",
                 sparkDatasourceProcessor.getJdbcUrl(sparkConnectionParam));
     }
 

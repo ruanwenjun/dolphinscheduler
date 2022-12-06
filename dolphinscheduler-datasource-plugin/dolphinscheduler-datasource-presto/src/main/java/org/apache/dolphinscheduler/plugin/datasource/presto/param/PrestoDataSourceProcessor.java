@@ -60,7 +60,7 @@ public class PrestoDataSourceProcessor extends AbstractDataSourceProcessor {
         prestoDatasourceParamDTO.setHost(hostPortArray[0].split(Constants.COLON)[0]);
         prestoDatasourceParamDTO.setDatabase(connectionParams.getDatabase());
         prestoDatasourceParamDTO.setUserName(connectionParams.getUser());
-        prestoDatasourceParamDTO.setOther(transformOtherParamToMap(connectionParams.getOther()));
+        prestoDatasourceParamDTO.setOther(connectionParams.getOther());
 
         return prestoDatasourceParamDTO;
     }
@@ -74,7 +74,7 @@ public class PrestoDataSourceProcessor extends AbstractDataSourceProcessor {
         PrestoConnectionParam prestoConnectionParam = new PrestoConnectionParam();
         prestoConnectionParam.setUser(prestoParam.getUserName());
         prestoConnectionParam.setPassword(PasswordUtils.encodePassword(prestoParam.getPassword()));
-        prestoConnectionParam.setOther(transformOther(prestoParam.getOther()));
+        prestoConnectionParam.setOther(prestoParam.getOther());
         prestoConnectionParam.setAddress(address);
         prestoConnectionParam.setJdbcUrl(jdbcUrl);
         prestoConnectionParam.setDatabase(prestoParam.getDatabase());
@@ -102,8 +102,9 @@ public class PrestoDataSourceProcessor extends AbstractDataSourceProcessor {
     @Override
     public String getJdbcUrl(ConnectionParam connectionParam) {
         PrestoConnectionParam prestoConnectionParam = (PrestoConnectionParam) connectionParam;
-        if (!StringUtils.isEmpty(prestoConnectionParam.getOther())) {
-            return String.format("%s?%s", prestoConnectionParam.getJdbcUrl(), prestoConnectionParam.getOther());
+        if (MapUtils.isNotEmpty(prestoConnectionParam.getOther())) {
+            return String.format("%s?%s", prestoConnectionParam.getJdbcUrl(),
+                    transformOther(prestoConnectionParam.getOther()));
         }
         return prestoConnectionParam.getJdbcUrl();
     }
