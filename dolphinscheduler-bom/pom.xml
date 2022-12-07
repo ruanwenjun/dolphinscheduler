@@ -60,7 +60,7 @@
         <cron-utils.version>9.1.6</cron-utils.version>
         <jline.version>2.11</jline.version>
         <jsch.version>0.1.54</jsch.version>
-        <libthrift.version>0.14.0</libthrift.version>
+        <libthrift.version>0.17.0</libthrift.version>
         <log4j-api.version>2.17.0</log4j-api.version>
         <h2.version>2.1.210</h2.version>
         <mysql-connector.version>8.0.28</mysql-connector.version>
