@@ -450,9 +450,11 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
             return result;
         }
 
-        result = verifyFile(name, type, file);
-        if (!result.getCode().equals(Status.SUCCESS.getCode())) {
-            return result;
+        if (file != null) {
+             result = verifyFile(name, type, file);
+             if (!result.getCode().equals(Status.SUCCESS.getCode())) {
+                 return result;
+             }
         }
 
         // query tenant by user id
