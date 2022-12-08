@@ -42,6 +42,7 @@ import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
+import org.apache.hive.jdbc.HivePreparedStatement;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
@@ -206,6 +207,15 @@ public class SqlTask extends AbstractTaskExecutor {
             sqlParameters.dealOutParam(result);
             postSql(connection, postStatementsBinds);
         } catch (Exception e) {
+            // deal with hive to get log
+            if (stmt instanceof HivePreparedStatement) {
+                HivePreparedStatement stmt1 = (HivePreparedStatement) stmt;
+                logger.error("querying hive log: ");
+                do {
+                    List<String> queryLog = stmt1.getQueryLog();
+                    queryLog.forEach(logger::error);
+                } while (stmt1.hasMoreLogs());
+            }
             logger.error("execute sql error: {}", e.getMessage());
             throw e;
         } finally {
