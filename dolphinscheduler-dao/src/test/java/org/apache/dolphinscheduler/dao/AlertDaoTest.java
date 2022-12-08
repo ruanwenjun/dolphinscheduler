@@ -68,17 +68,4 @@ public class AlertDaoTest {
         Assert.assertEquals(1, insertCount);
     }
 
-    @Test
-    public void testSendServerStoppedAlert() {
-        int alertGroupId = 1;
-        String host = "127.0.0.998165432";
-        String serverType = "Master";
-        alertDao.sendServerStoppedAlert(alertGroupId, host, serverType);
-        alertDao.sendServerStoppedAlert(alertGroupId, host, serverType);
-        long count = alertDao.listPendingAlerts()
-                .stream()
-                .filter(alert -> alert.getContent().contains(host))
-                .count();
-        Assert.assertEquals(1L, count);
-    }
 }

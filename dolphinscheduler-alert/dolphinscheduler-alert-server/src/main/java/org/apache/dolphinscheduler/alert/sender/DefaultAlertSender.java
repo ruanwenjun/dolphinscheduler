@@ -10,11 +10,12 @@ import org.apache.dolphinscheduler.alert.api.AlertChannel;
 import org.apache.dolphinscheduler.alert.api.AlertData;
 import org.apache.dolphinscheduler.alert.api.AlertInfo;
 import org.apache.dolphinscheduler.alert.api.AlertResult;
+import org.apache.dolphinscheduler.alert.api.content.AlertContent;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 import org.apache.dolphinscheduler.alert.content.AlertContentWrapper;
 import org.apache.dolphinscheduler.alert.content.AlertContentWrapperGenerator;
 import org.apache.dolphinscheduler.alert.filter.AlertFilter;
 import org.apache.dolphinscheduler.common.enums.AlertStatus;
-import org.apache.dolphinscheduler.common.enums.AlertType;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.AlertDao;
 import org.apache.dolphinscheduler.dao.dto.AlertPluginInstanceDTO;
@@ -126,8 +127,11 @@ public class DefaultAlertSender implements AlertSender {
         try {
             AlertChannel alertChannel = getAlertChannel(instance);
             Map<String, String> paramsMap = instance.getPluginInstanceParams();
-
-            AlertContentWrapper alertContentAdaptor = alertContentAdaptorGenerator.generateAlertContent(alert);
+            AlertContent alertContent = JSONUtils.parseObject(alert.getContent(), AlertContent.class);
+            if (alertContent == null) {
+                throw new RuntimeException("Alert content is null");
+            }
+            AlertContentWrapper alertContentAdaptor = alertContentAdaptorGenerator.generateAlertContent(alertContent);
             if (alertContentAdaptor == null) {
                 throw new RuntimeException("Alert content is invalidated");
             }
@@ -139,12 +143,13 @@ public class DefaultAlertSender implements AlertSender {
                     .build();
 
             AlertInfo alertInfo = AlertInfo.builder()
+                    .alertContent(alertContent)
                     .alertData(alertData)
                     .alertParams(paramsMap)
                     .alertPluginInstanceId(instance.getId())
                     .build();
             AlertResult alertResult;
-            if (alert.getAlertType() == AlertType.CLOSE_ALERT) {
+            if (alert.getAlertType() == AlertType.CLOSE_ALERT.getCode()) {
                 alertResult = alertChannel.closeAlert(alertInfo);
             } else {
                 alertResult = alertChannel.process(alertInfo);

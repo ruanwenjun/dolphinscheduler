@@ -18,6 +18,7 @@
 package org.apache.dolphinscheduler.plugin.alert.wechat;
 
 import org.apache.dolphinscheduler.alert.api.AlertConstants;
+import org.apache.dolphinscheduler.alert.api.AlertInfo;
 import org.apache.dolphinscheduler.alert.api.AlertResult;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
@@ -34,14 +35,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.dolphinscheduler.plugin.alert.wechat.WeChatAlertConstants.*;
+import static org.apache.dolphinscheduler.plugin.alert.wechat.WeChatAlertConstants.WE_CHAT_DUPLICATE_CHECK_INTERVAL_ZERO;
+import static org.apache.dolphinscheduler.plugin.alert.wechat.WeChatAlertConstants.WE_CHAT_ENABLE_ID_TRANS;
+import static org.apache.dolphinscheduler.plugin.alert.wechat.WeChatAlertConstants.WE_CHAT_MESSAGE_SAFE_PUBLICITY;
 
 public final class WeChatSender {
 
@@ -103,28 +102,7 @@ public final class WeChatSender {
      * @return markdown text
      */
     private static String markdownText(String title, String content) {
-        if (StringUtils.isNotEmpty(content)) {
-            List<LinkedHashMap> mapItemsList = JSONUtils.toList(content, LinkedHashMap.class);
-            if (null == mapItemsList || mapItemsList.isEmpty()) {
-                logger.error("itemsList is null");
-                throw new RuntimeException("itemsList is null");
-            }
-
-            StringBuilder contents = new StringBuilder(100);
-            contents.append(String.format("`%s`%n", title));
-            for (LinkedHashMap mapItems : mapItemsList) {
-
-                Set<Map.Entry<String, Object>> entries = mapItems.entrySet();
-                for (Entry<String, Object> entry : entries) {
-                    contents.append(WeChatAlertConstants.MARKDOWN_QUOTE);
-                    contents.append(entry.getKey()).append(":").append(entry.getValue());
-                    contents.append(WeChatAlertConstants.MARKDOWN_ENTER);
-                }
-
-            }
-            return contents.toString();
-        }
-        return null;
+        return String.format("`%s`%n", title) + content;
     }
 
     private static String get(String url) throws IOException {
@@ -195,8 +173,10 @@ public final class WeChatSender {
      *
      * @return Enterprise WeChat resp, demo: {"errcode":0,"errmsg":"ok","invaliduser":""}
      */
-    public AlertResult sendEnterpriseWeChat(String title, String content) {
+    public AlertResult sendEnterpriseWeChat(AlertInfo info) {
         AlertResult alertResult;
+        String title = info.getAlertData().getTitle();
+        String content = info.getAlertData().getContent();
         String data = markdownByAlert(title, content);
         if (null == weChatToken) {
             alertResult = new AlertResult();

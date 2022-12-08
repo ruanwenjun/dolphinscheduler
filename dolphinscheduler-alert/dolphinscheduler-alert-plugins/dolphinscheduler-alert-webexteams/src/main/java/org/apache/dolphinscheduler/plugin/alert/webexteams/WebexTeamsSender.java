@@ -17,26 +17,22 @@
 
 package org.apache.dolphinscheduler.plugin.alert.webexteams;
 
+import com.google.common.base.Preconditions;
 import org.apache.dolphinscheduler.alert.api.AlertData;
 import org.apache.dolphinscheduler.alert.api.AlertResult;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
-
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import org.slf4j.Logger;
-
-import com.google.common.base.Preconditions;
 
 public final class WebexTeamsSender {
 
@@ -148,26 +144,7 @@ public final class WebexTeamsSender {
     }
 
     public static String formatContent(AlertData alertData) {
-        if (alertData.getContent() != null) {
-            List<Map> list = JSONUtils.toList(alertData.getContent(), Map.class);
-            if (list.isEmpty()) {
-                return alertData.getTitle() + alertData.getContent();
-            }
 
-            StringBuilder contents = new StringBuilder(100);
-            contents.append(String.format("`%s`%n", alertData.getTitle()));
-            for (Map map : list) {
-                for (Map.Entry<String, Object> entry : (Iterable<Map.Entry<String, Object>>) map.entrySet()) {
-                    String key = entry.getKey();
-                    String value = entry.getValue().toString();
-                    contents.append(key).append(":").append(value);
-                    contents.append("\n");
-                }
-            }
-
-            return contents.toString();
-        }
-
-        return null;
+        return String.format("`%s`%n", alertData.getTitle()) + alertData.getContent();
     }
 }

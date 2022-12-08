@@ -15,55 +15,44 @@
  * limitations under the License.
  */
 
-package org.apache.dolphinscheduler.dao.dto.alert;
+package org.apache.dolphinscheduler.alert.api.content;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.dolphinscheduler.common.enums.AlertType;
-import org.apache.dolphinscheduler.common.utils.JSONUtils;
-import org.apache.dolphinscheduler.plugin.task.api.enums.dp.DqTaskState;
+import org.apache.dolphinscheduler.alert.api.enums.AlertEvent;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(Include.NON_NULL)
-public class DqExecuteResultAlertContent implements AlertContent {
+@NoArgsConstructor
+public class ServerAlertContent implements AlertContent {
 
-    private String projectName;
-    private String workflowInstanceName;
-    private String taskName;
-    private int ruleType;
-    private String ruleName;
-    private double statisticsValue;
-    private double comparisonValue;
-    private int checkType;
-    private double threshold;
-    private int operator;
-    private int failureStrategy;
-    private int userId;
-    private String userName;
-    private int state;
-    private String errorDataPath;
+    /**
+     * server type :master or worker
+     */
+    @JsonProperty("type")
+    private String type;
+    @JsonProperty("host")
+    private String host;
+    @JsonProperty("event")
+    private AlertEvent event;
 
     @Override
     public AlertType getAlertType() {
-        return AlertType.DATA_QUALITY_TASK_RESULT;
+        return AlertType.SERVER_CRASH_ALERT;
     }
 
     @Override
     public String getProjectName() {
-        return projectName;
+        return "";
     }
 
     @Override
     public String getWorkflowInstanceName() {
-        return workflowInstanceName;
+        return "";
     }
-
 }

@@ -1,34 +1,28 @@
-package org.apache.dolphinscheduler.dao.dto.alert;
+package org.apache.dolphinscheduler.alert.api.content;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.dolphinscheduler.common.enums.AlertType;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CloseAlertContent implements AlertContent {
+public class WorkflowFailureAlertContent implements AlertContent {
 
     private String projectName;
-
     private String workflowInstanceName;
 
     @Override
-    public String getProjectName() {
-        return projectName;
+    public AlertType getAlertType() {
+        return AlertType.PROCESS_INSTANCE_FAILURE;
     }
 
     @Override
     public String getWorkflowInstanceName() {
         return workflowInstanceName;
-    }
-
-    @Override
-    public AlertType getAlertType() {
-        return AlertType.CLOSE_ALERT;
     }
 
 }

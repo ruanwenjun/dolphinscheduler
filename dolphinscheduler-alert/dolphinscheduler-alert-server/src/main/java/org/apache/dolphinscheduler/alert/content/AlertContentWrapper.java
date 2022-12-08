@@ -1,6 +1,6 @@
 package org.apache.dolphinscheduler.alert.content;
 
-import org.apache.dolphinscheduler.dao.dto.alert.AlertContent;
+import org.apache.dolphinscheduler.alert.api.content.AlertContent;
 
 public interface AlertContentWrapper {
 

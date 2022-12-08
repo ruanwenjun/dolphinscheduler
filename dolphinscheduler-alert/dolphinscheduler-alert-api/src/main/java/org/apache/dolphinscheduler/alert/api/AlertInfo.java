@@ -25,6 +25,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.dolphinscheduler.alert.api.content.AlertContent;
 
 /**
  * The alarm information includes the parameters of the alert channel and the alarm data
@@ -38,6 +39,8 @@ public class AlertInfo {
     private Map<String, String> alertParams;
 
     private AlertData alertData;
+
+    private AlertContent alertContent;
 
     private int alertPluginInstanceId;
 

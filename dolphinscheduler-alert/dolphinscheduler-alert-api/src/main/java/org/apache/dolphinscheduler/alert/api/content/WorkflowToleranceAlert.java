@@ -1,12 +1,10 @@
-package org.apache.dolphinscheduler.dao.dto.alert;
+package org.apache.dolphinscheduler.alert.api.content;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.dolphinscheduler.common.enums.AlertType;
-
-import java.util.List;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
 @Data
 @Builder

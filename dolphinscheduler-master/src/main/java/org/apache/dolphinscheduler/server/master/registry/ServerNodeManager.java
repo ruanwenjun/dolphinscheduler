@@ -32,6 +32,7 @@ import org.apache.dolphinscheduler.registry.api.Event.Type;
 import org.apache.dolphinscheduler.registry.api.SubscribeListener;
 import org.apache.dolphinscheduler.remote.utils.NamedThreadFactory;
 import org.apache.dolphinscheduler.server.master.config.MasterConfig;
+import org.apache.dolphinscheduler.service.alert.AlertManager;
 import org.apache.dolphinscheduler.service.queue.MasterPriorityQueue;
 import org.apache.dolphinscheduler.service.registry.RegistryClient;
 import org.slf4j.Logger;
@@ -107,6 +108,8 @@ public class ServerNodeManager implements InitializingBean {
     private static volatile int MASTER_SLOT = 0;
 
     private static volatile int MASTER_SIZE = 0;
+
+    private AlertManager alertManager;
 
     public static int getSlot() {
         return MASTER_SLOT;
@@ -233,7 +236,7 @@ public class ServerNodeManager implements InitializingBean {
                         logger.info("worker group node : {} down.", path);
                         // Remove the node from workerNodeInfo, it will not receive task
                         workerNodeInfo.remove(workerAddress);
-                        alertDao.sendServerStoppedAlert(1, path, "WORKER");
+                        alertManager.sendWorkerServerStoppedAlert(path);
                     } else if (type == Type.UPDATE) {
                         logger.debug("worker group node : {} update, data: {}", path, data);
                         syncSingleWorkerNodeInfo(workerAddress, JSONUtils.parseObject(data, WorkerHeartBeat.class));
@@ -261,7 +264,7 @@ public class ServerNodeManager implements InitializingBean {
                     if (type.equals(Type.REMOVE)) {
                         logger.info("master node : {} down.", path);
                         updateMasterNodes();
-                        alertDao.sendServerStoppedAlert(1, path, "MASTER");
+                        alertManager.sendMasterServerStoppedAlert(path);
                     }
                 } catch (Exception ex) {
                     logger.error("MasterNodeListener capture data change and get data failed.", ex);

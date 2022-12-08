@@ -26,7 +26,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.dolphinscheduler.common.enums.AlertStatus;
-import org.apache.dolphinscheduler.common.enums.AlertType;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 
 import java.util.Date;
@@ -119,7 +118,7 @@ public class Alert {
      * alert_type
      */
     @TableField("alert_type")
-    private AlertType alertType;
+    private int alertType;
 
     @TableField(exist = false)
     private Map<String, Object> info = new HashMap<>();

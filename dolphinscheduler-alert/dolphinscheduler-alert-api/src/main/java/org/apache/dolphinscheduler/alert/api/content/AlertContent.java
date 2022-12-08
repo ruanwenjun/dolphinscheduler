@@ -1,8 +1,8 @@
-package org.apache.dolphinscheduler.dao.dto.alert;
+package org.apache.dolphinscheduler.alert.api.content;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.apache.dolphinscheduler.common.enums.AlertType;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(value = {
@@ -21,6 +21,7 @@ import org.apache.dolphinscheduler.common.enums.AlertType;
         @JsonSubTypes.Type(value = DqExecuteResultAlertContent.class, name = "DATA_QUALITY_RESULT"),
         @JsonSubTypes.Type(value = WorkflowTimeCheckNotRunAlertContent.class, name = "WORKFLOW_TIME_CHECK_NOT_RUN_ALERT"),
         @JsonSubTypes.Type(value = WorkflowTimeCheckStillRunningAlertContent.class, name = "WORKFLOW_TIME_CHECK_STILL_RUNNING_ALERT"),
+        @JsonSubTypes.Type(value = ServerAlertContent.class, name = "SERVER_CRASH_ALERT"),
 })
 public interface AlertContent {
 

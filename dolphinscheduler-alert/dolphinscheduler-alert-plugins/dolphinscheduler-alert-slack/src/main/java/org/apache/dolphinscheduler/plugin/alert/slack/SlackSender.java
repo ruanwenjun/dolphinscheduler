@@ -73,7 +73,7 @@ public final class SlackSender {
             paramMap.put(SlackParamsConstants.TEXT, title);
             if (StringUtils.isNotEmpty(content)) {
                 Map<String, String> attachmentTable = new HashMap<>();
-                attachmentTable.put(SlackParamsConstants.TEXT, generateMarkDownTable(content));
+                attachmentTable.put(SlackParamsConstants.TEXT, content);
                 List<Map<String, String>> attachments = new ArrayList<>();
                 attachments.add(attachmentTable);
                 paramMap.put(SlackParamsConstants.ATTACHMENT, attachments);
@@ -89,61 +89,5 @@ public final class SlackSender {
             logger.error("Send message to slack error.", e);
             return "System Exception";
         }
-    }
-
-    /**
-     * Because the slack does not support table we can transform to specific markdown table
-     *
-     * @param content sql data content
-     */
-    private String generateMarkDownTable(String content) {
-        List<LinkedHashMap> linkedHashMaps = JSONUtils.toList(content, LinkedHashMap.class);
-        if (linkedHashMaps.size() > SlackParamsConstants.MAX_SHOW_NUMBER) {
-            linkedHashMaps = linkedHashMaps.subList(0, SlackParamsConstants.MAX_SHOW_NUMBER);
-        }
-        int maxLen = 0;
-        List<String> headers = new LinkedList<>();
-        LinkedHashMap<String, Object> tmp = linkedHashMaps.get(0);
-        for (Entry<String, Object> entry : tmp.entrySet()) {
-            maxLen = Math.max(maxLen, entry.getKey().length());
-            headers.add(entry.getKey());
-        }
-        List<List<String>> elements = new ArrayList<>(tmp.size());
-        // build header
-        for (LinkedHashMap<String, Object> linkedHashMap : linkedHashMaps) {
-            List<String> element = new ArrayList<>(linkedHashMap.size());
-            for (Object value : linkedHashMap.values()) {
-                String valueStr = value.toString();
-                maxLen = Math.max(maxLen, valueStr.length());
-                element.add(valueStr);
-            }
-            elements.add(element);
-        }
-        final int elementLen = maxLen;
-        StringBuilder stringBuilder = new StringBuilder(200);
-        stringBuilder.append(headers.stream()
-                .map(header -> generateString(header, elementLen, " "))
-                .collect(Collectors.joining("|")));
-        stringBuilder.append("\n");
-        for (List<String> element : elements) {
-            stringBuilder.append(element.stream()
-                    .map(lement -> generateString("", elementLen, "-"))
-                    .collect(Collectors.joining("|")));
-            stringBuilder.append("\n");
-            stringBuilder.append(element.stream()
-                    .map(e -> generateString(e, elementLen, " "))
-                    .collect(Collectors.joining("|")));
-            stringBuilder.append("\n");
-        }
-        return String.format("```%s```", stringBuilder);
-    }
-
-    private String generateString(String value, int len, String supplement) {
-        StringBuilder stringBuilder = new StringBuilder(len);
-        stringBuilder.append(value);
-        for (int i = 0; i < len - stringBuilder.length(); i++) {
-            stringBuilder.append(supplement);
-        }
-        return stringBuilder.toString();
     }
 }

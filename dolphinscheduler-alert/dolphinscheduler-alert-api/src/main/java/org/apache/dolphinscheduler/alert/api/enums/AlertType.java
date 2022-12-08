@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.dolphinscheduler.common.enums;
+package org.apache.dolphinscheduler.alert.api.enums;
 
-import com.baomidou.mybatisplus.annotation.EnumValue;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * describe the reason why alert generates
@@ -49,14 +50,23 @@ public enum AlertType {
 
     WORKFLOW_TIME_CHECK_NOT_RUN_ALERT(13, "WorkflowTimeCheckNotRunAlert"),
     WORKFLOW_TIME_CHECK_STILL_RUNNING_ALERT(14, "WorkflowTimeCheckStillRunningRunAlert"),
+
+    SERVER_CRASH_ALERT(15, "ServerCrashAlert"),
     ;
+
+    private static final Map<Integer, AlertType> alertTypeMap = new HashMap<>();
+
+    static {
+        for (AlertType alertType : AlertType.values()) {
+            alertTypeMap.put(alertType.getCode(), alertType);
+        }
+    }
 
     AlertType(int code, String descp) {
         this.code = code;
         this.descp = descp;
     }
 
-    @EnumValue
     private final int code;
     private final String descp;
 
@@ -66,5 +76,9 @@ public enum AlertType {
 
     public String getDescp() {
         return descp;
+    }
+
+    public static AlertType ofCode(int code) {
+        return alertTypeMap.get(code);
     }
 }

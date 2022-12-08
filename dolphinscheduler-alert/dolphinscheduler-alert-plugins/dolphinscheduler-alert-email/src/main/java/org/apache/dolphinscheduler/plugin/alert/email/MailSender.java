@@ -22,11 +22,17 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.apache.dolphinscheduler.alert.api.AlertConstants;
+import org.apache.dolphinscheduler.alert.api.AlertData;
+import org.apache.dolphinscheduler.alert.api.AlertInfo;
 import org.apache.dolphinscheduler.alert.api.AlertResult;
 import org.apache.dolphinscheduler.alert.api.ShowType;
+import org.apache.dolphinscheduler.alert.api.content.AlertContent;
+import org.apache.dolphinscheduler.alert.api.content.TaskResultAlertContent;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 import org.apache.dolphinscheduler.plugin.alert.email.exception.AlertEmailException;
 import org.apache.dolphinscheduler.plugin.alert.email.template.AlertTemplate;
 import org.apache.dolphinscheduler.plugin.alert.email.template.DefaultHTMLTemplate;
+import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,27 +134,15 @@ public final class MailSender {
         alertTemplate = new DefaultHTMLTemplate();
     }
 
-    /**
-     * send mail to receivers
-     *
-     * @param title title
-     * @param content content
-     */
-    public AlertResult sendMails(String title, String content) {
-        return sendMails(this.receivers, this.receiverCcs, title, content);
+    public AlertResult sendMails(AlertInfo info) {
+        return sendMails(this.receivers, this.receiverCcs, info);
     }
 
-    /**
-     * send mail
-     *
-     * @param receivers receivers
-     * @param receiverCcs receiverCcs
-     * @param title title
-     * @param content content
-     */
-    public AlertResult sendMails(List<String> receivers, List<String> receiverCcs, String title, String content) {
+    public AlertResult sendMails(List<String> receivers, List<String> receiverCcs, AlertInfo info) {
         AlertResult alertResult = new AlertResult();
         alertResult.setSuccess(false);
+
+        AlertContent alertContent = info.getAlertContent();
 
         // if there is no receivers && no receiversCc, no need to process
         if (CollectionUtils.isEmpty(receivers) && CollectionUtils.isEmpty(receiverCcs)) {
@@ -157,86 +151,62 @@ public final class MailSender {
 
         receivers.removeIf(StringUtils::isEmpty);
         Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-        HtmlEmail email = new HtmlEmail();
-        try {
-            Session session = getSession();
-            email.setMailSession(session);
-            email.setFrom(mailSenderEmail);
-            email.setCharset(EmailConstants.UTF_8);
-            if (CollectionUtils.isNotEmpty(receivers)) {
-                // receivers mail
-                for (String receiver : receivers) {
-                    email.addTo(receiver);
-                }
-            }
 
-            if (CollectionUtils.isNotEmpty(receiverCcs)) {
-                // cc
-                for (String receiverCc : receiverCcs) {
-                    email.addCc(receiverCc);
-                }
-            }
-            /*
-             * the subject of the message to be sent
-             */
-            email.setSubject(title);
-            /*
-             * to send information, you can use HTML tags in mail content because of the use of HtmlEmail
-             */
-            email.setMsg(content);
-            // send
-            email.setDebug(true);
-            email.send();
+        // only result support other format
+        if (alertContent.getAlertType() != AlertType.TASK_RESULT) {
             alertResult.setSuccess(true);
-            return alertResult;
-        } catch (Exception e) {
-            handleException(alertResult, e);
+            return directlySendAlert(info, alertResult, receivers, receiverCcs);
         }
-        // todo: we didn't support xml format
-        // if (showType.equals(ShowType.TABLE.getDescp()) || showType.equals(ShowType.TEXT.getDescp())) {
-        // // send email
-        // HtmlEmail email = new HtmlEmail();
-        //
-        // try {
-        // Session session = getSession();
-        // email.setMailSession(session);
-        // email.setFrom(mailSenderEmail);
-        // email.setCharset(EmailConstants.UTF_8);
-        // if (CollectionUtils.isNotEmpty(receivers)) {
-        // // receivers mail
-        // for (String receiver : receivers) {
-        // email.addTo(receiver);
-        // }
-        // }
-        //
-        // if (CollectionUtils.isNotEmpty(receiverCcs)) {
-        // // cc
-        // for (String receiverCc : receiverCcs) {
-        // email.addCc(receiverCc);
-        // }
-        // }
-        // // sender mail
-        // return getStringObjectMap(title, content, alertResult, email);
-        // } catch (Exception e) {
-        // handleException(alertResult, e);
-        // }
-        // } else if (showType.equals(ShowType.ATTACHMENT.getDescp())
-        // || showType.equals(ShowType.TABLE_ATTACHMENT.getDescp())) {
-        // try {
-        //
-        // String partContent = (showType.equals(ShowType.ATTACHMENT.getDescp())
-        // ? "Please see the attachment " + title + EmailConstants.EXCEL_SUFFIX_XLSX
-        // : htmlTable(content, false));
-        //
-        // attachment(title, content, partContent);
-        //
-        // alertResult.setSuccess(true);
-        // return alertResult;
-        // } catch (Exception e) {
-        // handleException(alertResult, e);
-        // return alertResult;
-        // }
-        // }
+
+        TaskResultAlertContent taskResultAlertContent = (TaskResultAlertContent) alertContent;
+
+        String title = info.getAlertData().getTitle();
+        String content = JSONUtils.toJsonString(taskResultAlertContent.getResult());
+        if (showType.equals(ShowType.TABLE.getDescp()) || showType.equals(ShowType.TEXT.getDescp())) {
+            // send email
+            HtmlEmail email = new HtmlEmail();
+
+            try {
+                Session session = getSession();
+                email.setMailSession(session);
+                email.setFrom(mailSenderEmail);
+                email.setCharset(EmailConstants.UTF_8);
+                if (CollectionUtils.isNotEmpty(receivers)) {
+                    // receivers mail
+                    for (String receiver : receivers) {
+                        email.addTo(receiver);
+                    }
+                }
+
+                if (CollectionUtils.isNotEmpty(receiverCcs)) {
+                    // cc
+                    for (String receiverCc : receiverCcs) {
+                        email.addCc(receiverCc);
+                    }
+                }
+                // sender mail
+                return getStringObjectMap(info.getAlertContent().getAlertTitle(), content, alertResult, email);
+            } catch (Exception e) {
+                handleException(alertResult, e);
+            }
+        } else if (showType.equals(ShowType.ATTACHMENT.getDescp())
+                || showType.equals(ShowType.TABLE_ATTACHMENT.getDescp())) {
+            try {
+
+                String partContent = (showType.equals(ShowType.ATTACHMENT.getDescp())
+                        ? "Please see the attachment " + info.getAlertContent().getAlertTitle()
+                                + EmailConstants.EXCEL_SUFFIX_XLSX
+                        : htmlTable(content, false));
+
+                attachment(title, content, partContent);
+
+                alertResult.setSuccess(true);
+                return alertResult;
+            } catch (Exception e) {
+                handleException(alertResult, e);
+                return alertResult;
+            }
+        }
         return alertResult;
 
     }
@@ -436,6 +406,59 @@ public final class MailSender {
     private void handleException(AlertResult alertResult, Exception e) {
         logger.error("Send email to {} failed", receivers, e);
         alertResult.setMessage("Send email to {" + String.join(",", receivers) + "} failed，" + e.toString());
+    }
+
+    private AlertResult directlySendAlert(AlertInfo alertInfo,
+                                          AlertResult alertResult,
+                                          List<String> receivers,
+                                          List<String> receiverCcs) {
+        AlertData alertData = alertInfo.getAlertData();
+        String title = alertData.getTitle();
+        String content = alertData.getContent();
+        // send email
+        HtmlEmail email = new HtmlEmail();
+
+        try {
+            Session session = getSession();
+            email.setMailSession(session);
+            email.setFrom(mailSenderEmail);
+            email.setCharset(EmailConstants.UTF_8);
+            if (CollectionUtils.isNotEmpty(receivers)) {
+                // receivers mail
+                for (String receiver : receivers) {
+                    email.addTo(receiver);
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(receiverCcs)) {
+                // cc
+                for (String receiverCc : receiverCcs) {
+                    email.addCc(receiverCc);
+                }
+            }
+            /*
+             * the subject of the message to be sent
+             */
+            email.setSubject(title);
+            /*
+             * to send information, you can use HTML tags in mail content because of the use of HtmlEmail
+             */
+            if (showType.equals(ShowType.TABLE.getDescp())) {
+                email.setMsg(htmlTable(content));
+            } else if (showType.equals(ShowType.TEXT.getDescp())) {
+                email.setMsg(htmlText(content));
+            }
+
+            // send
+            email.setDebug(true);
+            email.send();
+
+            alertResult.setSuccess(true);
+
+        } catch (Exception e) {
+            handleException(alertResult, e);
+        }
+        return alertResult;
     }
 
 }

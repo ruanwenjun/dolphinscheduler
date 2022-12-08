@@ -20,20 +20,14 @@ package org.apache.dolphinscheduler.dao;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import lombok.NonNull;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.dolphinscheduler.common.enums.AlertEvent;
 import org.apache.dolphinscheduler.common.enums.AlertStatus;
-import org.apache.dolphinscheduler.common.enums.AlertType;
-import org.apache.dolphinscheduler.common.enums.AlertWarnLevel;
-import org.apache.dolphinscheduler.common.enums.WarningType;
-import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.dto.AlertPluginInstanceDTO;
 import org.apache.dolphinscheduler.dao.entity.Alert;
 import org.apache.dolphinscheduler.dao.entity.AlertPluginInstance;
 import org.apache.dolphinscheduler.dao.entity.AlertSendStatus;
-import org.apache.dolphinscheduler.dao.entity.ServerAlertContent;
 import org.apache.dolphinscheduler.dao.mapper.AlertGroupMapper;
 import org.apache.dolphinscheduler.dao.mapper.AlertMapper;
 import org.apache.dolphinscheduler.dao.mapper.AlertPluginInstanceMapper;
@@ -141,37 +135,6 @@ public class AlertDao {
     }
 
     /**
-     * MasterServer or WorkerServer stopped
-     *
-     * @param alertGroupId alertGroupId
-     * @param host         host
-     * @param serverType   serverType
-     */
-    public void sendServerStoppedAlert(int alertGroupId, String host, String serverType) {
-        ServerAlertContent serverStopAlertContent = ServerAlertContent.newBuilder().type(serverType)
-                .host(host)
-                .event(AlertEvent.SERVER_DOWN)
-                .warningLevel(AlertWarnLevel.SERIOUS).build();
-        String content = JSONUtils.toJsonString(Lists.newArrayList(serverStopAlertContent));
-
-        Alert alert = new Alert();
-        alert.setTitle("Fault tolerance warning");
-        alert.setWarningType(WarningType.FAILURE);
-        alert.setAlertStatus(AlertStatus.WAIT_EXECUTION);
-        alert.setContent(content);
-        alert.setAlertGroupId(alertGroupId);
-        alert.setCreateTime(new Date());
-        alert.setUpdateTime(new Date());
-        alert.setAlertType(AlertType.FAULT_TOLERANCE_WARNING);
-        alert.setSign(generateSign(alert));
-        // we use this method to avoid insert duplicate alert(issue #5525)
-        // we modified this method to optimize performance(issue #9174)
-        Date crashAlarmSuppressionStartTime = Date.from(
-                LocalDateTime.now().plusMinutes(-crashAlarmSuppression).atZone(ZoneId.systemDefault()).toInstant());
-        alertMapper.insertAlertWhenServerCrash(alert, crashAlarmSuppressionStartTime);
-    }
-
-    /**
      * List alerts that are pending for execution
      */
     public List<Alert> listPendingAlerts() {
@@ -243,5 +206,13 @@ public class AlertDao {
 
     public void setCrashAlarmSuppression(Integer crashAlarmSuppression) {
         this.crashAlarmSuppression = crashAlarmSuppression;
+    }
+
+    public void insertAlertWhenServerCrash(@NonNull Alert alert) {
+        // we use this method to avoid insert duplicate alert(issue #5525)
+        // we modified this method to optimize performance(issue #9174)
+        Date crashAlarmSuppressionStartTime = Date.from(
+                LocalDateTime.now().plusMinutes(-crashAlarmSuppression).atZone(ZoneId.systemDefault()).toInstant());
+        alertMapper.insertAlertWhenServerCrash(alert, crashAlarmSuppressionStartTime);
     }
 }

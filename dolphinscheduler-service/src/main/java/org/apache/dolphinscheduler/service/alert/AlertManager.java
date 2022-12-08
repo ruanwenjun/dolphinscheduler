@@ -19,14 +19,16 @@ package org.apache.dolphinscheduler.service.alert;
 
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.dolphinscheduler.alert.api.content.AlertContent;
+import org.apache.dolphinscheduler.alert.api.content.DqExecuteResultAlertContent;
+import org.apache.dolphinscheduler.alert.api.content.ServerAlertContent;
+import org.apache.dolphinscheduler.alert.api.content.TaskResultAlertContent;
+import org.apache.dolphinscheduler.alert.api.enums.AlertEvent;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 import org.apache.dolphinscheduler.common.enums.AlertStatus;
-import org.apache.dolphinscheduler.common.enums.AlertType;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.AlertDao;
-import org.apache.dolphinscheduler.dao.dto.alert.AlertContent;
-import org.apache.dolphinscheduler.dao.dto.alert.DqExecuteResultAlertContent;
-import org.apache.dolphinscheduler.dao.dto.alert.TaskResultAlertContent;
 import org.apache.dolphinscheduler.dao.entity.Alert;
 import org.apache.dolphinscheduler.dao.entity.DqExecuteResult;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
@@ -105,7 +107,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.PROCESS_INSTANCE_SUCCESS)
+                    .alertType(AlertType.PROCESS_INSTANCE_SUCCESS.getCode())
                     .build();
             alertDao.addAlert(alert);
             closeHistoryAlertIfNeeded(processInstance, projectUser);
@@ -131,7 +133,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.PROCESS_INSTANCE_FAILURE)
+                    .alertType(AlertType.PROCESS_INSTANCE_FAILURE.getCode())
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -156,7 +158,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.WORKFLOW_FAULT_TOLERANCE)
+                    .alertType(AlertType.WORKFLOW_FAULT_TOLERANCE.getCode())
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -181,7 +183,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.PROCESS_INSTANCE_BLOCKED)
+                    .alertType(AlertType.PROCESS_INSTANCE_BLOCKED.getCode())
                     .build();
             alertDao.addAlert(alert);
             logger.info("processInstance {} block alert send successful!", processInstance.getId());
@@ -207,7 +209,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.PROCESS_INSTANCE_TIMEOUT)
+                    .alertType(AlertType.PROCESS_INSTANCE_TIMEOUT.getCode())
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -237,7 +239,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.TASK_TIMEOUT)
+                    .alertType(AlertType.TASK_TIMEOUT.getCode())
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -262,7 +264,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.TASK_FAILURE)
+                    .alertType(AlertType.TASK_FAILURE.getCode())
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -291,7 +293,7 @@ public class AlertManager {
         alert.setProjectCode(processInstance.getProcessDefinition().getProjectCode());
         alert.setProcessDefinitionCode(processInstance.getProcessDefinitionCode());
         alert.setProcessInstanceId(processInstance.getId());
-        alert.setAlertType(AlertType.CLOSE_ALERT);
+        alert.setAlertType(AlertType.CLOSE_ALERT.getCode());
         alertDao.addAlert(alert);
     }
 
@@ -315,7 +317,7 @@ public class AlertManager {
                     .createTime(new Date())
                     .updateTime(new Date())
                     .projectCode(projectUser.getProjectCode())
-                    .alertType(AlertType.TASK_RESULT)
+                    .alertType(AlertType.TASK_RESULT.getCode())
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -356,12 +358,56 @@ public class AlertManager {
                     .projectCode(result.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.DATA_QUALITY_TASK_RESULT)
+                    .alertType(AlertType.DATA_QUALITY_TASK_RESULT.getCode())
                     .build();
             alertDao.addAlert(alert);
             logger.info("Add data quality alert to db , alert: {}", alert);
         } catch (Exception ex) {
             logger.error("Send data quality alert error, result: {}", result, ex);
         }
+    }
+
+    public void sendWorkerServerStoppedAlert(String path) {
+        ServerAlertContent serverStopAlertContent = ServerAlertContent.builder()
+                .type("Worker")
+                .host(path)
+                .event(AlertEvent.SERVER_DOWN)
+                .build();
+        String content = JSONUtils.toJsonString(serverStopAlertContent);
+
+        Alert alert = new Alert();
+        alert.setTitle("Fault tolerance warning");
+        alert.setWarningType(WarningType.FAILURE);
+        alert.setAlertStatus(AlertStatus.WAIT_EXECUTION);
+        alert.setContent(content);
+        alert.setAlertGroupId(1);
+        alert.setCreateTime(new Date());
+        alert.setUpdateTime(new Date());
+        alert.setAlertType(AlertType.SERVER_CRASH_ALERT.getCode());
+        // we use this method to avoid insert duplicate alert(issue #5525)
+        // we modified this method to optimize performance(issue #9174)
+        alertDao.insertAlertWhenServerCrash(alert);
+    }
+
+    public void sendMasterServerStoppedAlert(String path) {
+        ServerAlertContent serverStopAlertContent = ServerAlertContent.builder()
+                .type("Master")
+                .host(path)
+                .event(AlertEvent.SERVER_DOWN)
+                .build();
+        String content = JSONUtils.toJsonString(serverStopAlertContent);
+
+        Alert alert = new Alert();
+        alert.setTitle("Fault tolerance warning");
+        alert.setWarningType(WarningType.FAILURE);
+        alert.setAlertStatus(AlertStatus.WAIT_EXECUTION);
+        alert.setContent(content);
+        alert.setAlertGroupId(1);
+        alert.setCreateTime(new Date());
+        alert.setUpdateTime(new Date());
+        alert.setAlertType(AlertType.SERVER_CRASH_ALERT.getCode());
+        // we use this method to avoid insert duplicate alert(issue #5525)
+        // we modified this method to optimize performance(issue #9174)
+        alertDao.insertAlertWhenServerCrash(alert);
     }
 }

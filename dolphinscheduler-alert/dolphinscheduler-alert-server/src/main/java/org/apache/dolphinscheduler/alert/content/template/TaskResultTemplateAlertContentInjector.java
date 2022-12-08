@@ -4,10 +4,10 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dolphinscheduler.alert.config.AlertConfig;
 import org.apache.dolphinscheduler.alert.content.TemplateInjectedAlertContentWrapper;
-import org.apache.dolphinscheduler.common.enums.AlertType;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
-import org.apache.dolphinscheduler.dao.dto.alert.AlertContent;
-import org.apache.dolphinscheduler.dao.dto.alert.TaskResultAlertContent;
+import org.apache.dolphinscheduler.alert.api.content.AlertContent;
+import org.apache.dolphinscheduler.alert.api.content.TaskResultAlertContent;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 

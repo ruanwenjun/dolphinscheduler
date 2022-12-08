@@ -34,13 +34,12 @@ public final class EmailAlertChannel implements AlertChannel {
     @Override
     public AlertResult process(AlertInfo info) {
 
-        AlertData alert = info.getAlertData();
         Map<String, String> paramsMap = info.getAlertParams();
         if (null == paramsMap) {
             return AlertResult.error("mail params is null");
         }
         MailSender mailSender = new MailSender(paramsMap);
-        AlertResult alertResult = mailSender.sendMails(alert.getTitle(), alert.getContent());
+        AlertResult alertResult = mailSender.sendMails(info);
 
         boolean flag;
 

@@ -2,7 +2,7 @@ package org.apache.dolphinscheduler.alert.content;
 
 import lombok.AllArgsConstructor;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
-import org.apache.dolphinscheduler.dao.dto.alert.AlertContent;
+import org.apache.dolphinscheduler.alert.api.content.AlertContent;
 
 @AllArgsConstructor
 public class DefaultAlertContentWrapper implements AlertContentWrapper {

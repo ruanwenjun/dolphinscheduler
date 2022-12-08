@@ -18,7 +18,9 @@
 package org.apache.dolphinscheduler.plugin.alert.email;
 
 import org.apache.dolphinscheduler.alert.api.AlertConstants;
+import org.apache.dolphinscheduler.alert.api.AlertInfo;
 import org.apache.dolphinscheduler.alert.api.ShowType;
+import org.apache.dolphinscheduler.alert.api.content.AlertContent;
 import org.apache.dolphinscheduler.plugin.alert.email.template.AlertTemplate;
 import org.apache.dolphinscheduler.plugin.alert.email.template.DefaultHTMLTemplate;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
@@ -63,20 +65,20 @@ public class MailUtilsTest {
     @Test
     public void testSendMails() {
 
-        String content = "[\"id:69\","
-                + "\"name:UserBehavior-0--1193959466\","
-                + "\"Job name: Start workflow\","
-                + "\"State: SUCCESS\","
-                + "\"Recovery:NO\","
-                + "\"Run time: 1\","
-                + "\"Start time: 2018-08-06 10:31:34.0\","
-                + "\"End time: 2018-08-06 10:31:49.0\","
-                + "\"Host: 192.168.xx.xx\","
-                + "\"Notify group :4\"]";
-
-        mailSender.sendMails(
-                "Mysql Exception",
-                content);
+        // String content = "[\"id:69\","
+        // + "\"name:UserBehavior-0--1193959466\","
+        // + "\"Job name: Start workflow\","
+        // + "\"State: SUCCESS\","
+        // + "\"Recovery:NO\","
+        // + "\"Run time: 1\","
+        // + "\"Start time: 2018-08-06 10:31:34.0\","
+        // + "\"End time: 2018-08-06 10:31:49.0\","
+        // + "\"Host: 192.168.xx.xx\","
+        // + "\"Notify group :4\"]";
+        //
+        // mailSender.sendMails(
+        // "Mysql Exception",
+        // content);
     }
 
     public String list2String() {
@@ -111,7 +113,7 @@ public class MailUtilsTest {
         String content = list2String();
         emailConfig.put(AlertConstants.NAME_SHOW_TYPE, ShowType.TABLE.getDescp());
         mailSender = new MailSender(emailConfig);
-        mailSender.sendMails(title, content);
+        // mailSender.sendMails(title, content);
     }
 
     @Test
@@ -119,7 +121,7 @@ public class MailUtilsTest {
         String content = list2String();
         emailConfig.put(AlertConstants.NAME_SHOW_TYPE, ShowType.ATTACHMENT.getDescp());
         mailSender = new MailSender(emailConfig);
-        mailSender.sendMails("gaojing", content);
+        // mailSender.sendMails("gaojing", content);
     }
 
     @Test
@@ -127,7 +129,7 @@ public class MailUtilsTest {
         String content = list2String();
         emailConfig.put(AlertConstants.NAME_SHOW_TYPE, ShowType.TABLE_ATTACHMENT.getDescp());
         mailSender = new MailSender(emailConfig);
-        mailSender.sendMails("gaojing", content);
+        // mailSender.sendMails("gaojing", content);
     }
 
 }

@@ -33,7 +33,7 @@ public final class WeChatAlertChannel implements AlertChannel {
         if (null == paramsMap) {
             return AlertResult.error("we chat params is null");
         }
-        return new WeChatSender(paramsMap).sendEnterpriseWeChat(alertData.getTitle(), alertData.getContent());
+        return new WeChatSender(paramsMap).sendEnterpriseWeChat(info);
 
     }
 }

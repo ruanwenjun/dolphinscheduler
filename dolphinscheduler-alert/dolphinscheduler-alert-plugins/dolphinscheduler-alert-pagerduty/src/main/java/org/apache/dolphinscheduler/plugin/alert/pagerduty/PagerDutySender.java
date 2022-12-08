@@ -96,7 +96,7 @@ public final class PagerDutySender {
         payload.put("summary", title);
         payload.put("source", PagerDutyParamsConstants.PAGER_DUTY_EVENT_SOURCE);
         payload.put("severity", "critical");
-        payload.put("custom_details", formatContent(content));
+        payload.put("custom_details", content);
         items.put("payload", payload);
         return JSONUtils.toJsonString(items);
     }
@@ -107,24 +107,5 @@ public final class PagerDutySender {
         post.setEntity(entity);
         post.addHeader("Content-Type", "application/json; charset=utf-8");
         return post;
-    }
-
-    public static String formatContent(String content) {
-        List<Map> list = JSONUtils.toList(content, Map.class);
-        if (list.isEmpty()) {
-            return content;
-        }
-
-        StringBuilder contents = new StringBuilder(100);
-        for (Map map : list) {
-            for (Map.Entry<String, Object> entry : (Iterable<Map.Entry<String, Object>>) map.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue().toString();
-                contents.append(key + ":" + value);
-                contents.append("\n");
-            }
-        }
-
-        return contents.toString();
     }
 }

@@ -1,16 +1,16 @@
-package org.apache.dolphinscheduler.dao.dto.alert;
+package org.apache.dolphinscheduler.alert.api.content;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.dolphinscheduler.common.enums.AlertType;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WorkflowTimeCheckNotRunAlertContent implements AlertContent {
+public class WorkflowTimeCheckStillRunningAlertContent implements AlertContent {
 
     private String projectName;
     private String workflowName;
@@ -18,7 +18,7 @@ public class WorkflowTimeCheckNotRunAlertContent implements AlertContent {
 
     @Override
     public AlertType getAlertType() {
-        return AlertType.WORKFLOW_TIME_CHECK_NOT_RUN_ALERT;
+        return AlertType.WORKFLOW_TIME_CHECK_STILL_RUNNING_ALERT;
     }
 
     @Override
@@ -28,6 +28,6 @@ public class WorkflowTimeCheckNotRunAlertContent implements AlertContent {
 
     @Override
     public String getWorkflowInstanceName() {
-        return workflowName;
+        return workflowInstanceName;
     }
 }
