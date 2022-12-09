@@ -28,6 +28,7 @@ import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 import org.apache.dolphinscheduler.common.enums.AlertStatus;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
+import org.apache.dolphinscheduler.common.utils.PropertyUtils;
 import org.apache.dolphinscheduler.dao.AlertDao;
 import org.apache.dolphinscheduler.dao.entity.Alert;
 import org.apache.dolphinscheduler.dao.entity.DqExecuteResult;
@@ -58,6 +59,8 @@ public class AlertManager {
 
     @Autowired
     private ProcessService processService;
+
+    private boolean WORKER_FINISH_CLOSE_ALERT = PropertyUtils.getBoolean("workflow.finish.close.alert", true);
 
     private Map<AlertType, AlertContentFactory<? extends AlertContent>> alertContentFactoryMap = new HashMap<>();
 
@@ -273,6 +276,10 @@ public class AlertManager {
     }
 
     private void closeHistoryAlertIfNeeded(ProcessInstance processInstance, ProjectUser projectUser) {
+        if (!WORKER_FINISH_CLOSE_ALERT) {
+            return;
+        }
+
         List<Alert> alerts = alertDao.listAlerts(processInstance.getId());
         if (CollectionUtils.isEmpty(alerts)) {
             // no need to close alert
