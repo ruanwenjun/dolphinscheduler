@@ -140,7 +140,7 @@ public class AlertDao {
     public List<Alert> listPendingAlerts() {
         LambdaQueryWrapper<Alert> wrapper = new QueryWrapper<>(new Alert())
                 .lambda()
-                .eq(Alert::getAlertStatus, AlertStatus.WAIT_EXECUTION.getCode())
+                .eq(Alert::getAlertStatus, AlertStatus.WAIT_EXECUTION)
                 .last("limit " + QUERY_ALERT_THRESHOLD);
         return alertMapper.selectList(wrapper);
     }
