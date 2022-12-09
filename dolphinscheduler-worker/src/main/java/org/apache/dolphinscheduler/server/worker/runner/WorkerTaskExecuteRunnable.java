@@ -243,7 +243,7 @@ public abstract class WorkerTaskExecuteRunnable implements Runnable {
                 .content(taskAlertInfo.getContent())
                 .build();
         try {
-            workerRpcClient.send(Host.of(taskExecutionContext.getHost()), taskAlertRequestCommand.convert2Command());
+            workerRpcClient.send(Host.of(masterAddress), taskAlertRequestCommand.convert2Command());
             logger.info("Success send task alert request to master, request: {}", taskAlertRequestCommand);
         } catch (Exception e) {
             logger.error("Send task alert request to master error, e");
