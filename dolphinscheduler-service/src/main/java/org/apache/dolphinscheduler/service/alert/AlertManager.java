@@ -110,7 +110,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.PROCESS_INSTANCE_SUCCESS.getCode())
+                    .alertType(AlertType.PROCESS_INSTANCE_SUCCESS)
                     .build();
             alertDao.addAlert(alert);
             closeHistoryAlertIfNeeded(processInstance, projectUser);
@@ -136,7 +136,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.PROCESS_INSTANCE_FAILURE.getCode())
+                    .alertType(AlertType.PROCESS_INSTANCE_FAILURE)
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -161,7 +161,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.WORKFLOW_FAULT_TOLERANCE.getCode())
+                    .alertType(AlertType.WORKFLOW_FAULT_TOLERANCE)
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -186,7 +186,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.PROCESS_INSTANCE_BLOCKED.getCode())
+                    .alertType(AlertType.PROCESS_INSTANCE_BLOCKED)
                     .build();
             alertDao.addAlert(alert);
             logger.info("processInstance {} block alert send successful!", processInstance.getId());
@@ -212,7 +212,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.PROCESS_INSTANCE_TIMEOUT.getCode())
+                    .alertType(AlertType.PROCESS_INSTANCE_TIMEOUT)
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -242,7 +242,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.TASK_TIMEOUT.getCode())
+                    .alertType(AlertType.TASK_TIMEOUT)
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -267,7 +267,7 @@ public class AlertManager {
                     .projectCode(projectUser.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.TASK_FAILURE.getCode())
+                    .alertType(AlertType.TASK_FAILURE)
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -300,7 +300,7 @@ public class AlertManager {
         alert.setProjectCode(processInstance.getProcessDefinition().getProjectCode());
         alert.setProcessDefinitionCode(processInstance.getProcessDefinitionCode());
         alert.setProcessInstanceId(processInstance.getId());
-        alert.setAlertType(AlertType.CLOSE_ALERT.getCode());
+        alert.setAlertType(AlertType.CLOSE_ALERT);
         alertDao.addAlert(alert);
     }
 
@@ -324,7 +324,7 @@ public class AlertManager {
                     .createTime(new Date())
                     .updateTime(new Date())
                     .projectCode(projectUser.getProjectCode())
-                    .alertType(AlertType.TASK_RESULT.getCode())
+                    .alertType(AlertType.TASK_RESULT)
                     .build();
             alertDao.addAlert(alert);
         } catch (Exception ex) {
@@ -365,7 +365,7 @@ public class AlertManager {
                     .projectCode(result.getProjectCode())
                     .processDefinitionCode(processInstance.getProcessDefinitionCode())
                     .processInstanceId(processInstance.getId())
-                    .alertType(AlertType.DATA_QUALITY_TASK_RESULT.getCode())
+                    .alertType(AlertType.DATA_QUALITY_TASK_RESULT)
                     .build();
             alertDao.addAlert(alert);
             logger.info("Add data quality alert to db , alert: {}", alert);
@@ -390,7 +390,7 @@ public class AlertManager {
         alert.setAlertGroupId(1);
         alert.setCreateTime(new Date());
         alert.setUpdateTime(new Date());
-        alert.setAlertType(AlertType.SERVER_CRASH_ALERT.getCode());
+        alert.setAlertType(AlertType.SERVER_CRASH_ALERT);
         // we use this method to avoid insert duplicate alert(issue #5525)
         // we modified this method to optimize performance(issue #9174)
         alertDao.insertAlertWhenServerCrash(alert);
@@ -412,7 +412,7 @@ public class AlertManager {
         alert.setAlertGroupId(1);
         alert.setCreateTime(new Date());
         alert.setUpdateTime(new Date());
-        alert.setAlertType(AlertType.SERVER_CRASH_ALERT.getCode());
+        alert.setAlertType(AlertType.SERVER_CRASH_ALERT);
         // we use this method to avoid insert duplicate alert(issue #5525)
         // we modified this method to optimize performance(issue #9174)
         alertDao.insertAlertWhenServerCrash(alert);

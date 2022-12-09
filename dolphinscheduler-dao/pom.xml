@@ -44,6 +44,11 @@
             <groupId>org.apache.dolphinscheduler</groupId>
             <artifactId>dolphinscheduler-common</artifactId>
         </dependency>
+        <!-- todo: this is a bad design, why we use enum in do?  -->
+        <dependency>
+            <groupId>org.apache.dolphinscheduler</groupId>
+            <artifactId>dolphinscheduler-alert-api</artifactId>
+        </dependency>
         
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -149,7 +149,7 @@ public class DefaultAlertSender implements AlertSender {
                     .alertPluginInstanceId(instance.getId())
                     .build();
             AlertResult alertResult;
-            if (alert.getAlertType() == AlertType.CLOSE_ALERT.getCode()) {
+            if (alert.getAlertType() == AlertType.CLOSE_ALERT) {
                 alertResult = alertChannel.closeAlert(alertInfo);
             } else {
                 alertResult = alertChannel.process(alertInfo);
