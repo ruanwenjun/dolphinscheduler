@@ -33,5 +33,9 @@
             <artifactId>dolphinscheduler-spi</artifactId>
             <!-- TODO should get rid off this -->
         </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+        </dependency>
     </dependencies>
 </project>

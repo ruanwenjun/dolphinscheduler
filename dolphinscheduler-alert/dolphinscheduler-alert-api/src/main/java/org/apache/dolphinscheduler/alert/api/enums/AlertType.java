@@ -17,6 +17,8 @@
 
 package org.apache.dolphinscheduler.alert.api.enums;
 
+import com.baomidou.mybatisplus.annotation.EnumValue;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,6 +69,7 @@ public enum AlertType {
         this.descp = descp;
     }
 
+    @EnumValue
     private final int code;
     private final String descp;
 
