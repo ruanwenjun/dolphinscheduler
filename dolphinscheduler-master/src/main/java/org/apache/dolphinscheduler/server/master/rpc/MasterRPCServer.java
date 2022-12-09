@@ -32,6 +32,7 @@ import org.apache.dolphinscheduler.server.master.processor.WorkflowExecutingData
 
 import javax.annotation.PostConstruct;
 
+import org.apache.dolphinscheduler.server.master.processor.alert.TaskResultAlertRequestProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,9 @@ public class MasterRPCServer implements AutoCloseable {
     @Autowired
     private WorkflowExecutingDataRequestProcessor workflowExecutingDataRequestProcessor;
 
+    @Autowired
+    private TaskResultAlertRequestProcessor taskResultAlertRequestProcessor;
+
     public void start() {
         logger.info("Starting Master RPC Server...");
         // init remoting server
@@ -89,6 +93,8 @@ public class MasterRPCServer implements AutoCloseable {
         this.nettyRemotingServer.registerProcessor(CommandType.CACHE_EXPIRE, cacheProcessor);
         this.nettyRemotingServer.registerProcessor(CommandType.WORKFLOW_EXECUTING_DATA_REQUEST,
                 workflowExecutingDataRequestProcessor);
+        this.nettyRemotingServer.registerProcessor(CommandType.TASK_RESULT_ALERT_SEND_REQUEST,
+                taskResultAlertRequestProcessor);
 
         // logger server
         this.nettyRemotingServer.registerProcessor(CommandType.GET_LOG_BYTES_REQUEST, loggerRequestProcessor);
