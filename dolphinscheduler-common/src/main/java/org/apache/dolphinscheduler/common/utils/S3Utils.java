@@ -17,28 +17,20 @@
 
 package org.apache.dolphinscheduler.common.utils;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.transfer.MultipleFileDownload;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import org.apache.commons.lang.StringUtils;
+import static org.apache.dolphinscheduler.common.Constants.AWS_END_POINT;
+import static org.apache.dolphinscheduler.common.Constants.FOLDER_SEPARATOR;
+import static org.apache.dolphinscheduler.common.Constants.FORMAT_S_S;
+import static org.apache.dolphinscheduler.common.Constants.RESOURCE_STORAGE_TYPE;
+import static org.apache.dolphinscheduler.common.Constants.RESOURCE_TYPE_FILE;
+import static org.apache.dolphinscheduler.common.Constants.RESOURCE_TYPE_UDF;
+import static org.apache.dolphinscheduler.common.Constants.STORAGE_S3;
+
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.ResUploadType;
 import org.apache.dolphinscheduler.common.storage.StorageOperate;
 import org.apache.dolphinscheduler.spi.enums.ResourceType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -54,14 +46,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.apache.dolphinscheduler.common.Constants.AWS_END_POINT;
-import static org.apache.dolphinscheduler.common.Constants.BUCKET_NAME;
-import static org.apache.dolphinscheduler.common.Constants.FOLDER_SEPARATOR;
-import static org.apache.dolphinscheduler.common.Constants.FORMAT_S_S;
-import static org.apache.dolphinscheduler.common.Constants.RESOURCE_STORAGE_TYPE;
-import static org.apache.dolphinscheduler.common.Constants.RESOURCE_TYPE_FILE;
-import static org.apache.dolphinscheduler.common.Constants.RESOURCE_TYPE_UDF;
-import static org.apache.dolphinscheduler.common.Constants.STORAGE_S3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.transfer.MultipleFileDownload;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 
 public class S3Utils implements Closeable, StorageOperate {
 
@@ -95,7 +97,7 @@ public class S3Utils implements Closeable, StorageOperate {
                         .withRegion(Regions.fromName(REGION))
                         .build();
             }
-            checkBucketNameIfNotPresent(BUCKET_NAME);
+            checkBucketNameIfNotPresent(RESOURCE_UPLOAD_PATH);
         }
     }
 
@@ -166,7 +168,7 @@ public class S3Utils implements Closeable, StorageOperate {
     @Override
     public void download(String tenantCode, String srcFilePath, String dstFile, boolean deleteSource,
                          boolean overwrite) throws IOException {
-        S3Object o = s3Client.getObject(BUCKET_NAME, srcFilePath);
+        S3Object o = s3Client.getObject(RESOURCE_UPLOAD_PATH, srcFilePath);
         try (
                 S3ObjectInputStream s3is = o.getObjectContent();
                 FileOutputStream fos = new FileOutputStream(new File(dstFile))) {
@@ -187,13 +189,13 @@ public class S3Utils implements Closeable, StorageOperate {
 
     @Override
     public boolean exists(String tenantCode, String fileName) throws IOException {
-        return s3Client.doesObjectExist(BUCKET_NAME, fileName);
+        return s3Client.doesObjectExist(RESOURCE_UPLOAD_PATH, fileName);
     }
 
     @Override
     public boolean delete(String tenantCode, String filePath, boolean recursive) throws IOException {
         try {
-            s3Client.deleteObject(BUCKET_NAME, filePath);
+            s3Client.deleteObject(RESOURCE_UPLOAD_PATH, filePath);
             return true;
         } catch (AmazonServiceException e) {
             logger.error("delete the object error,the resource path is {}", filePath);
@@ -203,8 +205,8 @@ public class S3Utils implements Closeable, StorageOperate {
 
     @Override
     public boolean copy(String srcPath, String dstPath, boolean deleteSource, boolean overwrite) throws IOException {
-        s3Client.copyObject(BUCKET_NAME, srcPath, BUCKET_NAME, dstPath);
-        s3Client.deleteObject(BUCKET_NAME, srcPath);
+        s3Client.copyObject(RESOURCE_UPLOAD_PATH, srcPath, RESOURCE_UPLOAD_PATH, dstPath);
+        s3Client.deleteObject(RESOURCE_UPLOAD_PATH, srcPath);
         return true;
     }
 
@@ -225,10 +227,10 @@ public class S3Utils implements Closeable, StorageOperate {
     public boolean upload(String tenantCode, String srcFile, String dstPath, boolean deleteSource,
                           boolean overwrite) throws IOException {
         try {
-            s3Client.putObject(BUCKET_NAME, dstPath, new File(srcFile));
+            s3Client.putObject(RESOURCE_UPLOAD_PATH, dstPath, new File(srcFile));
             return true;
         } catch (AmazonServiceException e) {
-            logger.error("upload failed,the bucketName is {},the dstPath is {}", BUCKET_NAME,
+            logger.error("upload failed,the bucketName is {},the dstPath is {}", RESOURCE_UPLOAD_PATH,
                     tenantCode + FOLDER_SEPARATOR + dstPath);
             return false;
         }
@@ -240,7 +242,7 @@ public class S3Utils implements Closeable, StorageOperate {
             logger.error("file path:{} is blank", filePath);
             return Collections.emptyList();
         }
-        S3Object s3Object = s3Client.getObject(BUCKET_NAME, filePath);
+        S3Object s3Object = s3Client.getObject(RESOURCE_UPLOAD_PATH, filePath);
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(s3Object.getObjectContent()))) {
             Stream<String> stream = bufferedReader.lines().skip(skipLineNums).limit(limit);
             return stream.collect(Collectors.toList());
@@ -248,12 +250,12 @@ public class S3Utils implements Closeable, StorageOperate {
     }
 
     private void createFolder(String folderName) {
-        if (!s3Client.doesObjectExist(BUCKET_NAME, folderName + FOLDER_SEPARATOR)) {
+        if (!s3Client.doesObjectExist(RESOURCE_UPLOAD_PATH, folderName + FOLDER_SEPARATOR)) {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(0);
             InputStream emptyContent = new ByteArrayInputStream(new byte[0]);
             PutObjectRequest putObjectRequest =
-                    new PutObjectRequest(BUCKET_NAME, folderName + FOLDER_SEPARATOR, emptyContent, metadata);
+                    new PutObjectRequest(RESOURCE_UPLOAD_PATH, folderName + FOLDER_SEPARATOR, emptyContent, metadata);
             s3Client.putObject(putObjectRequest);
         }
     }
@@ -276,7 +278,7 @@ public class S3Utils implements Closeable, StorageOperate {
      * @param strPath
      */
     private void uploadDirectory(String tenantCode, String keyPrefix, String strPath) {
-        s3Client.putObject(BUCKET_NAME, tenantCode + FOLDER_SEPARATOR + keyPrefix, new File(strPath));
+        s3Client.putObject(RESOURCE_UPLOAD_PATH, tenantCode + FOLDER_SEPARATOR + keyPrefix, new File(strPath));
     }
 
     /**
@@ -290,10 +292,10 @@ public class S3Utils implements Closeable, StorageOperate {
         TransferManager tm = TransferManagerBuilder.standard().withS3Client(s3Client).build();
         try {
             MultipleFileDownload download =
-                    tm.downloadDirectory(BUCKET_NAME, tenantCode + FOLDER_SEPARATOR + keyPrefix, new File(srcPath));
+                    tm.downloadDirectory(RESOURCE_UPLOAD_PATH, tenantCode + FOLDER_SEPARATOR + keyPrefix, new File(srcPath));
             download.waitForCompletion();
         } catch (AmazonS3Exception | InterruptedException e) {
-            logger.error("download the directory failed with the bucketName is {} and the keyPrefix is {}", BUCKET_NAME,
+            logger.error("download the directory failed with the bucketName is {} and the keyPrefix is {}", RESOURCE_UPLOAD_PATH,
                     tenantCode + FOLDER_SEPARATOR + keyPrefix);
             Thread.currentThread().interrupt();
         } finally {
@@ -312,8 +314,8 @@ public class S3Utils implements Closeable, StorageOperate {
      * only delete the object of directory ,it`s better to delete the files in it -r
      */
     private void deleteDirectory(String directoryName) {
-        if (s3Client.doesObjectExist(BUCKET_NAME, directoryName)) {
-            s3Client.deleteObject(BUCKET_NAME, directoryName);
+        if (s3Client.doesObjectExist(RESOURCE_UPLOAD_PATH, directoryName)) {
+            s3Client.deleteObject(RESOURCE_UPLOAD_PATH, directoryName);
         }
     }
 
