@@ -113,11 +113,6 @@ public class Checker {
         if (!downloadFiles.isEmpty() && !PropertyUtils.getResUploadStartupState()) {
             throw new StorageOperateNoConfiguredException("Storage service config does not exist!");
         }
-        File resDir = new File(execLocalPath);
-        if (!resDir.exists()) {
-            resDir.mkdirs();
-        }
-
         if (CollectionUtils.isNotEmpty(downloadFiles)) {
             for (Pair<String, String> fileDownload : downloadFiles) {
                 try {
@@ -126,10 +121,14 @@ public class Checker {
                     String tenantCode = fileDownload.getRight();
                     // todo: We may need to send to resource type from master to worker
                     String resPath = storageOperate.getResourceFileName(tenantCode, fullName);
+                    String destPath = execLocalPath + File.separator + fullName;
+                    File resDir = new File(destPath);
+                    if (!resDir.getParentFile().exists()) {
+                        resDir.getParentFile().mkdirs();
+                    }
                     logger.info("get resource file from path:{}", resPath);
                     long resourceDownloadStartTime = System.currentTimeMillis();
-                    storageOperate.download(tenantCode, resPath, execLocalPath + File.separator + fullName, false,
-                            true);
+                    storageOperate.download(tenantCode, resPath, destPath, false, true);
                     WorkerServerMetrics
                             .recordWorkerResourceDownloadTime(System.currentTimeMillis() - resourceDownloadStartTime);
                     WorkerServerMetrics.recordWorkerResourceDownloadSize(
