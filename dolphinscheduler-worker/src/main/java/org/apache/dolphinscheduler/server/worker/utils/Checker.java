@@ -120,7 +120,13 @@ public class Checker {
                     // query the tenant code of the resource according to the name of the resource
                     String fullName = fileDownload.getLeft();
                     String tenantCode = fileDownload.getRight();
+                    // todo: We may need to send to resource type from master to worker
                     String resPath = storageOperate.getResourceFileName(tenantCode, fullName);
+                    File resDir = new File(resPath).getParentFile();
+                    if (!resDir.exists()) {
+                        resDir.mkdirs();
+                    }
+
                     logger.info("get resource file from path:{}", resPath);
                     long resourceDownloadStartTime = System.currentTimeMillis();
                     storageOperate.download(tenantCode, resPath, execLocalPath + File.separator + fullName, false,
