@@ -17,7 +17,9 @@
 
 package org.apache.dolphinscheduler.plugin.datasource.api.plugin;
 
+import lombok.NonNull;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.DataSourceProcessor;
+import org.apache.dolphinscheduler.spi.enums.DbType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +42,10 @@ public class DataSourceProcessorProvider {
 
     public static DataSourceProcessorProvider getInstance() {
         return DataSourceClientProviderHolder.INSTANCE;
+    }
+
+    public DataSourceProcessor getDataSourceProcessor(@NonNull DbType dbType) {
+        return dataSourcePluginManager.getDataSourceProcessorMap().get(dbType.name());
     }
 
     public Map<String, DataSourceProcessor> getDataSourceProcessorMap() {
