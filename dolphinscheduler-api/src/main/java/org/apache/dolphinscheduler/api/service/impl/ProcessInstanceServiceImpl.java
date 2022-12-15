@@ -276,14 +276,18 @@ public class ProcessInstanceServiceImpl extends BaseServiceImpl implements Proce
                                                               Integer pageSize) {
 
         PageInfo<ProcessInstance> pageInfo = new PageInfo<>(pageNo, pageSize);
-        Project project = projectMapper.queryByCode(projectCode);
-        // check user access for project
-        projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_INSTANCE);
+        List<Long> currentProjectProcessDefinitionCodes = Collections.emptyList();
+        if (projectCode != 0) {
+            // if the project code is 0, we will not do authority
+            Project project = projectMapper.queryByCode(projectCode);
+            // check user access for project
+            projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_INSTANCE);
 
-        List<Long> currentProjectProcessDefinitionCodes =
-                processDefinitionLogDao.queryProcessDefinitionCodeByProjectCode(project.getCode());
-        if (CollectionUtils.isEmpty(currentProjectProcessDefinitionCodes)) {
-            return pageInfo;
+            currentProjectProcessDefinitionCodes =
+                    processDefinitionLogDao.queryProcessDefinitionCodeByProjectCode(project.getCode());
+            if (CollectionUtils.isEmpty(currentProjectProcessDefinitionCodes)) {
+                return pageInfo;
+            }
         }
         int executorId = usersService.getUserIdByName(executorName);
         // todo: Change to selectUserByUserName
