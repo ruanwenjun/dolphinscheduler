@@ -18,6 +18,8 @@ public class WorkflowTimeoutAlertContentFactory implements AlertContentFactory<W
         return WorkflowTimeoutAlertContent.builder()
                 .projectName(projectUser.getProjectName())
                 .workflowInstanceName(processInstance.getName())
+                .startTime(processInstance.getStartTime())
+                .endTime(processInstance.getEndTime())
                 .build();
     }
 

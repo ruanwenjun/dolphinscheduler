@@ -29,6 +29,8 @@ import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * date utils
  */
@@ -428,5 +430,13 @@ public class DateUtils {
             return null;
         }
         return TimeZone.getTimeZone(timezoneId);
+    }
+
+    public static @Nullable Long transformToMillSeconds(Date date) {
+        return date == null ? null : date.getTime();
+    }
+
+    public static @Nullable Date transformToDate(Long millSeconds) {
+        return millSeconds == null ? null : new Date(millSeconds);
     }
 }

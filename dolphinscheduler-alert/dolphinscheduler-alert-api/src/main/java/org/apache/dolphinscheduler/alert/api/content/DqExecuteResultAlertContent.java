@@ -25,6 +25,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
+import java.util.Date;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -47,6 +49,9 @@ public class DqExecuteResultAlertContent implements AlertContent {
     private String userName;
     private int state;
     private String errorDataPath;
+
+    private Date startTime;
+    private Date endTime;
 
     @Override
     public AlertType getAlertType() {

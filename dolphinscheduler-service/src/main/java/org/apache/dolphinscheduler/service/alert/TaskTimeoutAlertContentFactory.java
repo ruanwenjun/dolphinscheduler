@@ -19,6 +19,8 @@ public class TaskTimeoutAlertContentFactory implements AlertContentFactory<TaskI
                 .projectName(projectUser.getProjectName())
                 .workflowInstanceName(processInstance.getName())
                 .taskName(taskInstances.getName())
+                .startTime(taskInstances.getStartTime())
+                .endTime(taskInstances.getEndTime())
                 .build();
     }
 

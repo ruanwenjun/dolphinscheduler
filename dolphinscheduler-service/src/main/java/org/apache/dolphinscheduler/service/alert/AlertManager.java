@@ -38,6 +38,7 @@ import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.plugin.task.api.enums.TaskTimeoutStrategy;
 import org.apache.dolphinscheduler.remote.command.alert.TaskAlertRequestCommand;
 import org.apache.dolphinscheduler.service.process.ProcessService;
+import org.apache.dolphinscheduler.spi.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class AlertManager {
@@ -312,6 +314,8 @@ public class AlertManager {
                     .projectName(projectUser.getProjectName())
                     .workflowInstanceName(taskAlertRequest.getWorkflowInstanceName())
                     .taskName(taskAlertRequest.getTaskName())
+                    .startTime(DateUtils.transformToDate(taskAlertRequest.getStartTime()))
+                    .endTime(DateUtils.transformToDate(taskAlertRequest.getEndTime()))
                     .title(taskAlertRequest.getTitle())
                     .result(taskAlertRequest.getContent())
                     .build();
@@ -353,6 +357,8 @@ public class AlertManager {
                     .userName(result.getUserName())
                     .state(result.getState())
                     .errorDataPath(result.getErrorOutputPath())
+                    .startTime(result.getCreateTime())
+                    .endTime(result.getUpdateTime())
                     .build();
 
             Alert alert = Alert.builder()

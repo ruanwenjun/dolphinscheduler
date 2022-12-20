@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
+import java.util.Date;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(value = {
         @JsonSubTypes.Type(value = CloseAlertContent.class, name = "CLOSE_ALERT"),
@@ -30,6 +32,14 @@ public interface AlertContent {
     String getProjectName();
 
     String getWorkflowInstanceName();
+
+    default Date getStartTime() {
+        return null;
+    }
+
+    default Date getEndTime() {
+        return null;
+    }
 
     default String getAlertTitle() {
         return String.format("[WhaleScheduler-%s] %s", getAlertType(), getProjectName());

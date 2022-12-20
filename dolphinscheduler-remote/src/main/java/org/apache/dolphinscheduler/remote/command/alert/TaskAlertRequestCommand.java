@@ -22,6 +22,8 @@ public class TaskAlertRequestCommand implements Serializable {
     private String workflowInstanceName;
     private String taskName;
     private int groupId;
+    private long startTime;
+    private long endTime;
     private String title;
     private ArrayNode content;
     private WarningType warningType;

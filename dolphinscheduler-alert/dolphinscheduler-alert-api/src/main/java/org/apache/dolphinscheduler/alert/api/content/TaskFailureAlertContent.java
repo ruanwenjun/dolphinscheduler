@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
+import java.util.Date;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,6 +17,8 @@ public class TaskFailureAlertContent implements AlertContent {
     private String projectName;
     private String workflowInstanceName;
     private String taskName;
+    private Date startTime;
+    private Date endTime;
 
     @Override
     public AlertType getAlertType() {

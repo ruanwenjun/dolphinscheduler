@@ -18,6 +18,8 @@ public class WorkflowSuccessAlertContentFactory implements AlertContentFactory<W
         return WorkflowSuccessAlertContent.builder()
                 .projectName(projectUser.getProjectName())
                 .workflowInstanceName(processInstance.getName())
+                .startTime(processInstance.getStartTime())
+                .endTime(processInstance.getEndTime())
                 .build();
     }
 

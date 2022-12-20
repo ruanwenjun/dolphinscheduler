@@ -19,6 +19,8 @@ public class TaskFailureAlertContentFactory implements AlertContentFactory<TaskF
                 .projectName(projectUser.getProjectName())
                 .workflowInstanceName(processInstance.getName())
                 .taskName(taskInstances.getName())
+                .startTime(taskInstances.getStartTime())
+                .endTime(taskInstances.getEndTime())
                 .build();
     }
 
