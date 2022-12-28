@@ -86,9 +86,6 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
                 ViewLogRequestCommand viewLogRequest = JSONUtils.parseObject(
                         command.getBody(), ViewLogRequestCommand.class);
                 String viewLogPath = viewLogRequest.getPath();
-                if (!checkPathSecurity(viewLogPath)) {
-                    throw new IllegalArgumentException("Illegal path");
-                }
                 String msg = LoggerUtils.readWholeFileContent(viewLogPath);
                 ViewLogResponseCommand viewLogResponse = new ViewLogResponseCommand(msg);
                 channel.writeAndFlush(viewLogResponse.convert2Command(command.getOpaque()));
@@ -105,9 +102,6 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
                         command.getBody(), RemoveTaskLogRequestCommand.class);
 
                 String taskLogPath = removeTaskLogRequest.getPath();
-                if (!checkPathSecurity(taskLogPath)) {
-                    throw new IllegalArgumentException("Illegal path");
-                }
                 File taskLogFile = new File(taskLogPath);
                 boolean status = true;
                 try {
@@ -125,31 +119,11 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
                 GetAppIdRequestCommand getAppIdRequestCommand =
                         JSONUtils.parseObject(command.getBody(), GetAppIdRequestCommand.class);
                 String logPath = getAppIdRequestCommand.getLogPath();
-                if (!checkPathSecurity(logPath)) {
-                    throw new IllegalArgumentException("Illegal path");
-                }
                 List<String> appIds = LogUtils.getAppIdsFromLogFile(logPath);
                 channel.writeAndFlush(new GetAppIdResponseCommand(appIds).convert2Command(command.getOpaque()));
                 break;
             default:
                 throw new IllegalArgumentException("unknown commandType");
-        }
-    }
-
-    /**
-     * LogServer only can read the logs dir.
-     * @param path
-     * @return
-     */
-    private boolean checkPathSecurity(String path) {
-        if (StringUtils.isBlank(dataBaseDir)) {
-            dataBaseDir = System.getProperty("user.dir");
-        }
-        if (StringUtils.isBlank(path)) {
-            logger.warn("path is null");
-            return false;
-        } else {
-            return path.startsWith(dataBaseDir) && !path.contains("../") && path.endsWith(".log");
         }
     }
 
@@ -168,10 +142,6 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
             return GetLogBytesResponseCommand.error(GetLogBytesResponseCommand.Status.COMMAND_IS_NULL);
         }
         String path = logBytesRequestCommand.getPath();
-        if (!checkPathSecurity(path)) {
-            logger.error("Log file path: {} is not a security path", path);
-            return GetLogBytesResponseCommand.error(GetLogBytesResponseCommand.Status.LOG_PATH_IS_NOT_SECURITY);
-        }
         try (
                 InputStream in = new FileInputStream(path);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
@@ -190,10 +160,6 @@ public class LoggerRequestProcessor implements NettyRequestProcessor {
     protected RollViewLogResponseCommand readPartFileContent(RollViewLogRequestCommand rollViewLogRequest) {
 
         String rollViewLogPath = rollViewLogRequest.getPath();
-        if (!checkPathSecurity(rollViewLogPath)) {
-            logger.error("Log file path: {} is not a security path", rollViewLogPath);
-            return RollViewLogResponseCommand.error(RollViewLogResponseCommand.Status.LOG_PATH_IS_NOT_SECURITY);
-        }
         File file = new File(rollViewLogPath);
         if (!file.exists() || !file.isFile()) {
             logger.error("Log file path: {} doesn't exists", rollViewLogPath);
