@@ -2996,6 +2996,10 @@ public class ProcessServiceImpl implements ProcessService {
                     logger.info("The taskGroupQueue's status is release, taskInstanceId: {}", taskInstance.getId());
                     return null;
                 }
+                if (thisTaskGroupQueue.getStatus() == TaskGroupQueueStatus.WAIT_QUEUE) {
+                    logger.info("The taskGroupQueue's status is in waiting, will not need to release task group");
+                    break;
+                }
             } while (thisTaskGroupQueue.getForceStart() == Flag.NO.getCode()
                     && taskGroupMapper.releaseTaskGroupResource(taskGroup.getId(),
                             taskGroup.getUseSize(),
@@ -3022,7 +3026,8 @@ public class ProcessServiceImpl implements ProcessService {
         } while (this.taskGroupQueueMapper.updateInQueueCAS(Flag.NO.getCode(),
                 Flag.YES.getCode(),
                 taskGroupQueue.getId()) != 1);
-        logger.info("Finished to release task group queue: taskGroupId: {}", taskInstance.getTaskGroupId());
+        logger.info("Finished to release task group queue: taskGroupId: {}, taskGroupQueueId: {}",
+                taskInstance.getTaskGroupId(), taskGroupQueue.getId());
         return this.taskInstanceMapper.selectById(taskGroupQueue.getTaskId());
     }
 
@@ -3037,6 +3042,7 @@ public class ProcessServiceImpl implements ProcessService {
     public void changeTaskGroupQueueStatus(int taskId, TaskGroupQueueStatus status) {
         TaskGroupQueue taskGroupQueue = taskGroupQueueMapper.queryByTaskId(taskId);
         taskGroupQueue.setStatus(status);
+        taskGroupQueue.setInQueue(Flag.NO.getCode());
         taskGroupQueue.setUpdateTime(new Date(System.currentTimeMillis()));
         taskGroupQueueMapper.updateById(taskGroupQueue);
     }

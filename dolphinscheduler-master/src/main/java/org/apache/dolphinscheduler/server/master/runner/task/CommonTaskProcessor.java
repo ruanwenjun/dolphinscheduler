@@ -17,7 +17,6 @@
 
 package org.apache.dolphinscheduler.server.master.runner.task;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
@@ -31,6 +30,8 @@ import org.apache.dolphinscheduler.service.bean.SpringApplicationContext;
 import org.apache.dolphinscheduler.service.queue.TaskPriority;
 import org.apache.dolphinscheduler.service.queue.TaskPriorityQueue;
 import org.apache.dolphinscheduler.service.queue.TaskPriorityQueueImpl;
+
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
 
@@ -106,11 +107,13 @@ public class CommonTaskProcessor extends BaseTaskProcessor {
     public boolean killTask() {
 
         try {
-            taskInstance = processService.findTaskInstanceById(taskInstance.getId());
+            logger.info("Begin to kill task: {}", taskInstance.getName());
             if (taskInstance == null) {
+                logger.warn("Kill task failed, the task instance is not exist");
                 return true;
             }
             if (taskInstance.getState().typeIsFinished()) {
+                logger.warn("Kill task failed, the task instance is already finished");
                 return true;
             }
             // we don't wait the kill response
@@ -121,12 +124,12 @@ public class CommonTaskProcessor extends BaseTaskProcessor {
                 killRemoteTask();
             }
         } catch (Exception e) {
-            logger.error("master kill task error, taskInstance id: {}", taskInstance.getId(), e);
+            logger.error("Master kill task: {} error, taskInstance id: {}", taskInstance.getName(),
+                    taskInstance.getId(), e);
             return false;
         }
 
-        logger.info("master success kill taskInstance name: {} taskInstance id: {}",
-                taskInstance.getName(), taskInstance.getId());
+        logger.info("Master success kill task: {}, taskInstanceId: {}", taskInstance.getName(), taskInstance.getId());
         return true;
     }
 
