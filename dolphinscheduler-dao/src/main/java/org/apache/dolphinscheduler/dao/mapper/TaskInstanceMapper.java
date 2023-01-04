@@ -17,16 +17,18 @@
 
 package org.apache.dolphinscheduler.dao.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.dao.entity.ExecuteStatusCount;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
 /**
  * task instance mapper interface
@@ -35,6 +37,8 @@ public interface TaskInstanceMapper extends BaseMapper<TaskInstance> {
 
     List<Integer> queryTaskByProcessIdAndState(@Param("processInstanceId") Integer processInstanceId,
                                                @Param("state") Integer state);
+
+    List<TaskInstance> queryByWorkflowInstanceId(@Param("workflowInstanceId") Integer workflowInstanceId);
 
     List<TaskInstance> findValidTaskListByProcessId(@Param("processInstanceId") Integer processInstanceId,
                                                     @Param("flag") Flag flag);
@@ -112,4 +116,5 @@ public interface TaskInstanceMapper extends BaseMapper<TaskInstance> {
                                             @Param("startTime") Date start,
                                             @Param("endTime") Date end);
 
+    void deleteTaskInstanceByWorkflowInstanceId(@Param("workflowInstanceId") int workflowInstanceId);
 }

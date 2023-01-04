@@ -14,6 +14,8 @@ public interface TaskInstanceDao {
 
     List<TaskInstance> queryTaskInstanceByIds(List<Integer> taskInstanceId);
 
+    void deleteTaskInstanceByWorkflowInstanceId(int workflowInstanceId);
+
     /**
      * Update the taskInstance, if update failed will throw exception.
      *
@@ -41,4 +43,6 @@ public interface TaskInstanceDao {
                                                   String host,
                                                   Date start,
                                                   Date end);
+
+    List<TaskInstance> queryByWorkflowInstanceId(Integer workflowInstanceId);
 }

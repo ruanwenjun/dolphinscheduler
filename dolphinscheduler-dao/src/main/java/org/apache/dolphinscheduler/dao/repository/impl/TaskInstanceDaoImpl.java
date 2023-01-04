@@ -1,22 +1,25 @@
 package org.apache.dolphinscheduler.dao.repository.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.dao.dto.ListingItem;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.dao.exception.RepositoryException;
 import org.apache.dolphinscheduler.dao.mapper.TaskInstanceMapper;
 import org.apache.dolphinscheduler.dao.repository.TaskInstanceDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Repository
@@ -31,6 +34,11 @@ public class TaskInstanceDaoImpl implements TaskInstanceDao {
             return Collections.emptyList();
         }
         return taskInstanceMapper.selectBatchIds(taskInstanceIds);
+    }
+
+    @Override
+    public void deleteTaskInstanceByWorkflowInstanceId(int workflowInstanceId) {
+        taskInstanceMapper.deleteTaskInstanceByWorkflowInstanceId(workflowInstanceId);
     }
 
     @Override
@@ -83,5 +91,10 @@ public class TaskInstanceDaoImpl implements TaskInstanceDao {
                 start,
                 end);
         return new ListingItem<>(taskInstanceIPage.getRecords(), taskInstanceIPage.getTotal());
+    }
+
+    @Override
+    public List<TaskInstance> queryByWorkflowInstanceId(Integer workflowInstanceId) {
+        return taskInstanceMapper.queryByWorkflowInstanceId(workflowInstanceId);
     }
 }

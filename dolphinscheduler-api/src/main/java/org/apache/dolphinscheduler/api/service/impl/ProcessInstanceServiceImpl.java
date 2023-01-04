@@ -677,7 +677,7 @@ public class ProcessInstanceServiceImpl extends BaseServiceImpl implements Proce
 
         processService.deleteAllSubWorkProcessByParentId(processInstanceId);
         processService.deleteWorkProcessMapByParentId(processInstanceId);
-        processService.deleteWorkTaskInstanceByProcessInstanceId(processInstanceId);
+        processService.deleteTaskInstanceByProcessInstanceId(processInstanceId);
 
         if (delete > 0) {
             putMsg(result, Status.SUCCESS);

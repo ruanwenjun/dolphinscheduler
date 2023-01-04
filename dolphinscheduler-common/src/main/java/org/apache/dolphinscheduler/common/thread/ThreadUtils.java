@@ -19,6 +19,7 @@ package org.apache.dolphinscheduler.common.thread;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -41,6 +42,14 @@ public class ThreadUtils {
                 .setNameFormat(threadName)
                 .build();
         return Executors.newFixedThreadPool(threadsNum, threadFactory);
+    }
+
+    public static ScheduledExecutorService newDaemonFixedScheduledThreadExecutor(String threadName, int threadsNum) {
+        ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setDaemon(true)
+                .setNameFormat(threadName)
+                .build();
+        return Executors.newScheduledThreadPool(threadsNum, threadFactory);
     }
 
     /**

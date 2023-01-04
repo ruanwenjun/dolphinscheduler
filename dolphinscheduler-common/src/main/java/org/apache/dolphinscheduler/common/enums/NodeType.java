@@ -22,6 +22,7 @@ public enum NodeType {
     MASTER("master", "/nodes/master"),
     WORKER("worker", "/nodes/worker"),
     API_SERVER("apiServer", "/nodes/apiServer"),
+    API_CLEAN_WORKFLOW_LOCK("apiCleanWorkflowLock", "/lock/apiCleanWorkflowLock"),
     ALERT_SERVER("alertServer", "/nodes/alertServer"),
     ALERT_LOCK("lock", "/lock/alert"),
     ;

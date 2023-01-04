@@ -102,6 +102,7 @@ import org.apache.dolphinscheduler.dao.mapper.UdfFuncMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkFlowLineageMapper;
 import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
+import org.apache.dolphinscheduler.dao.repository.TaskInstanceDao;
 import org.apache.dolphinscheduler.dao.utils.DagHelper;
 import org.apache.dolphinscheduler.dao.utils.DqRuleUtils;
 import org.apache.dolphinscheduler.plugin.task.api.enums.Direct;
@@ -276,6 +277,9 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Autowired
     private LogClient logClient;
+
+    @Autowired
+    private TaskInstanceDao taskInstanceDao;
 
     /**
      * handle Command (construct ProcessInstance from Command) , wrapped in transaction
@@ -578,7 +582,7 @@ public class ProcessServiceImpl implements ProcessService {
      */
     @Override
     public void removeTaskLogFile(Integer processInstanceId) {
-        List<TaskInstance> taskInstanceList = findValidTaskListByProcessId(processInstanceId);
+        List<TaskInstance> taskInstanceList = taskInstanceDao.queryByWorkflowInstanceId(processInstanceId);
         if (CollectionUtils.isEmpty(taskInstanceList)) {
             return;
         }
@@ -589,6 +593,7 @@ public class ProcessServiceImpl implements ProcessService {
             }
             Host host = Host.of(taskInstance.getHost());
             // remove task log from loggerserver
+            // todo: add batch delete log file
             logClient.removeTaskLog(host.getIp(), host.getPort(), taskLogPath);
         }
     }
@@ -597,19 +602,8 @@ public class ProcessServiceImpl implements ProcessService {
      * recursive delete all task instance by process instance id
      */
     @Override
-    public void deleteWorkTaskInstanceByProcessInstanceId(int processInstanceId) {
-        List<TaskInstance> taskInstanceList = findValidTaskListByProcessId(processInstanceId);
-        if (CollectionUtils.isEmpty(taskInstanceList)) {
-            return;
-        }
-
-        List<Integer> taskInstanceIdList = new ArrayList<>();
-
-        for (TaskInstance taskInstance : taskInstanceList) {
-            taskInstanceIdList.add(taskInstance.getId());
-        }
-
-        taskInstanceMapper.deleteBatchIds(taskInstanceIdList);
+    public void deleteTaskInstanceByProcessInstanceId(int processInstanceId) {
+        taskInstanceDao.deleteTaskInstanceByWorkflowInstanceId(processInstanceId);
     }
 
     /**

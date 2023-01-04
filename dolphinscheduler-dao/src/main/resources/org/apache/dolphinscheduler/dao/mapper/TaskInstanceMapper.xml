@@ -46,6 +46,14 @@
         and state = #{state}
         and flag = 1
     </select>
+
+    <select id="queryByWorkflowInstanceId" resultType="org.apache.dolphinscheduler.dao.entity.TaskInstance">
+        select
+        <include refid="baseSql"/>
+        from t_ds_task_instance
+        WHERE process_instance_id = #{workflowInstanceId}
+    </select>
+
     <select id="findValidTaskListByProcessId" resultType="org.apache.dolphinscheduler.dao.entity.TaskInstance">
         select
         <include refid="baseSql"/>
@@ -248,5 +256,11 @@
             and name like concat('%', #{processInstanceName}, '%')
         </if>
         order by start_time desc
+    </select>
+
+    <select id="deleteTaskInstanceByWorkflowInstanceId">
+        delete
+        from t_ds_task_instance
+        where process_instance_id = #{workflowInstanceId}
     </select>
 </mapper>
