@@ -41,4 +41,6 @@ public interface ErrorCommandMapper extends BaseMapper<ErrorCommand> {
                                          @Param("startTime") Date startTime,
                                          @Param("endTime") Date endTime,
                                          @Param("projectCodeArray") Long[] projectCodeArray);
+
+    void deleteByProcessDefinitionCode(@Param("processDefinitionCode") int processDefinitionCode);
 }

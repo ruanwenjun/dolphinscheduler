@@ -32,4 +32,10 @@
 
     </insert>
 
+    <delete id="deleteByAlertId">
+        delete
+        from t_ds_alert_send_status
+        where alert_id = #{alertId}
+    </delete>
+
 </mapper>

@@ -44,6 +44,7 @@ import org.apache.dolphinscheduler.common.utils.DateUtils;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.common.utils.ParameterUtils;
 import org.apache.dolphinscheduler.common.utils.placeholder.BusinessTimeUtils;
+import org.apache.dolphinscheduler.dao.AlertDao;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.ProcessTaskRelationLog;
@@ -53,8 +54,10 @@ import org.apache.dolphinscheduler.dao.entity.TaskDefinitionLog;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.dao.entity.Tenant;
 import org.apache.dolphinscheduler.dao.entity.User;
+import org.apache.dolphinscheduler.dao.mapper.ErrorCommandMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionMapper;
+import org.apache.dolphinscheduler.dao.mapper.ProcessInstanceMapMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProcessInstanceMapper;
 import org.apache.dolphinscheduler.dao.mapper.ProjectMapper;
 import org.apache.dolphinscheduler.dao.mapper.ScheduleMapper;
@@ -168,6 +171,15 @@ public class ProcessInstanceServiceImpl extends BaseServiceImpl implements Proce
 
     @Autowired
     private CuringParamsService curingGlobalParamsService;
+
+    @Autowired
+    private AlertDao alertDao;
+
+    @Autowired
+    private ProcessInstanceMapMapper processInstanceMapMapper;
+
+    @Autowired
+    private ErrorCommandMapper errorCommandMapper;
 
     /**
      * return top n SUCCESS process instance order by running time which started between startTime and endTime
@@ -673,12 +685,14 @@ public class ProcessInstanceServiceImpl extends BaseServiceImpl implements Proce
         }
 
         // delete database cascade
-        int delete = processService.deleteWorkProcessInstanceById(processInstanceId);
 
         processService.deleteAllSubWorkProcessByParentId(processInstanceId);
         processService.deleteWorkProcessMapByParentId(processInstanceId);
         processService.deleteTaskInstanceByProcessInstanceId(processInstanceId);
+        processService.deleteDqExecuteResultByWorkflowInstanceId(processInstanceId);
+        alertDao.deleteAlertByWorkflowInstanceId(processInstanceId);
 
+        int delete = processService.deleteWorkProcessInstanceById(processInstanceId);
         if (delete > 0) {
             putMsg(result, Status.SUCCESS);
         } else {

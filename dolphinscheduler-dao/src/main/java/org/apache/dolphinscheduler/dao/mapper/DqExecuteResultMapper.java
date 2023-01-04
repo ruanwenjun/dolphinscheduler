@@ -54,4 +54,6 @@ public interface DqExecuteResultMapper extends BaseMapper<DqExecuteResult> {
      * @return DqExecuteResult
      */
     DqExecuteResult getExecuteResultById(@Param("taskInstanceId") int taskInstanceId);
+
+    int deleteByWorkflowInstanceId(@Param("workflowInstanceId") int workflowInstanceId);
 }

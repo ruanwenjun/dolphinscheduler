@@ -23,6 +23,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * alert mapper interface
@@ -37,4 +38,5 @@ public interface AlertMapper extends BaseMapper<Alert> {
     void insertAlertWhenServerCrash(@Param("alert") Alert alert,
                                     @Param("crashAlarmSuppressionStartTime") Date crashAlarmSuppressionStartTime);
 
+    List<Alert> selectByWorkflowInstanceId(@Param("workflowInstanceId") int workflowInstanceId);
 }

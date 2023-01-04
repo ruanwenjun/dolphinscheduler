@@ -259,6 +259,8 @@ public interface ProcessService {
 
     int deleteDqExecuteResultByTaskInstanceId(int taskInstanceId);
 
+    int deleteDqExecuteResultByWorkflowInstanceId(int workflowInstanceId);
+
     int deleteTaskStatisticsValueByTaskInstanceId(int taskInstanceId);
 
     DqRule getDqRule(int ruleId);

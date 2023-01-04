@@ -33,4 +33,10 @@
         </if>
         group by cmd.command_type
     </select>
+
+    <delete id="deleteByprocessDefinitionCode">
+        delete
+        from t_ds_error_command
+        where process_definition_code = #{processDefinitionCode}
+    </delete>
 </mapper>

@@ -26,4 +26,6 @@ import java.util.List;
 public interface AlertSendStatusMapper extends BaseMapper<AlertSendStatus> {
 
     int batchInsert(@Param("alertSendStatuses") List<AlertSendStatus> alertSendStatuses);
+
+    void deleteByAlertId(@Param("alertId") int alertId);
 }

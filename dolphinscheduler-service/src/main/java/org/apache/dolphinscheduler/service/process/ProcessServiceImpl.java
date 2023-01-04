@@ -571,6 +571,7 @@ public class ProcessServiceImpl implements ProcessService {
             deleteWorkProcessMapByParentId(subId);
             removeTaskLogFile(subId);
             deleteWorkProcessInstanceById(subId);
+            deleteDqExecuteResultByTaskInstanceId(subId);
         }
         return 1;
     }
@@ -2854,6 +2855,11 @@ public class ProcessServiceImpl implements ProcessService {
         return dqExecuteResultMapper.delete(
                 new QueryWrapper<DqExecuteResult>()
                         .eq(TASK_INSTANCE_ID, taskInstanceId));
+    }
+
+    @Override
+    public int deleteDqExecuteResultByWorkflowInstanceId(int workflowInstanceId) {
+        return dqExecuteResultMapper.deleteByWorkflowInstanceId(workflowInstanceId);
     }
 
     @Override
