@@ -42,6 +42,6 @@
     <select id="selectByWorkflowInstanceId" resultType="org.apache.dolphinscheduler.dao.entity.Alert">
         select *
         from t_ds_alert
-        where process_instance_id = #{processInstanceId}
+        where process_instance_id = #{workflowInstanceId}
     </select>
 </mapper>
