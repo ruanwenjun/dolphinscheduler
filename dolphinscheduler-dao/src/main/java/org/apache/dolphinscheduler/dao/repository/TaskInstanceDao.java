@@ -35,7 +35,6 @@ public interface TaskInstanceDao {
     ListingItem<TaskInstance> queryTaskListPaging(Page<TaskInstance> page,
                                                   List<Long> taskDefinitionCodes,
                                                   Integer processInstanceId,
-                                                  String processInstanceName,
                                                   String searchVal,
                                                   String taskName,
                                                   int executorId,

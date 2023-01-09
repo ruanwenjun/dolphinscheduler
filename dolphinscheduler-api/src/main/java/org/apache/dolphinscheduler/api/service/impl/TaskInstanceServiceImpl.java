@@ -160,7 +160,6 @@ public class TaskInstanceServiceImpl extends BaseServiceImpl implements TaskInst
                 new Page<>(pageNo, pageSize),
                 taskDefinitionCodes,
                 processInstanceId,
-                processInstanceName,
                 searchVal,
                 taskName,
                 executorId,
