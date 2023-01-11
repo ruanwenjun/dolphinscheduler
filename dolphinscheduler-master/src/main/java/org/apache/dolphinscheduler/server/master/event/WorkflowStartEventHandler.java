@@ -18,6 +18,8 @@
 package org.apache.dolphinscheduler.server.master.event;
 
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
+import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
+import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.server.master.cache.ProcessInstanceExecCacheManager;
 import org.apache.dolphinscheduler.server.master.metrics.ProcessInstanceMetrics;
 import org.apache.dolphinscheduler.server.master.runner.StateWheelExecuteThread;
@@ -25,6 +27,7 @@ import org.apache.dolphinscheduler.server.master.runner.WorkflowExecuteRunnable;
 import org.apache.dolphinscheduler.server.master.runner.WorkflowExecuteThreadPool;
 import org.apache.dolphinscheduler.server.master.runner.WorkflowSubmitStatue;
 
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
@@ -47,7 +50,7 @@ public class WorkflowStartEventHandler implements WorkflowEventHandler {
     private WorkflowExecuteThreadPool workflowExecuteThreadPool;
 
     @Autowired
-    private WorkflowEventQueue workflowEventQueue;
+    private ProcessInstanceDao processInstanceDao;
 
     @Override
     public void handleWorkflowEvent(WorkflowEvent workflowEvent) throws WorkflowEventHandleError {
@@ -64,17 +67,30 @@ public class WorkflowStartEventHandler implements WorkflowEventHandler {
         CompletableFuture<WorkflowSubmitStatue> workflowSubmitFuture =
                 CompletableFuture.supplyAsync(workflowExecuteRunnable::call, workflowExecuteThreadPool);
         workflowSubmitFuture.thenAccept(workflowSubmitStatue -> {
-            if (WorkflowSubmitStatue.SUCCESS == workflowSubmitStatue) {
-                // submit failed will resend the event to workflow event queue
-                logger.info("Success submit the workflow instance");
-                if (processInstance.getTimeout() > 0) {
-                    stateWheelExecuteThread.addProcess4TimeoutCheck(processInstance);
-                }
-            } else {
-                logger.error("Failed to submit the workflow instance, will resend the workflow start event: {}",
-                        workflowEvent);
-                workflowEventQueue.addEvent(new WorkflowEvent(WorkflowEventType.START_WORKFLOW,
-                        processInstance.getId()));
+            switch (workflowSubmitStatue) {
+                case FAILED:
+                    logger.error("Failed to submit the workflow instance, please take a check, event: {}", workflowEvent);
+                    processInstance.setStateWithDesc(ExecutionStatus.FAILURE, "Failed to submit the workflow instance");
+                    processInstance.setEndTime(new Date());
+                    processInstanceDao.updateProcessInstance(processInstance);
+                    workflowExecuteRunnable.endProcess();
+                    processInstanceExecCacheManager.removeByProcessInstanceId(processInstance.getId());
+                    break;
+                case DUPLICATED_SUBMITTED:
+                    logger.error("Duplicated submit workflow instance, event: {}", workflowEvent);
+                    processInstance.setStateWithDesc(ExecutionStatus.FAILURE, "Duplicated submit workflow instance");
+                    processInstance.setEndTime(new Date());
+                    processInstanceDao.updateProcessInstance(processInstance);
+                    workflowExecuteRunnable.endProcess();
+                    processInstanceExecCacheManager.removeByProcessInstanceId(processInstance.getId());
+                    break;
+                case SUCCESS:
+                    logger.info("Success submit the workflow instance, event: {}", workflowEvent);
+                    if (processInstance.getTimeout() > 0) {
+                        stateWheelExecuteThread.addProcess4TimeoutCheck(processInstance);
+                    }
+                    break;
+                default:
             }
         });
     }
