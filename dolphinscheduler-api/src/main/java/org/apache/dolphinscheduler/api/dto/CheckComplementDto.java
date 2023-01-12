@@ -50,6 +50,8 @@ public class CheckComplementDto {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    private static final String FULL_ANGLE_COMMA = "，";
+
     private ProcessDefinition processDefinition;
 
     private String scheduleTimeParam;
@@ -85,6 +87,7 @@ public class CheckComplementDto {
     }
 
     public void setWritingTimes(String writingTimes) {
+        writingTimes = writingTimes.replace(FULL_ANGLE_COMMA, COMMA);
         this.writingTimes = writingTimes;
         this.writingTimeList = Arrays.stream(writingTimes.split(COMMA)).distinct().collect(Collectors.toList());
     }
