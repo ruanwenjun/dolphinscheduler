@@ -306,7 +306,7 @@ public class ProcessServiceImpl implements ProcessService {
                 processInstance.getProcessDefinitionVersion());
         if (processDefinition.getExecutionType().typeIsSerial()) {
             saveSerialProcess(processInstance, processDefinition);
-            if (processInstance.getState() != ExecutionStatus.SUBMITTED_SUCCESS) {
+            if (processInstance.getState() != ExecutionStatus.RUNNING_EXECUTION) {
                 setSubProcessParam(processInstance);
                 deleteCommandWithCheck(command.getId());
                 return null;
@@ -331,7 +331,7 @@ public class ProcessServiceImpl implements ProcessService {
                             processInstance.getProcessDefinitionVersion(), Constants.RUNNING_PROCESS_STATE,
                             processInstance.getId());
             if (CollectionUtils.isEmpty(runningProcessInstances)) {
-                processInstance.setStateWithDesc(ExecutionStatus.SUBMITTED_SUCCESS, "submit from serial_wait strategy");
+                processInstance.setStateWithDesc(ExecutionStatus.RUNNING_EXECUTION, "submit from serial_wait strategy");
                 processInstanceDao.upsertProcessInstance(processInstance);
             }
         } else if (processDefinition.getExecutionType().typeIsSerialDiscard()) {
@@ -357,7 +357,7 @@ public class ProcessServiceImpl implements ProcessService {
                 processInstanceDao.updateProcessInstance(info);
                 // TODO rpc after command handle complete, but this is not better
             }
-            processInstance.setStateWithDesc(ExecutionStatus.SUBMITTED_SUCCESS, "submit by serial_priority strategy");
+            processInstance.setStateWithDesc(ExecutionStatus.RUNNING_EXECUTION, "submit by serial_priority strategy");
             processInstanceDao.upsertProcessInstance(processInstance);
         }
     }
