@@ -27,7 +27,8 @@ public class TaskWaitTaskGroupStateHandler implements StateEventHandler {
 
     @Override
     public boolean handleStateEvent(WorkflowExecuteRunnable workflowExecuteRunnable, StateEvent stateEvent) {
-        return workflowExecuteRunnable.checkForceStartAndWakeUp(stateEvent);
+        workflowExecuteRunnable.checkForceStartAndWakeUp(stateEvent);
+        return true;
     }
 
     @Override
