@@ -30,57 +30,57 @@ public final class TaskMetrics {
     }
 
     private static final Counter TASK_SUBMIT_COUNTER =
-            Counter.builder("dolphinscheduler_task_submit_count")
+            Counter.builder("ds_task_submit_count")
                     .description("Task submit total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_FINISH_COUNTER =
-            Counter.builder("dolphinscheduler_task_finish_count")
+            Counter.builder("ds_task_finish_count")
                     .description("Task finish total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_SUCCESS_COUNTER =
-            Counter.builder("dolphinscheduler_task_success_count")
+            Counter.builder("ds_task_success_count")
                     .description("Task success total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_FAILURE_COUNTER =
-            Counter.builder("dolphinscheduler_task_failure_count")
+            Counter.builder("ds_task_failure_count")
                     .description("Task failure total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_TIMEOUT_COUNTER =
-            Counter.builder("dolphinscheduler_task_timeout_count")
+            Counter.builder("ds_task_timeout_count")
                     .description("Task timeout total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_RETRY_COUNTER =
-            Counter.builder("dolphinscheduler_task_retry_count")
+            Counter.builder("ds_task_retry_count")
                     .description("Task retry total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_STOP_COUNTER =
-            Counter.builder("dolphinscheduler_task_stop_count")
+            Counter.builder("ds_task_stop_count")
                     .description("Task stop total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_FAILOVER_COUNTER =
-            Counter.builder("dolphinscheduler_task_failover_count")
+            Counter.builder("ds_task_failover_count")
                     .description("Task failover total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_DISPATCH_COUNTER =
-            Counter.builder("dolphinscheduler_task_dispatch_count")
+            Counter.builder("ds_task_dispatch_count")
                     .description("Task dispatch count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_DISPATCHER_FAILED =
-            Counter.builder("dolphinscheduler_task_dispatch_failed_count")
+            Counter.builder("ds_task_dispatch_failed_count")
                     .description("Task dispatch failed count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter TASK_DISPATCH_ERROR =
-            Counter.builder("dolphinscheduler_task_dispatch_error_count")
+            Counter.builder("ds_task_dispatch_error_count")
                     .description("Task dispatch error")
                     .register(Metrics.globalRegistry);
 
@@ -89,7 +89,7 @@ public final class TaskMetrics {
     }
 
     public synchronized static void registerTaskPrepared(Supplier<Number> consumer) {
-        Gauge.builder("dolphinscheduler_task_running_gauge", consumer)
+        Gauge.builder("ds_task_running_gauge", consumer)
                 .description("Task running count")
                 .register(Metrics.globalRegistry);
     }

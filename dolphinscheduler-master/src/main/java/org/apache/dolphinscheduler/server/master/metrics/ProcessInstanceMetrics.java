@@ -52,17 +52,17 @@ public final class ProcessInstanceMetrics {
                     .register(Metrics.globalRegistry);
 
     private static final Counter PROCESS_INSTANCE_FINISH_COUNTER =
-            Counter.builder("dolphinscheduler_process_instance_finish_count")
+            Counter.builder("ds_process_instance_finish_count")
                     .description("Process instance finish total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter PROCESS_INSTANCE_SUCCESS_COUNTER =
-            Counter.builder("dolphinscheduler_process_instance_success_count")
+            Counter.builder("ds_process_instance_success_count")
                     .description("Process instance success total count")
                     .register(Metrics.globalRegistry);
 
     private static final Counter PROCESS_INSTANCE_FAILURE_COUNTER =
-            Counter.builder("dolphinscheduler_process_instance_failure_count")
+            Counter.builder("ds_process_instance_failure_count")
                     .description("Process instance failure total count")
                     .register(Metrics.globalRegistry);
 

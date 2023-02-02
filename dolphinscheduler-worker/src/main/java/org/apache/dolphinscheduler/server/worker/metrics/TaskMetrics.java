@@ -34,7 +34,7 @@ public final class TaskMetrics {
 
     private static Map<String, Counter> TASK_TYPE_EXECUTE_COUNTER = new HashMap<>();
     private static final Counter UNKNOWN_TASK_EXECUTE_COUNTER =
-            Counter.builder("dolphinscheduler_task_execute_count")
+            Counter.builder("ds_task_execute_count")
                     .tag("task_type", "unknown")
                     .description("task execute counter")
                     .register(Metrics.globalRegistry);
@@ -43,7 +43,7 @@ public final class TaskMetrics {
         for (TaskChannelFactory taskChannelFactory : ServiceLoader.load(TaskChannelFactory.class)) {
             TASK_TYPE_EXECUTE_COUNTER.put(
                     taskChannelFactory.getName(),
-                    Counter.builder("dolphinscheduler_task_execute_count")
+                    Counter.builder("ds_task_execute_count")
                             .tag("task_type", taskChannelFactory.getName())
                             .description("task execute counter")
                             .register(Metrics.globalRegistry));
