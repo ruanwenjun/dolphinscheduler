@@ -332,10 +332,11 @@ public abstract class AbstractCommandExecutor {
         ExecutorService parseProcessOutputExecutorService = newDaemonSingleThreadExecutor(threadLoggerInfoName);
         parseProcessOutputExecutorService.submit(() -> {
             try {
-                long lastFlushTime = System.currentTimeMillis();
                 while (logBuffer.size() > 0 || !logOutputIsSuccess) {
                     if (logBuffer.size() > 0) {
-                        lastFlushTime = flush(lastFlushTime);
+                        logHandler.accept(logBuffer);
+
+                        logBuffer.clear();
                     } else {
                         Thread.sleep(TaskConstants.DEFAULT_LOG_FLUSH_INTERVAL);
                     }
@@ -408,28 +409,6 @@ public abstract class AbstractCommandExecutor {
         }
 
         return processId;
-    }
-
-    /**
-     * when log buffer siz or flush time reach condition , then flush
-     *
-     * @param lastFlushTime last flush time
-     * @return last flush time
-     */
-    private long flush(long lastFlushTime) {
-        long now = System.currentTimeMillis();
-
-        /*
-         * when log buffer siz or flush time reach condition , then flush
-         */
-        if (logBuffer.size() >= TaskConstants.DEFAULT_LOG_ROWS_NUM
-                || now - lastFlushTime > TaskConstants.DEFAULT_LOG_FLUSH_INTERVAL) {
-            lastFlushTime = now;
-            logHandler.accept(logBuffer);
-
-            logBuffer.clear();
-        }
-        return lastFlushTime;
     }
 
     protected abstract String buildCommandFilePath();
