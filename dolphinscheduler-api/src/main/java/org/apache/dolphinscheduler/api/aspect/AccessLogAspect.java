@@ -65,23 +65,25 @@ public class AccessLogAspect {
     public Object doAround(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         long startTime = System.currentTimeMillis();
 
+        String URI = null;
+        String requestMethod = null;
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes != null) {
+            HttpServletRequest request = attributes.getRequest();
+            URI = request.getRequestURI();
+            requestMethod = request.getMethod();
+        }
+
         // fetch AccessLogAnnotation
         MethodSignature sign = (MethodSignature) proceedingJoinPoint.getSignature();
         Method method = sign.getMethod();
         AccessLogAnnotation annotation = method.getAnnotation(AccessLogAnnotation.class);
 
-        String traceId = UUID.randomUUID().toString();
-
         // log request
         if (!annotation.ignoreRequest()) {
-            ServletRequestAttributes attributes =
-                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
-                String traceIdFromHeader = request.getHeader(TRACE_ID);
-                if (!StringUtils.isEmpty(traceIdFromHeader)) {
-                    traceId = traceIdFromHeader;
-                }
+
                 // handle login info
                 String userName = parseLoginInfo(request);
 
@@ -89,8 +91,7 @@ public class AccessLogAspect {
                 String argsString = parseArgs(proceedingJoinPoint, annotation);
                 // handle sensitive data in the string
                 argsString = handleSensitiveData(argsString);
-                logger.info("REQUEST TRACE_ID:{}, LOGIN_USER:{}, URI:{}, METHOD:{}, HANDLER:{}, ARGS:{}",
-                        traceId,
+                logger.info("REQUEST LOGIN_USER:{}, URI:{}, METHOD:{}, HANDLER:{}, ARGS:{}",
                         userName,
                         request.getRequestURI(),
                         request.getMethod(),
@@ -103,11 +104,7 @@ public class AccessLogAspect {
 
         Object ob = proceedingJoinPoint.proceed();
 
-        // log response
-        if (!annotation.ignoreResponse()) {
-            logger.info("RESPONSE TRACE_ID:{}, BODY:{}, REQUEST DURATION:{} milliseconds", traceId, ob,
-                    (System.currentTimeMillis() - startTime));
-        }
+        logger.info("Call {}:{} milliseconds success, cost: {}ms", requestMethod, URI, (System.currentTimeMillis() - startTime));
 
         return ob;
     }

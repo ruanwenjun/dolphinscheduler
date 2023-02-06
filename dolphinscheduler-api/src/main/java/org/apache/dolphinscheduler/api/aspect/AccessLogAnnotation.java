@@ -26,12 +26,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Deprecated
 public @interface AccessLogAnnotation {
 
     // ignore request args
     String[] ignoreRequestArgs() default {"loginUser"};
 
     boolean ignoreRequest() default false;
-
-    boolean ignoreResponse() default true;
 }
