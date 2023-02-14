@@ -17,10 +17,12 @@
 
 package org.apache.dolphinscheduler.spi.utils;
 
+import static java.util.Objects.nonNull;
 import static org.apache.dolphinscheduler.spi.utils.Constants.COMMON_PROPERTIES_PATH;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -57,6 +59,16 @@ public class PropertyUtils {
             logger.info("Overriding property from system property: {}", key);
             PropertyUtils.setValue(key, String.valueOf(v));
         });
+        // Override from system environment variables
+        for (final Map.Entry<Object, Object> entry : properties.entrySet()) {
+            final Object key = entry.getKey();
+            final String envVarKey = String.valueOf(key).replaceAll("[.-]", "_").toUpperCase();
+            final String envVarVal = System.getenv(envVarKey);
+            if (nonNull(envVarVal)) { // We don't check for emptiness here, values can be empty
+                logger.info("Overriding property {} with system environment variable {}", key, envVarKey);
+                entry.setValue(envVarVal);
+            }
+        }
     }
 
     /**
