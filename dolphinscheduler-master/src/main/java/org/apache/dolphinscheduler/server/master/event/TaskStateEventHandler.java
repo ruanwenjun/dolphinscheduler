@@ -52,6 +52,11 @@ public class TaskStateEventHandler implements StateEventHandler {
         if (task.getState() == null) {
             throw new StateEventHandleError("Task state event handle error due to task state is null");
         }
+        if (task.getState().typeIsFinished()
+                && (stateEvent.getExecutionStatus() != null && stateEvent.getExecutionStatus().typeIsRunning())) {
+            throw new StateEventHandleError(
+                    "Task state event handle error due to task state is finished, but the event is a running event");
+        }
 
         Map<Long, Integer> completeTaskMap = workflowExecuteRunnable.getCompleteTaskMap();
 
