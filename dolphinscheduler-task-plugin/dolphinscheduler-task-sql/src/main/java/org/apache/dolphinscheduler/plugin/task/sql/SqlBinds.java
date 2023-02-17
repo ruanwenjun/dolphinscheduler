@@ -30,7 +30,8 @@ public class SqlBinds {
     private final Map<Integer, Property> paramsMap;
 
     public SqlBinds(String sql, Map<Integer, Property> paramsMap) {
-        this.sql = sql;
+        // for some sql dialects, the sql statement may end with ';', which is not allowed in PreparedStatement
+        this.sql = sql.replaceAll(";$", "");
         this.paramsMap = paramsMap;
     }
 

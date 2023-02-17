@@ -62,13 +62,6 @@ public class SqlParameters extends AbstractParameters {
     private String sql;
 
     /**
-     * sql type
-     * 0 query
-     * 1 NON_QUERY
-     */
-    private int sqlType;
-
-    /**
      * send email
      */
     private Boolean sendEmail;
@@ -152,14 +145,6 @@ public class SqlParameters extends AbstractParameters {
 
     public void setUdfs(String udfs) {
         this.udfs = udfs;
-    }
-
-    public int getSqlType() {
-        return sqlType;
-    }
-
-    public void setSqlType(int sqlType) {
-        this.sqlType = sqlType;
     }
 
     public Boolean getSendEmail() {
@@ -289,7 +274,6 @@ public class SqlParameters extends AbstractParameters {
                 + "type='" + type + '\''
                 + ", datasource=" + datasource
                 + ", sql='" + sql + '\''
-                + ", sqlType=" + sqlType
                 + ", sendEmail=" + sendEmail
                 + ", displayRows=" + displayRows
                 + ", limit=" + limit
