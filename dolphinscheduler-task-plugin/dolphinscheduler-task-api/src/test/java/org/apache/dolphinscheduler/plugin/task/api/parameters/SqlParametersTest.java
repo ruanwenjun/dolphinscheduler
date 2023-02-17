@@ -61,7 +61,6 @@ public class SqlParametersTest {
         sqlParameters.setSql(sql);
         sqlParameters.setUdfs(udfs);
         sqlParameters.setDatasource(datasource);
-        sqlParameters.setSqlType(sqlType);
         sqlParameters.setSendEmail(sendEmail);
         sqlParameters.setDisplayRows(displayRows);
         sqlParameters.setShowType(showType);
@@ -72,7 +71,6 @@ public class SqlParametersTest {
         Assert.assertEquals(sql, sqlParameters.getSql());
         Assert.assertEquals(udfs, sqlParameters.getUdfs());
         Assert.assertEquals(datasource, sqlParameters.getDatasource());
-        Assert.assertEquals(sqlType, sqlParameters.getSqlType());
         Assert.assertEquals(sendEmail, sqlParameters.getSendEmail());
         Assert.assertEquals(displayRows, sqlParameters.getDisplayRows());
         Assert.assertEquals(showType, sqlParameters.getShowType());

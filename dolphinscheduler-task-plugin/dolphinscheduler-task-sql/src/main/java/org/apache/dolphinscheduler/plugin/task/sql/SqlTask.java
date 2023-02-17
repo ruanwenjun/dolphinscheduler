@@ -52,6 +52,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,8 @@ public class SqlTask extends AbstractTaskExecutor {
     private static final int QUERY_LIMIT = 10000;
 
     private SQLTaskExecutionContext sqlTaskExecutionContext;
+
+    private static final String SQL_SEPARATOR = ";\n";
 
     /**
      * Abstract Yarn Task
@@ -127,6 +130,8 @@ public class SqlTask extends AbstractTaskExecutor {
                 sqlParameters.getConnParams(),
                 sqlParameters.getVarPool(),
                 sqlParameters.getLimit());
+        String separator = SQL_SEPARATOR;
+
         try {
 
             // get datasource
@@ -134,8 +139,14 @@ public class SqlTask extends AbstractTaskExecutor {
                     DbType.valueOf(sqlParameters.getType()),
                     sqlTaskExecutionContext.getConnectionParams());
 
+            String mainSql = sqlParameters.getSql();
+            mainSql = mainSql.replace("\r\n", "\n");
+            mainSql = removeSqlComment(mainSql);
             // ready to execute SQL and parameter entity Map
-            SqlBinds mainSqlBinds = getSqlAndSqlParamsMap(sqlParameters.getSql());
+            List<SqlBinds> mainStatementSqlBinds = split(mainSql, separator)
+                .stream()
+                .map(this::getSqlAndSqlParamsMap)
+                .collect(Collectors.toList());
             List<SqlBinds> preStatementSqlBinds = Optional.ofNullable(sqlParameters.getPreStatements())
                     .orElse(new ArrayList<>())
                     .stream()
@@ -150,7 +161,7 @@ public class SqlTask extends AbstractTaskExecutor {
             List<String> createFuncs = createFuncs(sqlTaskExecutionContext.getUdfFuncParametersList(), logger);
 
             // execute sql task
-            executeFuncAndSql(mainSqlBinds, preStatementSqlBinds, postStatementSqlBinds, createFuncs);
+            executeFuncAndSql(mainStatementSqlBinds, preStatementSqlBinds, postStatementSqlBinds, createFuncs);
 
             setExitStatusCode(TaskConstants.EXIT_CODE_SUCCESS);
 
@@ -162,14 +173,39 @@ public class SqlTask extends AbstractTaskExecutor {
     }
 
     /**
+     * split sql by segment separator
+     * <p>The segment separator is used
+     * when the data source does not support multi-segment SQL execution,
+     * and the client needs to split the SQL and execute it multiple times.</p>
+     * @param sql
+     * @param segmentSeparator
+     * @return
+     */
+    public static List<String> split(String sql, String segmentSeparator) {
+        if (StringUtils.isEmpty(segmentSeparator)) {
+            return Collections.singletonList(sql);
+        }
+
+        String[] lines = sql.split(segmentSeparator);
+        List<String> segments = new ArrayList<>();
+        for (String line : lines) {
+            if (line.trim().isEmpty() || line.startsWith("--") || line.startsWith("#")) {
+                continue;
+            }
+            segments.add(line);
+        }
+        return segments;
+    }
+
+    /**
      * execute function and sql
      *
-     * @param mainSqlBinds main sql binds
+     * @param mainStatementsBinds main sql binds
      * @param preStatementsBinds pre statements binds
      * @param postStatementsBinds post statements binds
      * @param createFuncs create functions
      */
-    public void executeFuncAndSql(SqlBinds mainSqlBinds,
+    public void executeFuncAndSql(List<SqlBinds> mainStatementsBinds,
                                   List<SqlBinds> preStatementsBinds,
                                   List<SqlBinds> postStatementsBinds,
                                   List<String> createFuncs) throws Exception {
@@ -188,22 +224,9 @@ public class SqlTask extends AbstractTaskExecutor {
 
             // pre sql
             preSql(connection, preStatementsBinds);
-            stmt = prepareStatementAndBind(connection, mainSqlBinds);
+            List<String> results = execute(connection, mainStatementsBinds);
+            results.forEach(sqlParameters::dealOutParam);
 
-            String result = null;
-            // decide whether to executeQuery or executeUpdate based on sqlType
-            if (sqlParameters.getSqlType() == SqlType.QUERY.ordinal()) {
-                // query statements need to be convert to JsonArray and inserted into Alert to send
-                resultSet = stmt.executeQuery();
-                result = resultProcess(resultSet);
-
-            } else if (sqlParameters.getSqlType() == SqlType.NON_QUERY.ordinal()) {
-                // non query statement
-                String updateResult = String.valueOf(stmt.executeUpdate());
-                result = setNonQuerySqlReturn(updateResult, sqlParameters.getLocalParams());
-            }
-            // deal out params
-            sqlParameters.dealOutParam(result);
             postSql(connection, postStatementsBinds);
         } catch (Exception e) {
             logger.error("execute sql error: {}", e.getMessage());
@@ -234,7 +257,7 @@ public class SqlTask extends AbstractTaskExecutor {
      * @param resultSet resultSet
      * @throws Exception Exception
      */
-    private String resultProcess(ResultSet resultSet) throws Exception {
+    private String resultProcess(String sql, ResultSet resultSet) throws Exception {
         ArrayNode resultJSONArray = JSONUtils.createArrayNode();
         if (resultSet != null) {
             ResultSetMetaData md = resultSet.getMetaData();
@@ -256,7 +279,7 @@ public class SqlTask extends AbstractTaskExecutor {
                 rowCount++;
             }
             int displayRows = sqlParameters.getDisplayRows() > 0 ? sqlParameters.getDisplayRows()
-                    : TaskConstants.DEFAULT_DISPLAY_ROWS;
+                : TaskConstants.DEFAULT_DISPLAY_ROWS;
             displayRows = Math.min(displayRows, rowCount);
             logger.info("display sql result {} rows as follows:", displayRows);
             for (int i = 0; i < displayRows; i++) {
@@ -264,26 +287,53 @@ public class SqlTask extends AbstractTaskExecutor {
                 logger.info("row {} : {}", i + 1, row);
             }
         }
-        String result = JSONUtils.toJsonString(resultJSONArray);
+        String result = resultJSONArray.isEmpty() ? JSONUtils.toJsonString(generateEmptyRow(resultSet))
+            : JSONUtils.toJsonString(resultJSONArray);
         if (Boolean.TRUE.equals(sqlParameters.getSendEmail())) {
-            sendSqlResultToAlert(resultJSONArray);
+            sendSqlResultToAlert(sql, resultJSONArray);
         }
         logger.debug("execute sql result : {}", result);
         return result;
     }
 
-    private void sendSqlResultToAlert(ArrayNode resultJSONArray) {
+    /**
+     * generate empty Results as ArrayNode
+     */
+    private ArrayNode generateEmptyRow(ResultSet resultSet) throws SQLException {
+        ArrayNode resultJSONArray = JSONUtils.createArrayNode();
+        ObjectNode emptyOfColValues = JSONUtils.createObjectNode();
+        if (resultSet != null) {
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnsNum = metaData.getColumnCount();
+            logger.info("sql query results is empty");
+            for (int i = 1; i <= columnsNum; i++) {
+                emptyOfColValues.set(metaData.getColumnLabel(i), JSONUtils.toJsonNode(""));
+            }
+        } else {
+            emptyOfColValues.set("error", JSONUtils.toJsonNode("resultSet is null"));
+        }
+        resultJSONArray.add(emptyOfColValues);
+        return resultJSONArray;
+    }
+
+    private void sendSqlResultToAlert(String sql, ArrayNode resultJSONArray) {
         setNeedAlert(Boolean.TRUE);
-        // todo: update the alert info
-        TaskAlertInfo taskAlertInfo = TaskAlertInfo.builder()
+        if (taskAlertInfo == null) {
+            taskAlertInfo = TaskAlertInfo.builder()
                 .alertGroupId(sqlParameters.getGroupId())
                 .workflowInstanceName(taskExecutionContext.getProcessInstanceName())
                 .taskName(taskExecutionContext.getTaskName())
                 .title(StringUtils.isNotEmpty(sqlParameters.getTitle()) ? sqlParameters.getTitle()
-                        : taskExecutionContext.getTaskName() + "result")
-                .content(resultJSONArray)
+                    : taskExecutionContext.getTaskName() + " result")
+                .content(JSONUtils.createArrayNode())
                 .build();
-        setTaskAlertInfo(taskAlertInfo);
+            setTaskAlertInfo(taskAlertInfo);
+        }
+
+        ArrayNode content = taskAlertInfo.getContent();
+        content.add(JSONUtils.createObjectNode()
+            .put("sql", sql.replaceAll("\n", " "))
+            .set("result", resultJSONArray));
     }
 
     /**
@@ -317,6 +367,34 @@ public class SqlTask extends AbstractTaskExecutor {
                 logger.info("post statement execute result: {},for sql: {}", result, sqlBind.getSql());
             }
         }
+    }
+
+    private List<String> execute(Connection connection, List<SqlBinds> statementsBinds) throws Exception {
+        List<String> results = new ArrayList<>();
+        logger.info("start execute sql................");
+        for (SqlBinds sqlBind : statementsBinds) {
+            logger.info("statement execute, for sql: {}", sqlBind.getSql());
+            try (PreparedStatement statement = prepareStatementAndBind(connection, sqlBind)) {
+                boolean executeResult = statement.execute();
+                // true if the first result is a ResultSet object; false if the first result is an update count or there is no result
+                String result;
+                if (executeResult) {
+                    ResultSet queryResult = statement.getResultSet();
+                    result = resultProcess(sqlBind.getSql(), queryResult);
+                } else {
+                    int updateResult = statement.getUpdateCount();
+                    sendSqlResultToAlert(sqlBind.getSql(), JSONUtils.createArrayNode().add(updateResult));
+                    result = setNonQuerySqlReturn(String.valueOf(updateResult), sqlParameters.getLocalParams());
+                    logger.info("update sql result {}", updateResult);
+                }
+                results.add(result);
+
+            }catch (Exception e){
+                logger.error("execute sql error : ", e);
+                throw e;
+            }
+        }
+        return results;
     }
 
     /**
@@ -529,6 +607,23 @@ public class SqlTask extends AbstractTaskExecutor {
                     resourceFullName.startsWith("/") ? resourceFullName : String.format("/%s", resourceFullName);
             return String.format("add jar %s%s%s", prefixPath, uploadPath, resourceFullName);
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * remove sql comment
+     * @param sql sql
+     * @return sql
+     */
+    public String removeSqlComment(String sql) {
+        if (StringUtils.isEmpty(sql)) {
+            return sql;
+        }
+        logger.info("remove sql comment, before: \n{}", sql);
+        sql = Pattern.compile("/\\*.*?\\*/\n?", Pattern.DOTALL).matcher(sql).replaceAll("");
+        sql = Pattern.compile("\\s*--.*").matcher(sql).replaceAll("");
+        sql = Pattern.compile("\\s*#.*").matcher(sql).replaceAll("");
+        logger.info("remove sql comment, after: \n{}", sql);
+        return sql;
     }
 
 }

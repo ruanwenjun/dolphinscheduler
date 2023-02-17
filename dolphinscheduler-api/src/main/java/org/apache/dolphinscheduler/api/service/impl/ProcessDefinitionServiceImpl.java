@@ -1243,8 +1243,6 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         sqlParameters.setType(dataSource.getType().name());
         sqlParameters.setDatasource(dataSource.getId());
         sqlParameters.setSql(sql.substring(0, sql.length() - 1));
-        // it may be a query type, but it can only be determined by parsing SQL
-        sqlParameters.setSqlType(SqlType.NON_QUERY.ordinal());
         sqlParameters.setLocalParams(Collections.emptyList());
         taskDefinition.setTaskParams(JSONUtils.toJsonString(sqlParameters));
         taskDefinition.setCode(CodeGenerateUtils.getInstance().genCode());
