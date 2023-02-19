@@ -857,5 +857,10 @@ public final class Constants {
      * file upload verify
      */
     public static final String FILE_TYPE_SUPPORT_LIST = "file.type.support.list";
-    public static final String FILE_NAME_RESTRICTED_CONTENT= "file.name.restricted.content";
+    public static final String FILE_NAME_RESTRICTED_CONTENT = "file.name.restricted.content";
+
+    /**
+     * default alert group id
+     */
+    public static final int DEFAULT_ALERT_GROUP_ID = 1;
 }

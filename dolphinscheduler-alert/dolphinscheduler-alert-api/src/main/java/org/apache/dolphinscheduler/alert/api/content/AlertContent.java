@@ -23,7 +23,7 @@ import java.util.Date;
         @JsonSubTypes.Type(value = DqExecuteResultAlertContent.class, name = "DATA_QUALITY_RESULT"),
         @JsonSubTypes.Type(value = WorkflowTimeCheckNotRunAlertContent.class, name = "WORKFLOW_TIME_CHECK_NOT_RUN_ALERT"),
         @JsonSubTypes.Type(value = WorkflowTimeCheckStillRunningAlertContent.class, name = "WORKFLOW_TIME_CHECK_STILL_RUNNING_ALERT"),
-        @JsonSubTypes.Type(value = ServerAlertContent.class, name = "SERVER_CRASH_ALERT"),
+        @JsonSubTypes.Type(value = ServerCrashAlertContent.class, name = "SERVER_CRASH_ALERT"),
 })
 public interface AlertContent {
 

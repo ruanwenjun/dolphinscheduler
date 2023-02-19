@@ -212,14 +212,6 @@ public class AlertDao {
         this.crashAlarmSuppression = crashAlarmSuppression;
     }
 
-    public void insertAlertWhenServerCrash(@NonNull Alert alert) {
-        // we use this method to avoid insert duplicate alert(issue #5525)
-        // we modified this method to optimize performance(issue #9174)
-        Date crashAlarmSuppressionStartTime = Date.from(
-                LocalDateTime.now().plusMinutes(-crashAlarmSuppression).atZone(ZoneId.systemDefault()).toInstant());
-        alertMapper.insertAlertWhenServerCrash(alert, crashAlarmSuppressionStartTime);
-    }
-
     public void deleteAlertByWorkflowInstanceId(int workflowInstanceId) {
         List<Alert> alertList = alertMapper.selectByWorkflowInstanceId(workflowInstanceId);
         if (CollectionUtils.isEmpty(alertList)) {

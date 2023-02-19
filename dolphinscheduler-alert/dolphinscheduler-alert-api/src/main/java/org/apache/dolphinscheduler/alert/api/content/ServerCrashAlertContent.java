@@ -15,9 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.dolphinscheduler.alert.api.enums;
+package org.apache.dolphinscheduler.alert.api.content;
 
-public enum AlertEvent {
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
+import org.apache.dolphinscheduler.spi.utils.StringUtils;
 
-    SERVER_DOWN, TIME_OUT
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class ServerCrashAlertContent implements AlertContent {
+
+    private String serverPath;
+
+    @Override
+    public AlertType getAlertType() {
+        return AlertType.SERVER_CRASH_ALERT;
+    }
+
+    @Override
+    public String getProjectName() {
+        return StringUtils.EMPTY;
+    }
+
+    @Override
+    public String getWorkflowInstanceName() {
+        return StringUtils.EMPTY;
+    }
 }

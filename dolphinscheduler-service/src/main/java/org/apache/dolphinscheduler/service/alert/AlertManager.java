@@ -21,10 +21,10 @@ import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.dolphinscheduler.alert.api.content.AlertContent;
 import org.apache.dolphinscheduler.alert.api.content.DqExecuteResultAlertContent;
-import org.apache.dolphinscheduler.alert.api.content.ServerAlertContent;
+import org.apache.dolphinscheduler.alert.api.content.ServerCrashAlertContent;
 import org.apache.dolphinscheduler.alert.api.content.TaskResultAlertContent;
-import org.apache.dolphinscheduler.alert.api.enums.AlertEvent;
 import org.apache.dolphinscheduler.alert.api.enums.AlertType;
+import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.AlertStatus;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class AlertManager {
@@ -380,47 +379,22 @@ public class AlertManager {
         }
     }
 
-    public void sendWorkerServerStoppedAlert(String path) {
-        ServerAlertContent serverStopAlertContent = ServerAlertContent.builder()
-                .type("Worker")
-                .host(path)
-                .event(AlertEvent.SERVER_DOWN)
+    public void sendServerStoppedAlert(String path) {
+        ServerCrashAlertContent serverCrashAlertContent = ServerCrashAlertContent.builder()
+                .serverPath(path)
                 .build();
-        String content = JSONUtils.toJsonString(serverStopAlertContent);
+        String content = JSONUtils.toJsonString(serverCrashAlertContent);
 
-        Alert alert = new Alert();
-        alert.setTitle("Fault tolerance warning");
-        alert.setWarningType(WarningType.FAILURE);
-        alert.setAlertStatus(AlertStatus.WAIT_EXECUTION);
-        alert.setContent(content);
-        alert.setAlertGroupId(1);
-        alert.setCreateTime(new Date());
-        alert.setUpdateTime(new Date());
-        alert.setAlertType(AlertType.SERVER_CRASH_ALERT);
-        // we use this method to avoid insert duplicate alert(issue #5525)
-        // we modified this method to optimize performance(issue #9174)
-        alertDao.insertAlertWhenServerCrash(alert);
+        Alert alert = Alert.builder()
+                .title(serverCrashAlertContent.getAlertTitle())
+                .content(content)
+                .alertGroupId(Constants.DEFAULT_ALERT_GROUP_ID)
+                .warningType(WarningType.FAILURE)
+                .createTime(new Date())
+                .updateTime(new Date())
+                .alertType(AlertType.SERVER_CRASH_ALERT)
+                .build();
+        alertDao.addAlert(alert);
     }
 
-    public void sendMasterServerStoppedAlert(String path) {
-        ServerAlertContent serverStopAlertContent = ServerAlertContent.builder()
-                .type("Master")
-                .host(path)
-                .event(AlertEvent.SERVER_DOWN)
-                .build();
-        String content = JSONUtils.toJsonString(serverStopAlertContent);
-
-        Alert alert = new Alert();
-        alert.setTitle("Fault tolerance warning");
-        alert.setWarningType(WarningType.FAILURE);
-        alert.setAlertStatus(AlertStatus.WAIT_EXECUTION);
-        alert.setContent(content);
-        alert.setAlertGroupId(1);
-        alert.setCreateTime(new Date());
-        alert.setUpdateTime(new Date());
-        alert.setAlertType(AlertType.SERVER_CRASH_ALERT);
-        // we use this method to avoid insert duplicate alert(issue #5525)
-        // we modified this method to optimize performance(issue #9174)
-        alertDao.insertAlertWhenServerCrash(alert);
-    }
 }

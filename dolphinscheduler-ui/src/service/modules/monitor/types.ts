@@ -25,12 +25,18 @@ interface DatabaseRes {
   date: string
 }
 
+interface NodeInfo {
+  cpuUsage: number
+  memoryUsage: number
+  loadAverage: number
+}
+
 interface MasterNode {
   id: number
   host: string
   port: number
   zkDirectory: string
-  resInfo: string
+  resInfo: NodeInfo
   createTime: string
   lastHeartbeatTime: string
 }
@@ -40,7 +46,7 @@ interface WorkerNode {
   host: string
   port: number
   zkDirectories: Array<string>
-  resInfo: string
+  resInfo: NodeInfo
   createTime: string
   lastHeartbeatTime: string
 }

@@ -12,5 +12,6 @@ public class TemplateInjectUtils {
     public static final String TASK_NAME_TEMPLATE = "\\{\\{taskName}}";
     public static final String RESULT_TEMPLATE = "\\{\\{result}}";
     public static final String TITLE_TEMPLATE = "\\{\\{title}}";
+    public static final String SERVER_PATH_TEMPLATE = "\\{\\{serverPath}}";
 
 }

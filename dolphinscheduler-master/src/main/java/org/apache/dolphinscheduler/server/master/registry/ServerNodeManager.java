@@ -109,6 +109,7 @@ public class ServerNodeManager implements InitializingBean {
 
     private static volatile int MASTER_SIZE = 0;
 
+    @Autowired
     private AlertManager alertManager;
 
     public static int getSlot() {
@@ -236,7 +237,7 @@ public class ServerNodeManager implements InitializingBean {
                         logger.info("worker group node : {} down.", path);
                         // Remove the node from workerNodeInfo, it will not receive task
                         workerNodeInfo.remove(workerAddress);
-                        alertManager.sendWorkerServerStoppedAlert(path);
+                        alertManager.sendServerStoppedAlert(path);
                     } else if (type == Type.UPDATE) {
                         logger.debug("worker group node : {} update, data: {}", path, data);
                         syncSingleWorkerNodeInfo(workerAddress, JSONUtils.parseObject(data, WorkerHeartBeat.class));
@@ -264,7 +265,7 @@ public class ServerNodeManager implements InitializingBean {
                     if (type.equals(Type.REMOVE)) {
                         logger.info("master node : {} down.", path);
                         updateMasterNodes();
-                        alertManager.sendMasterServerStoppedAlert(path);
+                        alertManager.sendServerStoppedAlert(path);
                     }
                 } catch (Exception ex) {
                     logger.error("MasterNodeListener capture data change and get data failed.", ex);
