@@ -100,7 +100,7 @@ public class CommonTaskProcessorTest {
         taskInstance.setExecutorId(2);
         // task node
 
-        Map<String, String> map = commonTaskProcessor.getResourceFullNames(taskInstance);
+        Map<String, String> map = commonTaskProcessor.processResource(taskInstance);
 
         List<Resource> resourcesList = new ArrayList<Resource>();
         Resource resource = new Resource();

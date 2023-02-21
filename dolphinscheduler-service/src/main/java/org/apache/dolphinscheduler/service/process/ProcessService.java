@@ -213,6 +213,8 @@ public interface ProcessService {
 
     List<Resource> listResourceByIds(Integer[] resIds);
 
+    List<Resource> getAllFileResourceInFolder(Resource resource);
+
     String formatTaskAppId(TaskInstance taskInstance);
 
     int switchVersion(ProcessDefinition processDefinition, ProcessDefinitionLog processDefinitionLog);

@@ -291,7 +291,31 @@ public enum Status {
             "资源文件已授权其他用户[{0}],后缀不允许修改"),
     RESOURCE_HAS_FOLDER(20018, "There are files or folders in the current directory:{0}", "当前目录下有文件或文件夹[{0}]"),
 
+    BATCH_RESOURCE_NAME_REPEAT(20019, "duplicate file names in this batch", "此批处理中存在重复的文件名"),
     RESOURCE_FILE_IS_EMPTY(20020, "resource file [{0}] is empty", "资源文件 [{0}] 内容不能为空"),
+
+    RESOURCE_OWNER_OR_TENANT_CHANGE_ERROR(20021,
+            "resource[{0}] owner is deleted or the tenant is unbound, the operation is not allowed",
+            "资源[{0}]所属用户被删除或者其租户被解除绑定, 无法进行该操作"),
+
+    RESOURCE_CREATE_ERROR(20022, "resource[{0}] create error",
+            "资源[{0}]创建失败"),
+
+    UPLOAD_FOLDER_WARNING(20023,
+            "upload folder warning, create resource failed[{0}], delete resource failed[{1}], other resources upload success",
+            "文件夹上传警告，以下资源创建失败[{0}], 以下资源覆盖删除失败[{1}], 其余均已上传成功"),
+
+    UPLOAD_FOLDER_CREATE_WARNING(20024,
+            "upload folder warning, create resource failed[{0}], other resources upload success",
+            "文件夹上传警告，以下资源创建失败[{0}], 其余均已上传成功"),
+
+    UPLOAD_FOLDER_DELETE_WARNING(20025,
+            "upload folder warning, delete resource failed[{0}], other resources upload success",
+            "文件夹上传警告, 以下资源覆盖删除失败[{0}], 其余均已上传成功"),
+
+    RESOURCE_LIST_IS_USED(20026,
+        "resource file is used by process definition, [{0}]",
+        "资源文件被上线的流程定义使用了, [{0}]"),
 
     USER_NO_OPERATION_PERM(30001, "user has no operation privilege", "当前用户没有操作权限"),
     USER_NO_OPERATION_PROJECT_PERM(30002, "user {0} is not has project {1} permission", "当前用户[{0}]没有[{1}]项目的操作权限"),
@@ -513,6 +537,8 @@ public enum Status {
     CONFIG_FILTER_EMPTY(1400007, "complement time is empty after filtering according to the configuration",
             "当前补数时间根据配置过滤后为空"),
     PROJECT_NAME_TOO_LONG_ERROR(1400008, "project name is too long error", "项目名称过长"),
+    NO_CURRENT_OPERATING_PERMISSION_FOR_RESOURCE(1400009, "[{0}] is exist, current user no [{0}] permission",
+        "[{0}]已存在，当前用户无[{0}]权限"),
     ;
 
     private final int code;

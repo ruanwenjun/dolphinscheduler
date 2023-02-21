@@ -19,12 +19,15 @@ package org.apache.dolphinscheduler.api.service;
 
 import org.apache.dolphinscheduler.api.utils.Result;
 import org.apache.dolphinscheduler.common.enums.ProgramType;
+import org.apache.dolphinscheduler.dao.entity.Resource;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.spi.enums.ResourceType;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * resources service
@@ -68,6 +71,38 @@ public interface ResourcesService {
                                   MultipartFile file,
                                   int pid,
                                   String currentDir);
+
+    /**
+     * create batch resource
+     *
+     * @param loginUser login user
+     * @param files files
+     * @param type type
+     * @param pid parent id
+     * @param currentDir current directory
+     * @return create result code
+     */
+    Result<Object> createBatchResources(User loginUser,
+                                        ResourceType type,
+                                        List<MultipartFile> files,
+                                        int pid,
+                                        String currentDir);
+
+    /**
+     * create folder resource
+     *
+     * @param loginUser login user
+     * @param files files
+     * @param type type
+     * @param pid parent id
+     * @param currentDir current directory
+     * @return create result code
+     */
+    Result<Object> createFolderWithFiles(User loginUser,
+                                         ResourceType type,
+                                         List<MultipartFile> files,
+                                         int pid,
+                                         String currentDir);
 
     /**
      * update resource
@@ -170,6 +205,30 @@ public interface ResourcesService {
                                         String desc, String content, int pid, String currentDirectory);
 
     /**
+     * create or update resource.
+     * If the folder is not already created, it will be
+     *
+     * @param loginUser user who create or update resource
+     * @param fileFullName The full name of resource.Includes path and suffix.
+     * @param desc description of resource
+     * @param content content of resource
+     * @return create result code
+     */
+    Result<Object> onlineCreateOrUpdateResourceWithDir(User loginUser, String fileFullName, String desc,
+                                                       String content);
+
+    /**
+     * create or update resource.
+     * If the folder is not already created, it will be
+     *
+     * @param userName user who create or update resource
+     * @param fullName The fullname of resource.Includes path and suffix.
+     * @param description description of resource
+     * @param resourceContent content of resource
+     */
+    void createOrUpdateResource(String userName, String fullName, String description, String resourceContent);
+
+    /**
      * updateProcessInstance resource
      *
      * @param resourceId resource id
@@ -195,6 +254,15 @@ public interface ResourcesService {
      * @return unauthorized result code
      */
     Map<String, Object> authorizeResourceTree(User loginUser, Integer userId);
+
+    /**
+     * Get resource by given resource type and full name.
+     * Useful in Python API create task which need processDefinition information.
+     *
+     * @param userName user who query resource
+     * @param fullName full name of the resource
+     */
+    Resource queryResourcesFileInfo(String userName, String fullName);
 
     /**
      * unauthorized file

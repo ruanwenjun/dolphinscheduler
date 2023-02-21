@@ -75,6 +75,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -318,7 +319,7 @@ public abstract class BaseTaskProcessor implements ITaskProcessor {
         String userQueue = processService.queryUserQueueByProcessInstance(taskInstance.getProcessInstance());
         taskInstance.getProcessInstance().setQueue(StringUtils.isEmpty(userQueue) ? tenant.getQueue() : userQueue);
         taskInstance.getProcessInstance().setTenantCode(tenant.getTenantCode());
-        taskInstance.setResources(getResourceFullNames(taskInstance));
+        taskInstance.setResources(processResource(taskInstance));
 
         TaskChannel taskChannel = taskPluginManager.getTaskChannel(taskInstance.getTaskType());
         ResourceParametersHelper resources = taskChannel.getResources(taskInstance.getTaskParams());
@@ -615,7 +616,7 @@ public abstract class BaseTaskProcessor implements ITaskProcessor {
     /**
      * get resource map key is full name and value is tenantCode
      */
-    protected Map<String, String> getResourceFullNames(TaskInstance taskInstance) {
+    protected Map<String, String> processResource(TaskInstance taskInstance) {
         Map<String, String> resourcesMap = new HashMap<>();
         AbstractParameters baseParam = taskPluginManager.getParameters(ParametersNode.builder()
                 .taskType(taskInstance.getTaskType()).taskParams(taskInstance.getTaskParams()).build());
@@ -635,8 +636,20 @@ public abstract class BaseTaskProcessor implements ITaskProcessor {
                 Stream<Integer> resourceIdStream = projectResourceFiles.stream().map(ResourceInfo::getId);
                 Set<Integer> resourceIdsSet = resourceIdStream.collect(Collectors.toSet());
 
-                if (CollectionUtils.isNotEmpty(resourceIdsSet)) {
-                    Integer[] resourceIds = resourceIdsSet.toArray(new Integer[resourceIdsSet.size()]);
+                // process resource if the resource is a folder
+                Set<Integer> newResourceIdsSet = new HashSet<>();
+                for (int resourceId : resourceIdsSet) {
+                    Resource resource = processService.getResourceById(resourceId);
+                    if (resource.isDirectory()) {
+                        List<Resource> resources = processService.getAllFileResourceInFolder(resource);
+                        newResourceIdsSet.addAll(resources.stream().map(Resource::getId).collect(Collectors.toList()));
+                    } else {
+                        newResourceIdsSet.add(resourceId);
+                    }
+                }
+
+                if (CollectionUtils.isNotEmpty(newResourceIdsSet)) {
+                    Integer[] resourceIds = newResourceIdsSet.toArray(new Integer[newResourceIdsSet.size()]);
 
                     List<Resource> resources = processService.listResourceByIds(resourceIds);
                     resources.forEach(t -> resourcesMap.put(t.getFullName(),

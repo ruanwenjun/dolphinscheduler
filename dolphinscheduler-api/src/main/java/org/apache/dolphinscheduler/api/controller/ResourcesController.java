@@ -17,48 +17,10 @@
 
 package org.apache.dolphinscheduler.api.controller;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.dolphinscheduler.api.aspect.AccessLogAnnotation;
-import org.apache.dolphinscheduler.api.exceptions.ApiException;
-import org.apache.dolphinscheduler.api.service.ResourcesService;
-import org.apache.dolphinscheduler.api.service.UdfFuncService;
-import org.apache.dolphinscheduler.api.utils.Result;
-import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.common.enums.ProgramType;
-import org.apache.dolphinscheduler.common.enums.UdfType;
-import org.apache.dolphinscheduler.common.utils.ParameterUtils;
-import org.apache.dolphinscheduler.dao.entity.User;
-import org.apache.dolphinscheduler.spi.enums.ResourceType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.Map;
-
 import static org.apache.dolphinscheduler.api.enums.Status.AUTHORIZED_FILE_RESOURCE_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.AUTHORIZED_UDF_FUNCTION_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.AUTHORIZE_RESOURCE_TREE;
+import static org.apache.dolphinscheduler.api.enums.Status.CREATE_BATCH_RESOURCE_NOTES;
 import static org.apache.dolphinscheduler.api.enums.Status.CREATE_RESOURCE_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.CREATE_RESOURCE_FILE_ON_LINE_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.CREATE_UDF_FUNCTION_ERROR;
@@ -71,7 +33,6 @@ import static org.apache.dolphinscheduler.api.enums.Status.QUERY_RESOURCES_LIST_
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_RESOURCES_LIST_PAGING;
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_UDF_FUNCTION_LIST_PAGING_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.RESOURCE_FILE_CATNOT_BE_EMPTY;
-import static org.apache.dolphinscheduler.api.enums.Status.RESOURCE_FILE_IS_EMPTY;
 import static org.apache.dolphinscheduler.api.enums.Status.RESOURCE_NOT_EXIST;
 import static org.apache.dolphinscheduler.api.enums.Status.UNAUTHORIZED_UDF_FUNCTION_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.UPDATE_RESOURCE_ERROR;
@@ -80,6 +41,40 @@ import static org.apache.dolphinscheduler.api.enums.Status.VERIFY_RESOURCE_BY_NA
 import static org.apache.dolphinscheduler.api.enums.Status.VERIFY_UDF_FUNCTION_NAME_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.VIEW_RESOURCE_FILE_ON_LINE_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.VIEW_UDF_FUNCTION_ERROR;
+
+import org.apache.dolphinscheduler.api.aspect.AccessLogAnnotation;
+import org.apache.dolphinscheduler.api.exceptions.ApiException;
+import org.apache.dolphinscheduler.api.service.ResourcesService;
+import org.apache.dolphinscheduler.api.service.UdfFuncService;
+import org.apache.dolphinscheduler.api.utils.Result;
+import org.apache.dolphinscheduler.common.Constants;
+import org.apache.dolphinscheduler.common.enums.ProgramType;
+import org.apache.dolphinscheduler.common.enums.UdfType;
+import org.apache.dolphinscheduler.common.utils.ParameterUtils;
+import org.apache.dolphinscheduler.dao.entity.User;
+import org.apache.dolphinscheduler.spi.enums.ResourceType;
+
+import springfox.documentation.annotations.ApiIgnore;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 
 /**
  * resources controller
@@ -152,6 +147,52 @@ public class ResourcesController extends BaseController {
                                          @RequestParam(value = "currentDir") String currentDir) {
         // todo verify the file name
         return resourceService.createResource(loginUser, alias, description, type, file, pid, currentDir);
+    }
+
+    /**
+     * create batch resource
+     *
+     * @return create batch result code
+     */
+    @ApiOperation(value = "createBatchResource", notes = "CREATE_BATCH_RESOURCE_NOTES")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "type", value = "RESOURCE_TYPE", required = true, dataType = "ResourceType"),
+            @ApiImplicitParam(name = "files", value = "RESOURCE_FILE", required = true, dataType = "List"),
+            @ApiImplicitParam(name = "pid", value = "RESOURCE_PID", required = true, dataType = "Int", example = "10"),
+            @ApiImplicitParam(name = "currentDir", value = "RESOURCE_CURRENT_DIR", required = true, dataType = "String")
+    })
+    @PostMapping(value = "/batch-upload")
+    @ApiException(CREATE_BATCH_RESOURCE_NOTES)
+    @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
+    public Result<Object> createBatchResources(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                                               @RequestParam(value = "type") ResourceType type,
+                                               @RequestParam(value = "files") MultipartFile[] files,
+                                               @RequestParam(value = "pid") int pid,
+                                               @RequestParam(value = "currentDir") String currentDir) {
+        return resourceService.createBatchResources(loginUser, type, Arrays.asList(files), pid, currentDir);
+    }
+
+    /**
+     * create folder resource
+     *
+     * @return create folder result code
+     */
+    @ApiOperation(value = "uploadFolder", notes = "CREATE_FOLDER_RESOURCE_NOTES")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "type", value = "RESOURCE_TYPE", required = true, dataType = "ResourceType"),
+            @ApiImplicitParam(name = "files", value = "RESOURCE_FILE", required = true, dataType = "List"),
+            @ApiImplicitParam(name = "pid", value = "RESOURCE_PID", required = true, dataType = "Int", example = "10"),
+            @ApiImplicitParam(name = "currentDir", value = "RESOURCE_CURRENT_DIR", required = true, dataType = "String")
+    })
+    @PostMapping(value = "/upload-folder")
+    @ApiException(CREATE_BATCH_RESOURCE_NOTES)
+    @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
+    public Result<Object> uploadFolder(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                                       @RequestParam(value = "type") ResourceType type,
+                                       @RequestParam(value = "files") MultipartFile[] files,
+                                       @RequestParam(value = "pid") int pid,
+                                       @RequestParam(value = "currentDir") String currentDir) {
+        return resourceService.createFolderWithFiles(loginUser, type, Arrays.asList(files), pid, currentDir);
     }
 
     /**

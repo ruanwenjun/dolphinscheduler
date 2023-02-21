@@ -51,7 +51,7 @@ public class FileUtilsTest {
     @Test
     public void testGetProcessExecDir() {
         String dir = FileUtils.getProcessExecDir("test", 1L, 2L, 1, 3, 4);
-        Assert.assertEquals("/tmp/dolphinscheduler/exec/process/test,1/2_1/3/4", dir);
+        Assert.assertEquals("/tmp/dolphinscheduler/exec/process/test/1/2_1/3/4", dir);
     }
 
     @Test
@@ -94,6 +94,9 @@ public class FileUtilsTest {
         path = "abc.txt";
         Assert.assertFalse(FileUtils.directoryTraversal(path));
 
+        path = "data/abc.txt";
+        Assert.assertFalse(FileUtils.directoryTraversal(path));
+
         path = "abc...txt";
         Assert.assertFalse(FileUtils.directoryTraversal(path));
 
@@ -108,12 +111,18 @@ public class FileUtilsTest {
         Assert.assertTrue(FileUtils.directoryTraversal(path));
 
         path = "abc../def.txt";
-        Assert.assertTrue(FileUtils.directoryTraversal(path));
+        Assert.assertFalse(FileUtils.directoryTraversal(path));
 
         path = "abc./def.txt";
-        Assert.assertTrue(FileUtils.directoryTraversal(path));
+        Assert.assertFalse(FileUtils.directoryTraversal(path));
 
         path = "abc/def...txt";
+        Assert.assertFalse(FileUtils.directoryTraversal(path));
+
+        path = "abc/def...txt";
+        Assert.assertFalse(FileUtils.directoryTraversal(path));
+
+        path = "${path}/.bashrc";
         Assert.assertTrue(FileUtils.directoryTraversal(path));
     }
 

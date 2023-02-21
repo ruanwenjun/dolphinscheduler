@@ -47,6 +47,8 @@ public final class Constants {
     public static final String AWS_REGION = "aws.region";
     public static final String FOLDER_SEPARATOR = "/";
 
+    public static final String FOLDER_DOLLOR = "$";
+
     public static final String RESOURCE_TYPE_FILE = "resources";
 
     public static final String RESOURCE_TYPE_UDF = "udfs";
@@ -151,6 +153,11 @@ public final class Constants {
      * COLON :
      */
     public static final String COLON = ":";
+
+    /**
+     * period .
+     */
+    public static final String PERIOD = ".";
 
     /**
      * QUESTION ?

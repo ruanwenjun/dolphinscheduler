@@ -102,6 +102,7 @@ import org.apache.dolphinscheduler.dao.mapper.UdfFuncMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkFlowLineageMapper;
 import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
+import org.apache.dolphinscheduler.dao.repository.ResourceDao;
 import org.apache.dolphinscheduler.dao.repository.TaskInstanceDao;
 import org.apache.dolphinscheduler.dao.utils.DagHelper;
 import org.apache.dolphinscheduler.dao.utils.DqRuleUtils;
@@ -205,6 +206,9 @@ public class ProcessServiceImpl implements ProcessService {
 
     @Autowired
     private ResourceMapper resourceMapper;
+
+    @Autowired
+    private ResourceDao resourceDao;
 
     @Autowired
     private ResourceUserMapper resourceUserMapper;
@@ -2345,6 +2349,19 @@ public class ProcessServiceImpl implements ProcessService {
     @Override
     public List<Resource> listResourceByIds(Integer[] resIds) {
         return resourceMapper.listResourceByIds(resIds);
+    }
+
+    /**
+     * get all file resource in folder
+     *
+     * @param resource resource
+     * @return resource list
+     */
+    @Override
+    public List<Resource> getAllFileResourceInFolder(Resource resource) {
+        List<Integer> allIds = resourceDao.listAllChildren(resource, false);
+        List<Resource> resources = resourceMapper.selectBatchIds(allIds);
+        return resources.stream().filter(res -> !res.isDirectory()).collect(Collectors.toList());
     }
 
     /**

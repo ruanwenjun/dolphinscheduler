@@ -31,6 +31,7 @@ import java.nio.file.NoSuchFileException;
 
 import static org.apache.dolphinscheduler.common.Constants.DATA_BASEDIR_PATH;
 import static org.apache.dolphinscheduler.common.Constants.FOLDER_SEPARATOR;
+import static org.apache.dolphinscheduler.common.Constants.FOLDER_DOLLOR;
 import static org.apache.dolphinscheduler.common.Constants.RESOURCE_VIEW_SUFFIXES;
 import static org.apache.dolphinscheduler.common.Constants.RESOURCE_VIEW_SUFFIXES_DEFAULT_VALUE;
 import static org.apache.dolphinscheduler.common.Constants.UTF_8;
@@ -242,7 +243,7 @@ public class FileUtils {
      * @return whether file path could be traversal or not
      */
     public static boolean directoryTraversal(String filename) {
-        if (filename.contains(FOLDER_SEPARATOR)) {
+        if (filename.startsWith(FOLDER_SEPARATOR) || filename.contains(FOLDER_DOLLOR)) {
             return true;
         }
         File file = new File(filename);

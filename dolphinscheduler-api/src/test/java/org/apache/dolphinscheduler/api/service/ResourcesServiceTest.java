@@ -28,22 +28,28 @@ import org.apache.dolphinscheduler.api.service.impl.ResourcesServiceImpl;
 import org.apache.dolphinscheduler.api.utils.PageInfo;
 import org.apache.dolphinscheduler.api.utils.Result;
 import org.apache.dolphinscheduler.common.Constants;
-import org.apache.dolphinscheduler.common.enums.*;
-import org.apache.dolphinscheduler.common.storage.StorageOperate;
+import org.apache.dolphinscheduler.common.enums.AuthorizationType;
+import org.apache.dolphinscheduler.common.enums.UserType;
 import org.apache.dolphinscheduler.common.utils.FileUtils;
 import org.apache.dolphinscheduler.common.utils.PropertyUtils;
-import org.apache.dolphinscheduler.dao.entity.*;
+import org.apache.dolphinscheduler.common.storage.StorageOperate;
+import org.apache.dolphinscheduler.dao.entity.Resource;
+import org.apache.dolphinscheduler.dao.entity.Tenant;
+import org.apache.dolphinscheduler.dao.entity.UdfFunc;
+import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.dao.mapper.ProcessDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.ResourceMapper;
 import org.apache.dolphinscheduler.dao.mapper.ResourceUserMapper;
 import org.apache.dolphinscheduler.dao.mapper.TenantMapper;
 import org.apache.dolphinscheduler.dao.mapper.UdfFuncMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
+import org.apache.dolphinscheduler.dao.repository.ResourceDao;
 import org.apache.dolphinscheduler.spi.enums.ResourceType;
 
 import org.apache.commons.collections.CollectionUtils;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,11 +74,11 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.io.Files;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * resources service test
@@ -91,6 +97,9 @@ public class ResourcesServiceTest {
 
     @Mock
     private ResourceMapper resourcesMapper;
+
+    @Mock
+    private ResourceDao resourceDao;
 
     @Mock
     private TenantMapper tenantMapper;
@@ -134,6 +143,67 @@ public class ResourcesServiceTest {
     }
 
     @Test
+    public void testCreateBatchResource() {
+        PowerMockito.when(resourcePermissionCheckService.operationPermissionCheck(AuthorizationType.RESOURCE_FILE_ID,
+                null, 1, ApiFuncIdentificationConstant.FILE_UPLOAD, serviceLogger)).thenReturn(true);
+        PowerMockito.when(resourcePermissionCheckService.resourcePermissionCheck(AuthorizationType.RESOURCE_FILE_ID,
+                null, 1, serviceLogger)).thenReturn(true);
+
+        PowerMockito.when(PropertyUtils.getResUploadStartupState()).thenReturn(false);
+        User user = new User();
+        user.setId(1);
+        user.setUserType(UserType.GENERAL_USER);
+
+        // CURRENT_LOGIN_USER_TENANT_NOT_EXIST
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("test.pdf", "test.pdf", "pdf", "test".getBytes());
+        MockMultipartFile mockMultipartFile1 =
+                new MockMultipartFile("test1.pdf", "test1.pdf", "pdf", "test1".getBytes());
+        List<MultipartFile> mockMultipartFiles = new ArrayList<>();
+        mockMultipartFiles.add(mockMultipartFile);
+        mockMultipartFiles.add(mockMultipartFile1);
+        PowerMockito.when(PropertyUtils.getResUploadStartupState()).thenReturn(true);
+        Mockito.when(userMapper.selectById(1)).thenReturn(getUser());
+        Mockito.when(tenantMapper.queryById(1)).thenReturn(null);
+        Result result = resourcesService.createBatchResources(user,
+                ResourceType.FILE, mockMultipartFiles, -1, "/");
+        Assert.assertEquals(Status.CURRENT_LOGIN_USER_TENANT_NOT_EXIST.getCode(), (long) result.getCode());
+
+        // set tenant for user
+        user.setTenantId(1);
+        Mockito.when(tenantMapper.queryById(1)).thenReturn(getTenant());
+
+        // BATCH_RESOURCE_NAME_REPEAT
+        MockMultipartFile mockMultipartFile2 =
+                new MockMultipartFile("test1.pdf", "test1.pdf", "pdf", "test1".getBytes());
+        mockMultipartFiles.add(mockMultipartFile2);
+        PowerMockito.when(PropertyUtils.getResUploadStartupState()).thenReturn(true);
+        result = resourcesService.createBatchResources(user,
+                ResourceType.FILE, mockMultipartFiles, -1, "/");
+        Assert.assertEquals(Status.BATCH_RESOURCE_NAME_REPEAT.getCode(), (long) result.getCode());
+
+        // RESOURCE_EXIST
+        mockMultipartFiles.remove(mockMultipartFile2);
+        List<String> repeatFileNames = Arrays.asList("test1.pdf");
+        Mockito.when(resourcesMapper.existResources(any(List.class), eq(ResourceType.FILE.ordinal())))
+                .thenReturn(repeatFileNames);
+        result = resourcesService.createBatchResources(user,
+                ResourceType.FILE, mockMultipartFiles, -1, "/");
+        Assert.assertEquals(Status.RESOURCE_EXIST.getCode(), (long) result.getCode());
+
+        // RESOURCE_FULL_NAME_TOO_LONG_ERROR
+        MockMultipartFile mockMultipartFile3 = new MockMultipartFile(
+                "tesfff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222t1.pdf",
+                "test11111111ffffffff1111122fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff111112222fff11111222222.pdf",
+                "pdf", "test1".getBytes());
+        mockMultipartFiles.add(mockMultipartFile3);
+        Mockito.when(resourcesMapper.existResources(any(List.class), eq(ResourceType.FILE.ordinal())))
+                .thenReturn(new ArrayList());
+        result = resourcesService.createBatchResources(user,
+                ResourceType.FILE, mockMultipartFiles, -1, "/");
+        Assert.assertEquals(Status.RESOURCE_FULL_NAME_TOO_LONG_ERROR.getCode(), (long) result.getCode());
+    }
+
+    @Test
     public void testCreateResource() {
         PowerMockito.when(resourcePermissionCheckService.operationPermissionCheck(AuthorizationType.RESOURCE_FILE_ID,
                 null, 1, ApiFuncIdentificationConstant.FILE_UPLOAD, serviceLogger)).thenReturn(true);
@@ -171,7 +241,7 @@ public class ResourcesServiceTest {
         result = resourcesService.createResource(user, "ResourcesServiceTest", "ResourcesServiceTest",
                 ResourceType.FILE, mockMultipartFile, -1, "/");
         logger.info(result.toString());
-        Assert.assertEquals(Status.RESOURCE_FILE_IS_EMPTY.getMsg(), result.getMsg());
+        Assert.assertEquals(MessageFormat.format(Status.VERIFY_PARAMETER_NAME_FAILED.getMsg(), ""), result.getMsg());
 
         // RESOURCE_SUFFIX_FORBID_CHANGE
         mockMultipartFile = new MockMultipartFile("test.pdf", "test.pdf", "pdf", "test".getBytes());
@@ -522,6 +592,7 @@ public class ResourcesServiceTest {
             Mockito.when(processDefinitionMapper.listResources()).thenReturn(getResources());
             Mockito.when(resourcesMapper.deleteIds(Mockito.any())).thenReturn(1);
             Mockito.when(resourceUserMapper.deleteResourceUserArray(Mockito.anyInt(), Mockito.any())).thenReturn(1);
+            Mockito.when(resourceDao.listAllChildren(Mockito.any(), Mockito.anyBoolean())).thenReturn(new ArrayList<>());
             result = resourcesService.delete(loginUser, 1);
             logger.info(result.toString());
             Assert.assertEquals(Status.SUCCESS.getMsg(), result.getMsg());
