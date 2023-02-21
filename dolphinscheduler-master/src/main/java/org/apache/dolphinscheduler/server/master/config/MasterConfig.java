@@ -88,6 +88,7 @@ public class MasterConfig implements Validator {
     private double reservedMemory = 0.3;
     private Duration failoverInterval = Duration.ofMinutes(10);
     private boolean killYarnJobWhenTaskFailover = true;
+    private boolean needFailover = true;
     private ConnectStrategyProperties registryDisconnectStrategy = new ConnectStrategyProperties();
 
     // ip:listenPort
@@ -156,6 +157,7 @@ public class MasterConfig implements Validator {
         logger.info("Master config: reservedMemory -> {} ", reservedMemory);
         logger.info("Master config: failoverInterval -> {} ", failoverInterval);
         logger.info("Master config: killYarnJobWhenTaskFailover -> {} ", killYarnJobWhenTaskFailover);
+        logger.info("Master config: needFailover -> {} ", needFailover);
         logger.info("Master config: registryDisconnectStrategy -> {} ", registryDisconnectStrategy);
         logger.info("Master config: masterAddress -> {} ", masterAddress);
         logger.info("Master config: masterRegistryPath -> {} ", masterRegistryPath);

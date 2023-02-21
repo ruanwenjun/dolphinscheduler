@@ -93,6 +93,11 @@ public class WorkerFailoverService {
      * @param workerHost worker host
      */
     public void failoverWorker(@NonNull String workerHost) {
+        if (!masterConfig.isNeedFailover()) {
+            LOGGER.info("Master do not need to do failover, will skip it");
+            return;
+        }
+
         LOGGER.info("Worker[{}] failover starting", workerHost);
         final StopWatch failoverTimeCost = StopWatch.createStarted();
 

@@ -58,6 +58,11 @@ public class FailoverExecuteThread extends BaseDaemonThread {
         // when startup, wait 10s for ready
         ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS * 10);
 
+        if (!masterConfig.isNeedFailover()) {
+            logger.info("Master do not need to do failover, will stop this daemon thread");
+            return;
+        }
+
         while (!ServerLifeCycleManager.isStopped()) {
             try {
                 if (!ServerLifeCycleManager.isRunning()) {

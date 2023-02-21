@@ -102,6 +102,11 @@ public class MasterFailoverService {
     }
 
     public void failoverMaster(String masterHost) {
+        if (!masterConfig.isNeedFailover()) {
+            LOGGER.info("Master do not need to do failover, will skip it");
+            return;
+        }
+
         String failoverPath = Constants.REGISTRY_DOLPHINSCHEDULER_LOCK_FAILOVER_MASTERS + "/" + masterHost;
         try {
             registryClient.getLock(failoverPath);

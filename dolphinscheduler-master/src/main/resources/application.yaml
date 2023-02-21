@@ -111,6 +111,8 @@ master:
   failover-interval: 10m
   # kill yarn jon when failover taskInstance, default true
   kill-yarn-job-when-task-failover: true
+  # failover switch, default true. If false master will skip doing workflow and task failover
+  need-failover: true
   registry-disconnect-strategy:
     # The disconnect strategy: stop, waiting
     strategy: waiting
