@@ -40,6 +40,7 @@ public enum DbType {
     H2(9, "h2"),
     REDSHIFT(10, "redshift"),
     DAMENG(101, "dameng"),
+    OPENLOOKENG(12, "openlookeng"),
     ;
 
     @EnumValue
