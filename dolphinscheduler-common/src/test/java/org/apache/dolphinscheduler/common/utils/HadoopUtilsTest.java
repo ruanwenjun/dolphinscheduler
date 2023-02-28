@@ -37,15 +37,6 @@ public class HadoopUtilsTest {
     private HadoopUtils hadoopUtils = HadoopUtils.getInstance();
 
     @Test
-    public void getActiveRMTest() {
-        try {
-            hadoopUtils.getAppAddress("http://ark1:8088/ws/v1/cluster/apps/%s", "192.168.xx.xx,192.168.xx.xx");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    @Test
     public void rename() {
 
         boolean result = false;
@@ -108,12 +99,6 @@ public class HadoopUtilsTest {
         Assert.assertEquals("/dolphinscheduler/11000/resources", result);
     }
 
-    // @Test
-    // public void getHdfsUserDir() {
-    // String result = hadoopUtils.getHdfsUserDir("11000",1000);
-    // Assert.assertEquals("/dolphinscheduler/11000/home/1000", result);
-    // }
-
     @Test
     public void getHdfsUdfDir() {
         String result = hadoopUtils.getHdfsUdfDir("11000");
@@ -139,25 +124,9 @@ public class HadoopUtilsTest {
     }
 
     @Test
-    public void isYarnEnabled() {
-        boolean result = hadoopUtils.isYarnEnabled();
-        Assert.assertEquals(true, result);
-    }
-
-    @Test
     public void test() {
         try {
             hadoopUtils.copyLocalToHdfs("/root/teamviewer_13.1.8286.x86_64.rpm", "/journey", true, true);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    @Test
-    public void readFileTest() {
-        try {
-            byte[] bytes = hadoopUtils.catFile("/dolphinscheduler/hdfs/resources/35435.sh");
-            logger.info(new String(bytes));
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -174,27 +143,6 @@ public class HadoopUtilsTest {
     }
 
     @Test
-    public void getApplicationStatus() {
-        try {
-            logger.info(hadoopUtils.getApplicationStatus("application_1542010131334_0029").toString());
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
-
-    @Test(expected = Exception.class)
-    public void getApplicationUrl() throws Exception {
-        String application_1516778421218_0042 = hadoopUtils.getApplicationUrl("application_1529051418016_0167");
-        logger.info(application_1516778421218_0042);
-    }
-
-    @Test
-    public void getJobHistoryUrl() {
-        String application_1516778421218_0042 = hadoopUtils.getJobHistoryUrl("application_1529051418016_0167");
-        logger.info(application_1516778421218_0042);
-    }
-
-    @Test
     public void catFileWithLimitTest() {
         List<String> stringList = new ArrayList<>();
         try {
@@ -203,16 +151,5 @@ public class HadoopUtilsTest {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-    }
-
-    @Test
-    public void catFileTest() {
-        byte[] content = new byte[0];
-        try {
-            content = hadoopUtils.catFile("/dolphinscheduler/hdfs/resources/WCSparkPython.py");
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        logger.info(Arrays.toString(content));
     }
 }

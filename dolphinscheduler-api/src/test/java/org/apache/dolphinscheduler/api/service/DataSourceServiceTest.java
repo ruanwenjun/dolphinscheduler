@@ -425,7 +425,6 @@ public class DataSourceServiceTest {
         hiveDataSourceParamDTO.setHost("192.168.9.1");
         hiveDataSourceParamDTO.setPort(10000);
         hiveDataSourceParamDTO.setDatabase("im");
-        hiveDataSourceParamDTO.setPrincipal("hive/hdfs-mycluster@ESZ.COM");
         hiveDataSourceParamDTO.setUserName("test");
         hiveDataSourceParamDTO.setPassword("test");
         hiveDataSourceParamDTO.setJavaSecurityKrb5Conf("/opt/krb5.conf");

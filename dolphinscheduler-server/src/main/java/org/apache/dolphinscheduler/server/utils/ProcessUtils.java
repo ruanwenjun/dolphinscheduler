@@ -18,19 +18,32 @@
 package org.apache.dolphinscheduler.server.utils;
 
 import lombok.NonNull;
+import static org.apache.dolphinscheduler.common.Constants.HADOOP_SECURITY_AUTHENTICATION_STARTUP_STATE;
+import static org.apache.dolphinscheduler.common.Constants.YARN_APPLICATION_STATUS_ADDRESS;
+import static org.apache.dolphinscheduler.common.Constants.YARN_JOB_HISTORY_STATUS_ADDRESS;
+import static org.apache.dolphinscheduler.common.Constants.YARN_RESOURCEMANAGER_HA_RM_IDS;
+import static org.apache.dolphinscheduler.common.utils.HadoopUtils.HADOOP_RESOURCE_MANAGER_HTTP_ADDRESS_PORT_VALUE;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.dolphinscheduler.common.Constants;
+import org.apache.dolphinscheduler.common.exception.BaseException;
+import org.apache.dolphinscheduler.common.storage.StorageOperate;
 import org.apache.dolphinscheduler.common.utils.CommonUtils;
 import org.apache.dolphinscheduler.common.utils.FileUtils;
 import org.apache.dolphinscheduler.common.utils.HadoopUtils;
+import org.apache.dolphinscheduler.common.utils.HttpUtils;
+import org.apache.dolphinscheduler.common.utils.KerberosHttpClient;
 import org.apache.dolphinscheduler.common.utils.OSUtils;
 import org.apache.dolphinscheduler.common.utils.PropertyUtils;
 import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.remote.utils.Host;
+import org.apache.dolphinscheduler.service.bean.SpringApplicationContext;
 import org.apache.dolphinscheduler.service.log.LogClient;
+import org.apache.dolphinscheduler.spi.utils.JSONUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,12 +56,17 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 /**
  * mainly used to get the start command line of a process.
  */
 public class ProcessUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessUtils.class);
+    private static final String RM_HA_IDS = org.apache.dolphinscheduler.spi.utils.PropertyUtils.getString(YARN_RESOURCEMANAGER_HA_RM_IDS);
+    private static final String APP_ADDRESS = org.apache.dolphinscheduler.spi.utils.PropertyUtils.getString(YARN_APPLICATION_STATUS_ADDRESS);
+    private static final String JOB_HISTORY_ADDRESS = org.apache.dolphinscheduler.spi.utils.PropertyUtils.getString(YARN_JOB_HISTORY_STATUS_ADDRESS);
 
     /**
      * Initialization regularization, solve the problem of pre-compilation performance,
@@ -76,7 +94,12 @@ public class ProcessUtils {
 
         for (String appId : appIds) {
             try {
-                ExecutionStatus applicationStatus = HadoopUtils.getInstance().getApplicationStatus(appId);
+                StorageOperate storageOperate = SpringApplicationContext.getBean(StorageOperate.class);
+                if (storageOperate == null) {
+                    logger.info("storage operate is null, will skip kill yarn application");
+                    return;
+                }
+                ExecutionStatus applicationStatus = getApplicationStatus(appId);
 
                 if (!applicationStatus.typeIsFinished()) {
                     String commandFile = String.format("%s/%s.kill", executePath, appId);
@@ -86,6 +109,180 @@ public class ProcessUtils {
             } catch (Exception e) {
                 logger.error("Get yarn application app id [{}}] status failed", appId, e);
             }
+        }
+    }
+
+    /**
+     * get the state of an application
+     *
+     * @param applicationId application id
+     * @return the return may be null or there may be other parse exceptions
+     */
+    public static ExecutionStatus getApplicationStatus(String applicationId) throws BaseException {
+        if (StringUtils.isEmpty(applicationId)) {
+            return null;
+        }
+
+        String result;
+        String applicationUrl = getApplicationUrl(applicationId);
+        logger.debug("generate yarn application url, applicationUrl={}", applicationUrl);
+
+        String responseContent = Boolean.TRUE
+            .equals(org.apache.dolphinscheduler.spi.utils.PropertyUtils.getBoolean(HADOOP_SECURITY_AUTHENTICATION_STARTUP_STATE, false))
+            ? KerberosHttpClient.get(applicationUrl)
+            : HttpUtils.get(applicationUrl);
+        if (responseContent != null) {
+            ObjectNode jsonObject = JSONUtils.parseObject(responseContent);
+            if (!jsonObject.has("app")) {
+                return ExecutionStatus.FAILURE;
+            }
+            result = jsonObject.path("app").path("finalStatus").asText();
+
+        } else {
+            // may be in job history
+            String jobHistoryUrl = getJobHistoryUrl(applicationId);
+            logger.debug("generate yarn job history application url, jobHistoryUrl={}", jobHistoryUrl);
+            responseContent = Boolean.TRUE
+                .equals(org.apache.dolphinscheduler.spi.utils.PropertyUtils.getBoolean(HADOOP_SECURITY_AUTHENTICATION_STARTUP_STATE, false))
+                ? KerberosHttpClient.get(jobHistoryUrl)
+                : HttpUtils.get(jobHistoryUrl);
+
+            if (null != responseContent) {
+                ObjectNode jsonObject = JSONUtils.parseObject(responseContent);
+                if (!jsonObject.has("job")) {
+                    return ExecutionStatus.FAILURE;
+                }
+                result = jsonObject.path("job").path("state").asText();
+            } else {
+                return ExecutionStatus.FAILURE;
+            }
+        }
+
+        return getExecutionStatus(result);
+    }
+
+    private static ExecutionStatus getExecutionStatus(String result) {
+        switch (result) {
+            case "ACCEPTED":
+                return ExecutionStatus.SUBMITTED_SUCCESS;
+            case "SUCCEEDED":
+            case "ENDED":
+                return ExecutionStatus.SUCCESS;
+            case "NEW":
+            case "NEW_SAVING":
+            case "SUBMITTED":
+            case "FAILED":
+                return ExecutionStatus.FAILURE;
+            case "KILLED":
+                return ExecutionStatus.KILL;
+            case "RUNNING":
+            default:
+                return ExecutionStatus.RUNNING_EXECUTION;
+        }
+    }
+
+    private static String getApplicationUrl(String applicationId) throws BaseException {
+
+        String appUrl = StringUtils.isEmpty(RM_HA_IDS) ? APP_ADDRESS : getAppAddress(APP_ADDRESS, RM_HA_IDS);
+        if (StringUtils.isBlank(appUrl)) {
+            throw new BaseException("yarn application url generation failed");
+        }
+        logger.debug("yarn application url:{}, applicationId:{}", appUrl, applicationId);
+        return String.format(appUrl, HADOOP_RESOURCE_MANAGER_HTTP_ADDRESS_PORT_VALUE, applicationId);
+    }
+
+    private static String getJobHistoryUrl(String applicationId) {
+        // eg:application_1587475402360_712719 -> job_1587475402360_712719
+        String jobId = applicationId.replace("application", "job");
+        return String.format(JOB_HISTORY_ADDRESS, jobId);
+    }
+
+    private static String getAppAddress(String appAddress, String rmHa) {
+
+        String[] split1 = appAddress.split(org.apache.dolphinscheduler.spi.utils.Constants.DOUBLE_SLASH);
+
+        if (split1.length != 2) {
+            return null;
+        }
+
+        String start = split1[0] + org.apache.dolphinscheduler.spi.utils.Constants.DOUBLE_SLASH;
+        String[] split2 = split1[1].split(org.apache.dolphinscheduler.spi.utils.Constants.COLON);
+
+        if (split2.length != 2) {
+            return null;
+        }
+
+        String end = org.apache.dolphinscheduler.spi.utils.Constants.COLON + split2[1];
+
+        // get active ResourceManager
+        String activeRM = HadoopUtils.YarnHAAdminUtils.getActiveRMName(start, rmHa);
+
+        if (StringUtils.isEmpty(activeRM)) {
+            return null;
+        }
+
+        return start + activeRM + end;
+    }
+
+    /**
+     * yarn ha admin utils
+     */
+    private static final class YarnHAAdminUtils {
+
+        /**
+         * get active resourcemanager node
+         *
+         * @param protocol http protocol
+         * @param rmIds    yarn ha ids
+         * @return yarn active node
+         */
+        public static String getActiveRMName(String protocol, String rmIds) {
+
+            String[] rmIdArr = rmIds.split(org.apache.dolphinscheduler.spi.utils.Constants.COMMA);
+
+            String yarnUrl = protocol + "%s:" + HADOOP_RESOURCE_MANAGER_HTTP_ADDRESS_PORT_VALUE + "/ws/v1/cluster/info";
+
+            try {
+
+                /**
+                 * send http get request to rm
+                 */
+
+                for (String rmId : rmIdArr) {
+                    String state = getRMState(String.format(yarnUrl, rmId));
+                    if ("ACTIVE".equals(state)) {
+                        return rmId;
+                    }
+                }
+
+            } catch (Exception e) {
+                logger.error("yarn ha application url generation failed, message:{}", e.getMessage());
+            }
+            return null;
+        }
+
+        /**
+         * get ResourceManager state
+         */
+        public static String getRMState(String url) {
+
+            String retStr = Boolean.TRUE
+                .equals(org.apache.dolphinscheduler.common.utils.PropertyUtils
+                    .getBoolean(HADOOP_SECURITY_AUTHENTICATION_STARTUP_STATE, false))
+                ? KerberosHttpClient.get(url)
+                : HttpUtils.get(url);
+
+            if (StringUtils.isEmpty(retStr)) {
+                return null;
+            }
+            // to json
+            ObjectNode jsonObject = org.apache.dolphinscheduler.common.utils.JSONUtils.parseObject(retStr);
+
+            // get ResourceManager state
+            if (!jsonObject.has("clusterInfo")) {
+                return null;
+            }
+            return jsonObject.get("clusterInfo").path("haState").asText();
         }
     }
 
@@ -126,9 +323,6 @@ public class ProcessUtils {
             sb.append("#!/bin/sh\n");
             sb.append("BASEDIR=$(cd `dirname $0`; pwd)\n");
             sb.append("cd $BASEDIR\n");
-            if (CommonUtils.getSystemEnvPath() != null) {
-                sb.append("source ").append(CommonUtils.getSystemEnvPath()).append("\n");
-            }
             sb.append("\n\n");
             sb.append(cmd);
 

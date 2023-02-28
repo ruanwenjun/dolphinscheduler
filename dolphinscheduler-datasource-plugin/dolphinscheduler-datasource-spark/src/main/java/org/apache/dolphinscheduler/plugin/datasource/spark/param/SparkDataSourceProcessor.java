@@ -21,13 +21,13 @@ import org.apache.dolphinscheduler.plugin.datasource.api.datasource.AbstractData
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.BaseDataSourceParamDTO;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.DataSourceProcessor;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.CommonUtils;
+import org.apache.dolphinscheduler.plugin.task.api.utils.KerberosUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.PasswordUtils;
 import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.datasource.ConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
 import org.apache.dolphinscheduler.spi.utils.Constants;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
-import org.apache.dolphinscheduler.spi.utils.StringUtils;
 
 import org.apache.commons.collections4.MapUtils;
 
@@ -36,7 +36,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -99,7 +98,6 @@ public class SparkDataSourceProcessor extends AbstractDataSourceProcessor {
         sparkConnectionParam.setValidationQuery(getValidationQuery());
 
         if (CommonUtils.getKerberosStartupState()) {
-            sparkConnectionParam.setPrincipal(sparkDatasourceParam.getPrincipal());
             sparkConnectionParam.setJavaSecurityKrb5Conf(sparkDatasourceParam.getJavaSecurityKrb5Conf());
             sparkConnectionParam.setLoginUserKeytabPath(sparkDatasourceParam.getLoginUserKeytabPath());
             sparkConnectionParam.setLoginUserKeytabUsername(sparkDatasourceParam.getLoginUserKeytabUsername());
@@ -136,11 +134,20 @@ public class SparkDataSourceProcessor extends AbstractDataSourceProcessor {
     @Override
     public Connection getConnection(ConnectionParam connectionParam) throws IOException, ClassNotFoundException, SQLException {
         SparkConnectionParam sparkConnectionParam = (SparkConnectionParam) connectionParam;
-        CommonUtils.loadKerberosConf(sparkConnectionParam.getJavaSecurityKrb5Conf(),
-                sparkConnectionParam.getLoginUserKeytabUsername(), sparkConnectionParam.getLoginUserKeytabPath());
         Class.forName(getDatasourceDriver());
-        return DriverManager.getConnection(getJdbcUrl(sparkConnectionParam),
-                sparkConnectionParam.getUser(), PasswordUtils.decodePassword(sparkConnectionParam.getPassword()));
+        try {
+            return KerberosUtils.doWithReloadKerberosConfIfAuthFail(
+                () -> DriverManager.getConnection(getJdbcUrl(sparkConnectionParam),
+                    sparkConnectionParam.getUser(),
+                    PasswordUtils.decodePassword(sparkConnectionParam.getPassword())),
+                sparkConnectionParam.getJavaSecurityKrb5Conf(),
+                sparkConnectionParam.getLoginUserKeytabUsername(),
+                sparkConnectionParam.getLoginUserKeytabPath());
+        } catch (IOException | ClassNotFoundException | SQLException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw new RuntimeException("Get connection fail", ex);
+        }
     }
 
     @Override

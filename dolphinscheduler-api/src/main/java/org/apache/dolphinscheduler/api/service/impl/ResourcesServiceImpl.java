@@ -2024,7 +2024,7 @@ public class ResourcesServiceImpl extends BaseServiceImpl implements ResourcesSe
 
             storageOperate.upload(tenantCode, localFilename, storageFileName, true, true);
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Upload to storage fail", e);
             result.setCode(Status.HDFS_OPERATION_ERROR.getCode());
             result.setMsg(String.format("copy %s to hdfs %s fail", localFilename, storageFileName));
             return result;

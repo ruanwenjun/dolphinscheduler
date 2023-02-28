@@ -28,7 +28,6 @@ public class SparkDataSourceParamDTO extends BaseHDFSDataSourceParamDTO {
                 + "host='" + host + '\''
                 + ", port=" + port
                 + ", database='" + database + '\''
-                + ", principal='" + principal + '\''
                 + ", userName='" + userName + '\''
                 + ", password='" + password + '\''
                 + ", other='" + other + '\''

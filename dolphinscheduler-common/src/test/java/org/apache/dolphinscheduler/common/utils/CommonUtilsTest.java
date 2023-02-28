@@ -40,12 +40,6 @@ import org.slf4j.LoggerFactory;
 public class CommonUtilsTest {
 
     private static final Logger logger = LoggerFactory.getLogger(CommonUtilsTest.class);
-    @Test
-    public void getSystemEnvPath() {
-        String envPath;
-        envPath = CommonUtils.getSystemEnvPath();
-        Assert.assertEquals("/etc/profile", envPath);
-    }
 
     @Test
     public void isDevelopMode() {

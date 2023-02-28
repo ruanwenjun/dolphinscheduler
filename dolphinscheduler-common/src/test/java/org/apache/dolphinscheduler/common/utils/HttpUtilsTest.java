@@ -49,20 +49,6 @@ public class HttpUtilsTest {
     }
 
     @Test
-    public void testGetByKerberos() {
-        try {
-            String applicationUrl = hadoopUtils.getApplicationUrl("application_1542010131334_0029");
-            String responseContent;
-            responseContent = HttpUtils.get(applicationUrl);
-            Assert.assertNull(responseContent);
-
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-
-    }
-
-    @Test
     public void testGetResponseContentString() {
         CloseableHttpClient httpclient = HttpClients.createDefault();
         HttpGet httpget = new HttpGet("https://github.com/manifest.json");

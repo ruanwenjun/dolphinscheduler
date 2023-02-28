@@ -33,7 +33,6 @@ public class SparkConnectionParam extends BaseHDFSConnectionParam {
                 + ", driverClassName='" + driverClassName + '\''
                 + ", validationQuery='" + validationQuery + '\''
                 + ", other='" + other + '\''
-                + ", principal='" + principal + '\''
                 + ", javaSecurityKrb5Conf='" + javaSecurityKrb5Conf + '\''
                 + ", loginUserKeytabUsername='" + loginUserKeytabUsername + '\''
                 + ", loginUserKeytabPath='" + loginUserKeytabPath + '\''

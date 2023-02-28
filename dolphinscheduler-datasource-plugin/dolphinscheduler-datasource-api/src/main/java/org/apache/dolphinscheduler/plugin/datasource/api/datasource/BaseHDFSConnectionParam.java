@@ -21,18 +21,9 @@ import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 
 public class BaseHDFSConnectionParam extends BaseConnectionParam {
 
-    protected String principal;
     protected String javaSecurityKrb5Conf;
     protected String loginUserKeytabUsername;
     protected String loginUserKeytabPath;
-
-    public String getPrincipal() {
-        return principal;
-    }
-
-    public void setPrincipal(String principal) {
-        this.principal = principal;
-    }
 
     public String getJavaSecurityKrb5Conf() {
         return javaSecurityKrb5Conf;

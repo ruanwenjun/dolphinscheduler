@@ -76,32 +76,4 @@ public class ProcessUtilsTest {
                 .thenReturn(false);
         Assert.assertEquals("", ProcessUtils.getKerberosInitCommand());
     }
-
-    @Test
-    public void testCancelApplication() {
-        List<String> appIds = new ArrayList<>();
-        appIds.add("application_1585532379175_228491");
-        appIds.add("application_1598885606600_3677");
-        String tenantCode = "dev";
-        String executePath = "/ds-exec/1/1/1";
-        ExecutionStatus running = ExecutionStatus.RUNNING_EXECUTION;
-
-        PowerMockito.mockStatic(HadoopUtils.class);
-        HadoopUtils hadoop = HadoopUtils.getInstance();
-
-        try {
-            PowerMockito.whenNew(HadoopUtils.class).withAnyArguments().thenReturn(hadoop);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            when(hadoop.getApplicationStatus("application_1585532379175_228491")).thenReturn(running);
-            when(hadoop.getApplicationStatus("application_1598885606600_3677")).thenReturn(running);
-        } catch (Exception e) {
-            e.printStackTrace();
-            ProcessUtils.cancelApplication(appIds, logger, tenantCode, executePath);
-        }
-
-        Assert.assertNotNull(appIds);
-    }
 }

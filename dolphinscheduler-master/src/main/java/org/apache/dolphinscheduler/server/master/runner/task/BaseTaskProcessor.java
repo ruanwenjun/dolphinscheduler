@@ -394,7 +394,7 @@ public abstract class BaseTaskProcessor implements ITaskProcessor {
         udfFuncList.forEach(udfFunc -> {
             UdfFuncParameters udfFuncParameters =
                     JSONUtils.parseObject(JSONUtils.toJsonString(udfFunc), UdfFuncParameters.class);
-            udfFuncParameters.setDefaultFS(HadoopUtils.getInstance().getDefaultFS());
+            udfFuncParameters.setDefaultFS(PropertyUtils.getString(Constants.FS_DEFAULT_FS));
             String tenantCode = processService.queryTenantCodeByResName(udfFunc.getResourceName(), ResourceType.UDF);
             udfFuncParameters.setTenantCode(tenantCode);
             map.put(udfFunc.getId(), udfFuncParameters);

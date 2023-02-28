@@ -42,6 +42,7 @@ public class DataSourceClientProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(DataSourceClientProvider.class);
 
+    // todo remove the cache
     private static final long duration = PropertyUtils.getLong(TaskConstants.KERBEROS_EXPIRE_TIME, 24);
     private static final Cache<String, DataSourceClient> uniqueId2dataSourceClientCache = CacheBuilder.newBuilder()
             .expireAfterWrite(duration, TimeUnit.HOURS)

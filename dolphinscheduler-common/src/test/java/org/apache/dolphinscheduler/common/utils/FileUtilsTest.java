@@ -60,7 +60,7 @@ public class FileUtilsTest {
             FileUtils.createWorkDirIfAbsent("/tmp/createWorkDirAndUserIfAbsent");
             Assert.assertTrue(true);
         } catch (Exception e) {
-            Assert.assertTrue(false);
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -72,7 +72,7 @@ public class FileUtilsTest {
             PropertyUtils.setValue(Constants.DATASOURCE_ENCRYPTION_ENABLE, "false");
             Assert.assertFalse(PropertyUtils.getBoolean(Constants.DATASOURCE_ENCRYPTION_ENABLE));
         } catch (Exception e) {
-            Assert.assertTrue(false);
+            Assert.fail(e.getMessage());
         }
     }
 

@@ -17,24 +17,27 @@
 
 package org.apache.dolphinscheduler.plugin.datasource.hive.param;
 
-import com.google.auto.service.AutoService;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.AbstractDataSourceProcessor;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.BaseDataSourceParamDTO;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.DataSourceProcessor;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.CommonUtils;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.PasswordUtils;
+import org.apache.dolphinscheduler.plugin.task.api.utils.KerberosUtils;
 import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
 import org.apache.dolphinscheduler.spi.datasource.ConnectionParam;
 import org.apache.dolphinscheduler.spi.enums.DbType;
 import org.apache.dolphinscheduler.spi.utils.Constants;
 import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 
+import org.apache.commons.collections4.MapUtils;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
+
+import com.google.auto.service.AutoService;
 
 @AutoService(DataSourceProcessor.class)
 public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
@@ -90,7 +93,6 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
         hiveConnectionParam.setValidationQuery(getValidationQuery());
 
         if (CommonUtils.getKerberosStartupState()) {
-            hiveConnectionParam.setPrincipal(hiveParam.getPrincipal());
             hiveConnectionParam.setJavaSecurityKrb5Conf(hiveParam.getJavaSecurityKrb5Conf());
             hiveConnectionParam.setLoginUserKeytabPath(hiveParam.getLoginUserKeytabPath());
             hiveConnectionParam.setLoginUserKeytabUsername(hiveParam.getLoginUserKeytabUsername());
@@ -128,11 +130,20 @@ public class HiveDataSourceProcessor extends AbstractDataSourceProcessor {
     @Override
     public Connection getConnection(ConnectionParam connectionParam) throws IOException, ClassNotFoundException, SQLException {
         HiveConnectionParam hiveConnectionParam = (HiveConnectionParam) connectionParam;
-        CommonUtils.loadKerberosConf(hiveConnectionParam.getJavaSecurityKrb5Conf(),
-                hiveConnectionParam.getLoginUserKeytabUsername(), hiveConnectionParam.getLoginUserKeytabPath());
-        Class.forName(getDatasourceDriver());
-        return DriverManager.getConnection(getJdbcUrl(connectionParam),
-                hiveConnectionParam.getUser(), PasswordUtils.decodePassword(hiveConnectionParam.getPassword()));
+        try {
+            Class.forName(getDatasourceDriver());
+            return KerberosUtils.doWithReloadKerberosConfIfAuthFail(
+                () -> DriverManager.getConnection(getJdbcUrl(connectionParam),
+                    hiveConnectionParam.getUser(),
+                    PasswordUtils.decodePassword(hiveConnectionParam.getPassword())),
+                hiveConnectionParam.getJavaSecurityKrb5Conf(),
+                hiveConnectionParam.getLoginUserKeytabUsername(),
+                hiveConnectionParam.getLoginUserKeytabPath());
+        } catch (IOException | ClassNotFoundException | SQLException e) {
+            throw e;
+        } catch (Exception ex) {
+            throw new RuntimeException("Get connection fail", ex);
+        }
     }
 
     @Override
