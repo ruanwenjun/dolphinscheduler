@@ -55,6 +55,8 @@ public class WorkerHeartBeatTask extends BaseHeartBeatTask<WorkerHeartBeat> {
         int execThreads = workerConfig.getExecThreads();
         int waitSubmitQueueSize = workerManagerThread.getWaitSubmitQueueSize();
 
+        int allWaitTaskCnt = waitSubmitQueueSize + workerManagerThread.getThreadPoolWaitingTaskNum();
+
         return WorkerHeartBeat.builder()
                 .workerServerStatus(ServerLifeCycleManager.getServerStatus())
                 .workerConfigProperty(workerConfigProperty)
@@ -69,7 +71,7 @@ public class WorkerHeartBeatTask extends BaseHeartBeatTask<WorkerHeartBeat> {
                 .maxCpuloadAvg(maxCpuLoadAvg)
                 .reservedMemory(reservedMemory)
                 .serverStatus(getServerStatus(cpuUsage, maxCpuLoadAvg, availablePhysicalMemorySize, reservedMemory,
-                        execThreads, waitSubmitQueueSize))
+                        execThreads, allWaitTaskCnt))
                 .workerHostWeight(workerConfig.getHostWeight())
                 .workerWaitingTaskCount(waitSubmitQueueSize)
                 .workerExecThreadCount(execThreads)
