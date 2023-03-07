@@ -413,19 +413,10 @@ public class DataxTask extends AbstractTaskExecutor {
 
     public String getPythonCommand() {
         String pythonHome = System.getenv("PYTHON_HOME");
-        return getPythonCommand(pythonHome);
-    }
-
-    public String getPythonCommand(String pythonHome) {
-        if (StringUtils.isEmpty(pythonHome)) {
-            return DATAX_PYTHON;
+        if (StringUtils.isNotEmpty(pythonHome)) {
+            return pythonHome;
         }
-        String pythonBinPath = "/bin/" + DATAX_PYTHON;
-        Matcher matcher = PYTHON_PATH_PATTERN.matcher(pythonHome);
-        if (matcher.find()) {
-            return matcher.replaceAll(pythonBinPath);
-        }
-        return Paths.get(pythonHome, pythonBinPath).toString();
+        return DATAX_PYTHON;
     }
 
     public String loadJvmEnv(DataxParameters dataXParameters) {
