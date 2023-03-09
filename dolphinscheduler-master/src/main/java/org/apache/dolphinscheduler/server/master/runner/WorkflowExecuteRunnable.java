@@ -285,33 +285,33 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
                     this.stateEvents.remove(stateEvent);
                 }
             } catch (StateEventHandleError stateEventHandleError) {
-                logger.error("State event handle error, will remove this event: {}", stateEvent, stateEventHandleError);
+                logger.error("State event handle error, will remove this event: {}, errMsg:{}", stateEvent, stateEventHandleError.getMessage());
                 this.stateEvents.remove(stateEvent);
-                ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS);
+                ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS_SHORT);
             } catch (StateEventHandleException stateEventHandleException) {
                 logger.error("State event handle error, will retry this event: {}",
                         stateEvent,
                         stateEventHandleException);
-                ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS);
+                ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS_SHORT);
             } catch (Exception e) {
                 // we catch the exception here, since if the state event handle failed, the state event will still keep
                 // in the stateEvents queue.
                 logger.error("State event handle error, get a unknown exception, will retry this event: {}",
                         stateEvent,
                         e);
-                ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS);
+                ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS_SHORT);
             } finally {
                 LoggerUtils.removeWorkflowAndTaskInstanceIdMDC();
             }
-            if (!stateEvents.isEmpty()) {
-                // The current events may exist bad event or cannot handle now , we need to sleep here to avoid the
-                // thread busy loop.
-                try {
-                    Thread.sleep(Constants.SLEEP_TIME_MILLIS);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    logger.error("The current thread has been interrupted", e);
-                }
+        }
+        if (!stateEvents.isEmpty()) {
+            // The current events may exist bad event or cannot handle now , we need to sleep here to avoid the
+            // thread busy loop.
+            try {
+                Thread.sleep(Constants.SLEEP_TIME_MILLIS_SHORT);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.error("The current thread has been interrupted", e);
             }
         }
     }
