@@ -69,6 +69,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -195,7 +196,7 @@ public class ProcessInstanceServiceTest {
         Mockito.doNothing().when(projectService).checkProjectAndAuth(loginUser, project, projectCode,
                 WORKFLOW_INSTANCE);
         when(processDefineMapper.selectById(Mockito.anyInt())).thenReturn(getProcessDefinition());
-        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Mockito.any(), Mockito.any(),
+        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Mockito.any(), Mockito.any(), Mockito.any(),
                 Mockito.any(), Mockito.any(), Mockito.any(),
                 eq("192.168.xx.xx"), Mockito.any(), Mockito.any())).thenReturn(pageReturn);
 
@@ -208,7 +209,7 @@ public class ProcessInstanceServiceTest {
         projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_INSTANCE);
         when(usersService.queryUser(loginUser.getId())).thenReturn(loginUser);
         when(usersService.getUserIdByName(loginUser.getUserName())).thenReturn(loginUser.getId());
-        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Lists.emptyList(),
+        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Collections.emptySet(), Lists.emptyList(),
                 eq(1L), eq(""), eq(-1), Mockito.any(),
                 eq("192.168.xx.xx"), eq(start), eq(end))).thenReturn(pageReturn);
         when(usersService.queryUser(processInstance.getExecutorId())).thenReturn(loginUser);
@@ -219,7 +220,7 @@ public class ProcessInstanceServiceTest {
         // Assert.assertEquals(Status.SUCCESS.getCode(), (int) successRes.getCode());
 
         // data parameter empty
-        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Lists.emptyList(),
+        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Collections.emptySet(), Lists.emptyList(),
                 eq(1L), eq(""), eq(-1), Mockito.any(),
                 eq("192.168.xx.xx"), eq(null), eq(null))).thenReturn(pageReturn);
         processInstanceService.queryProcessInstanceList(loginUser, projectCode, 1, "",
@@ -239,6 +240,7 @@ public class ProcessInstanceServiceTest {
 
         // executor name empty
         when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class),
+                Collections.emptySet(),
                 Lists.newArrayList(project.getCode()),
                 eq(1L), eq(""), eq(0), Mockito.any(),
                 eq("192.168.xx.xx"), eq(start), eq(end))).thenReturn(pageReturn);

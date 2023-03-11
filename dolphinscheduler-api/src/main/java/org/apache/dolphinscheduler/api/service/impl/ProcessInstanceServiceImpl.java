@@ -90,6 +90,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -301,6 +302,13 @@ public class ProcessInstanceServiceImpl extends BaseServiceImpl implements Proce
                 return pageInfo;
             }
         }
+        Set<Long> specifyProcessInstanceIdSet = Collections.emptySet();
+        if (StringUtils.isNotEmpty(otherParamsJson)) {
+            specifyProcessInstanceIdSet = specifyProcessInstanceIdSet(otherParamsJson);
+            if (CollectionUtils.isEmpty(specifyProcessInstanceIdSet)) {
+                return pageInfo;
+            }
+        }
         int executorId = usersService.getUserIdByName(executorName);
         // todo: Change to selectUserByUserName
         if (executorId == -1) {
@@ -314,6 +322,7 @@ public class ProcessInstanceServiceImpl extends BaseServiceImpl implements Proce
         Page<ProcessInstance> page = new Page<>(pageNo, pageSize);
         // todo: add project_code
         IPage<ProcessInstance> processInstanceList = processInstanceMapper.queryProcessInstanceListPaging(page,
+                specifyProcessInstanceIdSet,
                 currentProjectProcessDefinitionCodes, processDefineCode, searchVal, executorId, statusArray, host,
                 start, end);
 
@@ -340,6 +349,10 @@ public class ProcessInstanceServiceImpl extends BaseServiceImpl implements Proce
         pageInfo.setTotal((int) processInstanceList.getTotal());
         pageInfo.setTotalList(processInstances);
         return pageInfo;
+    }
+
+    public Set<Long> specifyProcessInstanceIdSet(String otherParamsJson) {
+        return Collections.emptySet();
     }
 
     /**

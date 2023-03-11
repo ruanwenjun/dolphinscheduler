@@ -33,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -183,6 +184,7 @@ public class ProcessInstanceMapperTest extends BaseDaoTest {
 
         IPage<ProcessInstance> processInstanceIPage = processInstanceMapper.queryProcessInstanceListPaging(
                 page,
+                Collections.emptySet(),
                 Lists.emptyList(),
                 processInstance.getProcessDefinitionCode(),
                 processInstance.getName(),

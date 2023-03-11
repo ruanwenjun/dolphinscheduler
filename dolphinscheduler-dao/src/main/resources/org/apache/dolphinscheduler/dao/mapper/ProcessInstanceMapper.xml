@@ -107,6 +107,12 @@
         <if test="processDefinitionCode != 0">
             and process_definition_code = #{processDefinitionCode}
         </if>
+        <if test="specifyProcessInstanceIdSet != null and specifyProcessInstanceIdSet.size() != 0">
+            and id in
+            <foreach collection="specifyProcessInstanceIdSet" item="i" open="(" close=")" separator=",">
+                #{i}
+            </foreach>
+        </if>
         <if test="currentProjectProcessDefinitionCodes != null and currentProjectProcessDefinitionCodes.size() != 0">
             and process_definition_code in
             <foreach collection="currentProjectProcessDefinitionCodes" item="i" open="(" close=")" separator=",">

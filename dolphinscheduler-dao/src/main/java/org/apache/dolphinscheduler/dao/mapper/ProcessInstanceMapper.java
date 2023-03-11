@@ -27,6 +27,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * process instance mapper interface
@@ -105,6 +106,7 @@ public interface ProcessInstanceMapper extends BaseMapper<ProcessInstance> {
      * @return process instance page
      */
     IPage<ProcessInstance> queryProcessInstanceListPaging(Page<ProcessInstance> page,
+                                                          @Param("specifyProcessInstanceIdSet") Set<Long> specifyProcessInstanceIdSet,
                                                           @Param("currentProjectProcessDefinitionCodes") List<Long> currentProjectProcessDefinitionCodes,
                                                           @Param("processDefinitionCode") Long processDefinitionCode,
                                                           @Param("searchVal") String searchVal,
