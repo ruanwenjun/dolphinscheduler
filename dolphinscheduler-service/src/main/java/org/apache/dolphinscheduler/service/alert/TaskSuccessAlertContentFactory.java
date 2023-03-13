@@ -8,6 +8,8 @@ import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.ProjectUser;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 
+import java.util.Date;
+
 @AutoService(AlertContentFactory.class)
 public class TaskSuccessAlertContentFactory implements AlertContentFactory<TaskSuccessAlert> {
 
@@ -19,6 +21,7 @@ public class TaskSuccessAlertContentFactory implements AlertContentFactory<TaskS
                 .projectName(projectUser.getProjectName())
                 .workflowInstanceName(processInstance.getName())
                 .taskName(taskInstances.getName())
+                .alertCreateTime(new Date())
                 .startTime(taskInstances.getStartTime())
                 .endTime(taskInstances.getEndTime())
                 .build();

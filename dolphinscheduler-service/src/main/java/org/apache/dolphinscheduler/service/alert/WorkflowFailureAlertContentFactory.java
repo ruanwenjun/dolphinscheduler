@@ -8,6 +8,8 @@ import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.ProjectUser;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 
+import java.util.Date;
+
 @AutoService(AlertContentFactory.class)
 public class WorkflowFailureAlertContentFactory implements AlertContentFactory<WorkflowFailureAlertContent> {
 
@@ -18,6 +20,7 @@ public class WorkflowFailureAlertContentFactory implements AlertContentFactory<W
         return WorkflowFailureAlertContent.builder()
                 .projectName(projectUser.getProjectName())
                 .workflowInstanceName(processInstance.getName())
+                .alertCreateTime(new Date())
                 .startTime(processInstance.getStartTime())
                 .endTime(processInstance.getEndTime())
                 .build();

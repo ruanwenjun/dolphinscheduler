@@ -1,14 +1,18 @@
 package org.apache.dolphinscheduler.alert.content.template;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.dolphinscheduler.alert.config.AlertConfig;
-import org.apache.dolphinscheduler.alert.content.TemplateInjectedAlertContentWrapper;
-import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 import org.apache.dolphinscheduler.alert.api.content.AlertContent;
 import org.apache.dolphinscheduler.alert.api.content.WorkflowFailureAlertContent;
+import org.apache.dolphinscheduler.alert.api.enums.AlertType;
+import org.apache.dolphinscheduler.alert.config.AlertConfig;
+import org.apache.dolphinscheduler.alert.content.TemplateInjectedAlertContentWrapper;
+import org.apache.dolphinscheduler.alert.utils.AlertContentUtils;
+import org.apache.dolphinscheduler.spi.utils.DateUtils;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -24,17 +28,21 @@ public class WorkflowInstanceFailureAlertContentTemplateInjector extends BaseAle
         WorkflowFailureAlertContent workflowFailureAlertContent = (WorkflowFailureAlertContent) alertContent;
         String title = alertTemplate.getTitleTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
-                        workflowFailureAlertContent.getAlertType().getDescp())
+                        AlertContentUtils.getAlertType(workflowFailureAlertContent.getAlertType()))
                 .replaceAll(TemplateInjectUtils.PROJECT_NAME_TEMPLATE, workflowFailureAlertContent.getProjectName())
                 .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_NAME_TEMPLATE,
-                        workflowFailureAlertContent.getWorkflowInstanceName());
+                        workflowFailureAlertContent.getWorkflowInstanceName())
+                .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
+                        DateUtils.formatDate(workflowFailureAlertContent.getAlertCreateTime()));
 
         String content = alertTemplate.getContentTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
-                        workflowFailureAlertContent.getAlertType().getDescp())
+                        AlertContentUtils.getAlertType(workflowFailureAlertContent.getAlertType()))
                 .replaceAll(TemplateInjectUtils.PROJECT_NAME_TEMPLATE, workflowFailureAlertContent.getProjectName())
                 .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_NAME_TEMPLATE,
-                        workflowFailureAlertContent.getWorkflowInstanceName());
+                        workflowFailureAlertContent.getWorkflowInstanceName())
+                .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
+                        DateUtils.formatDate(workflowFailureAlertContent.getAlertCreateTime()));
 
         return TemplateInjectedAlertContentWrapper.builder()
                 .alertContentPojo(alertContent)

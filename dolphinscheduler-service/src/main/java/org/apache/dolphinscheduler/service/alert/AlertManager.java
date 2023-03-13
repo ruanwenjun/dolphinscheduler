@@ -17,8 +17,6 @@
 
 package org.apache.dolphinscheduler.service.alert;
 
-import lombok.NonNull;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.dolphinscheduler.alert.api.content.AlertContent;
 import org.apache.dolphinscheduler.alert.api.content.DqExecuteResultAlertContent;
 import org.apache.dolphinscheduler.alert.api.content.ServerCrashAlertContent;
@@ -39,16 +37,21 @@ import org.apache.dolphinscheduler.plugin.task.api.enums.TaskTimeoutStrategy;
 import org.apache.dolphinscheduler.remote.command.alert.TaskAlertRequestCommand;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 import org.apache.dolphinscheduler.spi.utils.DateUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import lombok.NonNull;
 
 @Component
 public class AlertManager {
@@ -356,6 +359,7 @@ public class AlertManager {
                     .userName(result.getUserName())
                     .state(result.getState())
                     .errorDataPath(result.getErrorOutputPath())
+                    .alertCreateTime(new Date())
                     .startTime(result.getCreateTime())
                     .endTime(result.getUpdateTime())
                     .build();
@@ -382,6 +386,7 @@ public class AlertManager {
     public void sendServerStoppedAlert(String path) {
         ServerCrashAlertContent serverCrashAlertContent = ServerCrashAlertContent.builder()
                 .serverPath(path)
+                .alertCreateTime(new Date())
                 .build();
         String content = JSONUtils.toJsonString(serverCrashAlertContent);
 

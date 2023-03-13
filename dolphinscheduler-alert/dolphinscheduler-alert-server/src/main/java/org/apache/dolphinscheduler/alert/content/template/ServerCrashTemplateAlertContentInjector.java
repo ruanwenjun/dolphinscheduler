@@ -5,6 +5,8 @@ import org.apache.dolphinscheduler.alert.api.content.ServerCrashAlertContent;
 import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 import org.apache.dolphinscheduler.alert.config.AlertConfig;
 import org.apache.dolphinscheduler.alert.content.TemplateInjectedAlertContentWrapper;
+import org.apache.dolphinscheduler.alert.utils.AlertContentUtils;
+import org.apache.dolphinscheduler.spi.utils.DateUtils;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -27,13 +29,17 @@ public class ServerCrashTemplateAlertContentInjector extends BaseAlertTemplateIn
                 (ServerCrashAlertContent) alertContent;
         String title = alertTemplate.getTitleTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
-                        serverCrashAlertContent.getAlertType().getDescp())
-                .replaceAll(TemplateInjectUtils.SERVER_PATH_TEMPLATE, serverCrashAlertContent.getServerPath());
+                        AlertContentUtils.getAlertType(serverCrashAlertContent.getAlertType()))
+                .replaceAll(TemplateInjectUtils.SERVER_PATH_TEMPLATE, serverCrashAlertContent.getServerPath())
+                .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
+                        DateUtils.formatDate(serverCrashAlertContent.getAlertCreateTime()));
 
         String content = alertTemplate.getContentTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
-                        serverCrashAlertContent.getAlertType().getDescp())
-                .replaceAll(TemplateInjectUtils.SERVER_PATH_TEMPLATE, serverCrashAlertContent.getServerPath());
+                        AlertContentUtils.getAlertType(serverCrashAlertContent.getAlertType()))
+                .replaceAll(TemplateInjectUtils.SERVER_PATH_TEMPLATE, serverCrashAlertContent.getServerPath())
+                .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
+                        DateUtils.formatDate(serverCrashAlertContent.getAlertCreateTime()));
 
         return TemplateInjectedAlertContentWrapper.builder()
                 .alertTitle(title)

@@ -26,10 +26,10 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 /**
  * date utils
@@ -63,8 +63,15 @@ public class DateUtils {
         return formatTimeStamp(timeMillis, DEFAULT_DATETIME_FORMATTER);
     }
 
+    public static String formatDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        return formatTimeStamp(date.getTime(), DEFAULT_DATETIME_FORMATTER);
+    }
+
     /**
-     * @param timeMillis timeMillis like System.currentTimeMillis()
+     * @param timeMillis        timeMillis like System.currentTimeMillis()
      * @param dateTimeFormatter expect formatter, like yyyy-MM-dd HH:mm:ss
      * @return formatted string
      */

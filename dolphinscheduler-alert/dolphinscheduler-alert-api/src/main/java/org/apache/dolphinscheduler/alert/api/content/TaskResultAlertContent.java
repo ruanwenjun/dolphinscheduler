@@ -18,6 +18,7 @@ public class TaskResultAlertContent implements AlertContent {
     private String projectName;
     private String workflowInstanceName;
     private String taskName;
+    private Date alertCreateTime;
     private Date startTime;
     private Date endTime;
 

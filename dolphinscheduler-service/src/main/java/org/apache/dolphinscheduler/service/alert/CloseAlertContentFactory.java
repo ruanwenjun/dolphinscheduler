@@ -1,12 +1,16 @@
 package org.apache.dolphinscheduler.service.alert;
 
-import com.google.auto.service.AutoService;
-import lombok.NonNull;
 import org.apache.dolphinscheduler.alert.api.content.CloseAlertContent;
 import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.ProjectUser;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
+
+import java.util.Date;
+
+import com.google.auto.service.AutoService;
+
+import lombok.NonNull;
 
 @AutoService(AlertContentFactory.class)
 public class CloseAlertContentFactory implements AlertContentFactory<CloseAlertContent> {
@@ -19,6 +23,7 @@ public class CloseAlertContentFactory implements AlertContentFactory<CloseAlertC
         return CloseAlertContent.builder()
                 .projectName(projectUser.getProjectName())
                 .workflowInstanceName(processInstance.getName())
+                .alertCreateTime(new Date())
                 .build();
     }
 

@@ -31,29 +31,29 @@ public enum AlertType {
      * 0 process instance failure, 1 process instance success, 2 process instance blocked, 3 process instance timeout, 4 fault tolerance warning,
      * 5 task failure, 6 task success, 7 task timeout, 8 close alert
       */
-    PROCESS_INSTANCE_FAILURE(0, "WorkflowInstanceFailure"),
-    PROCESS_INSTANCE_SUCCESS(1, "WorkflowInstanceSuccess"),
-    PROCESS_INSTANCE_BLOCKED(2, "WorkflowInstanceBlocked"),
-    PROCESS_INSTANCE_TIMEOUT(3, "WorkflowInstanceTimeout"),
+    PROCESS_INSTANCE_FAILURE(0, "WorkflowInstanceFailure", "执行失败"),
+    PROCESS_INSTANCE_SUCCESS(1, "WorkflowInstanceSuccess", "执行成功"),
+    PROCESS_INSTANCE_BLOCKED(2, "WorkflowInstanceBlocked", "执行阻塞"),
+    PROCESS_INSTANCE_TIMEOUT(3, "WorkflowInstanceTimeout", "执行超时"),
     @Deprecated
-    FAULT_TOLERANCE_WARNING(4, "FaultToleranceWarning"),
-    TASK_FAILURE(5, "TaskFailure"),
-    TASK_SUCCESS(6, "TaskSuccess"),
-    TASK_TIMEOUT(7, "TaskTimeout"),
+    FAULT_TOLERANCE_WARNING(4, "FaultToleranceWarning", "容错"),
+    TASK_FAILURE(5, "TaskFailure", "执行失败"),
+    TASK_SUCCESS(6, "TaskSuccess", "执行成功"),
+    TASK_TIMEOUT(7, "TaskTimeout", "执行超时"),
 
-    CLOSE_ALERT(8, "The workflow instance success, can close the before alert"),
+    CLOSE_ALERT(8, "The workflow instance success, can close the before alert", "关闭告警"),
 
-    WORKFLOW_FAULT_TOLERANCE(9, "WorkflowFaultTolerance"),
-    TASK_FAULT_TOLERANCE(10, "TaskFaultTolerance"),
+    WORKFLOW_FAULT_TOLERANCE(9, "WorkflowFaultTolerance", "容错"),
+    TASK_FAULT_TOLERANCE(10, "TaskFaultTolerance", "容错"),
 
-    TASK_RESULT(11, "TaskResult"),
+    TASK_RESULT(11, "TaskResult", "任务结果"),
 
-    DATA_QUALITY_TASK_RESULT(12, "DataQualityTaskResult"),
+    DATA_QUALITY_TASK_RESULT(12, "DataQualityTaskResult", "数据质量任务结果"),
 
-    WORKFLOW_TIME_CHECK_NOT_RUN_ALERT(13, "WorkflowTimeCheckNotRunAlert"),
-    WORKFLOW_TIME_CHECK_STILL_RUNNING_ALERT(14, "WorkflowTimeCheckStillRunningRunAlert"),
+    WORKFLOW_TIME_CHECK_NOT_RUN_ALERT(13, "WorkflowTimeCheckNotRunAlert", "工作流未执行"),
+    WORKFLOW_TIME_CHECK_STILL_RUNNING_ALERT(14, "WorkflowTimeCheckStillRunningRunAlert", "工作流仍在运行"),
 
-    SERVER_CRASH_ALERT(15, "ServerCrashAlert"),
+    SERVER_CRASH_ALERT(15, "ServerCrashAlert", "服务下线"),
     ;
 
     private static final Map<Integer, AlertType> alertTypeMap = new HashMap<>();
@@ -64,14 +64,16 @@ public enum AlertType {
         }
     }
 
-    AlertType(int code, String descp) {
+    AlertType(int code, String descp, String descpCN) {
         this.code = code;
         this.descp = descp;
+        this.descpCN = descpCN;
     }
 
     @EnumValue
     private final int code;
     private final String descp;
+    private final String descpCN;
 
     public int getCode() {
         return code;
@@ -79,6 +81,10 @@ public enum AlertType {
 
     public String getDescp() {
         return descp;
+    }
+
+    public String getDescpCN() {
+        return descpCN;
     }
 
     public static AlertType ofCode(int code) {

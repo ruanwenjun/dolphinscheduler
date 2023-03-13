@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.dolphinscheduler.alert.api.enums.AlertType;
 
+import java.util.Date;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -14,6 +16,7 @@ public class WorkflowBlockAlertContent implements AlertContent {
 
     private String projectName;
     private String workflowInstanceName;
+    private Date alertCreateTime;
 
     @Override
     public AlertType getAlertType() {

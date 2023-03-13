@@ -16,6 +16,7 @@ public class WorkflowFailureAlertContent implements AlertContent {
 
     private String projectName;
     private String workflowInstanceName;
+    private Date alertCreateTime;
     private Date startTime;
     private Date endTime;
 
