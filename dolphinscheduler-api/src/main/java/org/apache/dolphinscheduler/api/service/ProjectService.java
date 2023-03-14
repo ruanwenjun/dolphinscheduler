@@ -56,7 +56,7 @@ public interface ProjectService {
      * @param projectName project name
      * @return project detail information
      */
-    Map<String, Object> queryByName(User loginUser, String projectName);
+    Project queryByName(User loginUser, String projectName);
 
     /**
      * check project and authorization

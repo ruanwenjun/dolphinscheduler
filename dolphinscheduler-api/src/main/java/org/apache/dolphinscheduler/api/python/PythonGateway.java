@@ -493,7 +493,7 @@ public class PythonGateway {
         Map<String, Object> result = new HashMap<>();
 
         User user = usersService.queryUser(userName);
-        Project project = (Project) projectService.queryByName(user, projectName).get(Constants.DATA_LIST);
+        Project project = projectService.queryByName(user, projectName);
         long projectCode = project.getCode();
         ProcessDefinition processDefinition = getProcessDefinition(user, projectCode, processDefinitionName);
         // get process definition info

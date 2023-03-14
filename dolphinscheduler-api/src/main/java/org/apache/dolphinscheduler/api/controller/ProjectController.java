@@ -29,6 +29,7 @@ import org.apache.dolphinscheduler.api.utils.Result;
 import org.apache.dolphinscheduler.api.vo.project.ProjectListingVO;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.utils.ParameterUtils;
+import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -139,6 +140,19 @@ public class ProjectController extends BaseController {
                                      @PathVariable("code") long code) {
         Map<String, Object> result = projectService.queryByCode(loginUser, code);
         return returnDataList(result);
+    }
+
+    @ApiOperation(value = "queryProjectByName", notes = "QUERY_PROJECT_BY_ID_NOTES")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "code", value = "PROJECT_CODE", dataType = "Long", example = "123456")
+    })
+    @GetMapping(value = "/")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiException(QUERY_PROJECT_DETAILS_BY_CODE_ERROR)
+    @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
+    public Result<Project> queryProjectByName(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                                              @RequestParam("name") String name) {
+        return Result.success(projectService.queryByName(loginUser, name));
     }
 
     /**
