@@ -17,12 +17,16 @@
 
 package org.apache.dolphinscheduler.api.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Lists;
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang3.StringUtils;
+import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.WORKFLOW_START;
+import static org.apache.dolphinscheduler.common.Constants.CMDPARAM_COMPLEMENT_DATA_END_DATE;
+import static org.apache.dolphinscheduler.common.Constants.CMDPARAM_COMPLEMENT_DATA_SCHEDULE_DATE_LIST;
+import static org.apache.dolphinscheduler.common.Constants.CMDPARAM_COMPLEMENT_DATA_START_DATE;
+import static org.apache.dolphinscheduler.common.Constants.CMD_PARAM_RECOVER_PROCESS_ID_STRING;
+import static org.apache.dolphinscheduler.common.Constants.CMD_PARAM_START_NODES;
+import static org.apache.dolphinscheduler.common.Constants.CMD_PARAM_START_PARAMS;
+import static org.apache.dolphinscheduler.common.Constants.COMMA;
+import static org.apache.dolphinscheduler.common.Constants.MAX_TASK_TIMEOUT;
+
 import org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant;
 import org.apache.dolphinscheduler.api.dto.CheckComplementDto;
 import org.apache.dolphinscheduler.api.enums.ExecuteType;
@@ -30,6 +34,7 @@ import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.exceptions.ServiceException;
 import org.apache.dolphinscheduler.api.service.ExecutorService;
 import org.apache.dolphinscheduler.api.service.MonitorService;
+import org.apache.dolphinscheduler.api.service.OperationService;
 import org.apache.dolphinscheduler.api.service.ProjectService;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.CommandType;
@@ -75,12 +80,12 @@ import org.apache.dolphinscheduler.remote.processor.StateEventCallbackService;
 import org.apache.dolphinscheduler.remote.utils.Host;
 import org.apache.dolphinscheduler.service.corn.CronUtils;
 import org.apache.dolphinscheduler.service.process.ProcessService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -91,15 +96,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.WORKFLOW_START;
-import static org.apache.dolphinscheduler.common.Constants.CMDPARAM_COMPLEMENT_DATA_END_DATE;
-import static org.apache.dolphinscheduler.common.Constants.CMDPARAM_COMPLEMENT_DATA_SCHEDULE_DATE_LIST;
-import static org.apache.dolphinscheduler.common.Constants.CMDPARAM_COMPLEMENT_DATA_START_DATE;
-import static org.apache.dolphinscheduler.common.Constants.CMD_PARAM_RECOVER_PROCESS_ID_STRING;
-import static org.apache.dolphinscheduler.common.Constants.CMD_PARAM_START_NODES;
-import static org.apache.dolphinscheduler.common.Constants.CMD_PARAM_START_PARAMS;
-import static org.apache.dolphinscheduler.common.Constants.COMMA;
-import static org.apache.dolphinscheduler.common.Constants.MAX_TASK_TIMEOUT;
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Lists;
 
 /**
  * executor service impl
@@ -142,6 +147,9 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
     @Autowired
     private TaskGroupQueueMapper taskGroupQueueMapper;
 
+    @Autowired
+    private OperationService operationService;
+
     /**
      * execute process instance
      *
@@ -165,17 +173,26 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
      * @return execute process instance code
      */
     @Override
-    public Map<String, Object> execProcessInstance(User loginUser, long projectCode,
-                                                   long processDefinitionCode, String cronTime, CommandType commandType,
-                                                   FailureStrategy failureStrategy, String startNodeList,
-                                                   TaskDependType taskDependType, WarningType warningType,
+    public Map<String, Object> execProcessInstance(User loginUser,
+                                                   long projectCode,
+                                                   long processDefinitionCode,
+                                                   String cronTime,
+                                                   CommandType commandType,
+                                                   FailureStrategy failureStrategy,
+                                                   String startNodeList,
+                                                   TaskDependType taskDependType,
+                                                   WarningType warningType,
                                                    int warningGroupId,
                                                    RunMode runMode,
-                                                   Priority processInstancePriority, String workerGroup,
-                                                   Long environmentCode, Integer timeout,
-                                                   Map<String, String> startParams, Integer expectedParallelismNumber,
+                                                   Priority processInstancePriority,
+                                                   String workerGroup,
+                                                   Long environmentCode,
+                                                   Integer timeout,
+                                                   Map<String, String> startParams,
+                                                   Integer expectedParallelismNumber,
                                                    int dryRun,
-                                                   ComplementDependentMode complementDependentMode) {
+                                                   ComplementDependentMode complementDependentMode,
+                                                   Long operationId) {
         Project project = projectMapper.queryByCode(projectCode);
         // check user access for project
         Map<String, Object> result = new HashMap<>();
@@ -213,14 +230,28 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
         if (!complementDto.isCheckResult()) {
             return result;
         }
-
+        operationId = operationService.checkOrCreateOperationId(operationId);
         /**
          * create command
          */
-        int create = this.createCommand(commandType, processDefinition.getCode(),
-                taskDependType, failureStrategy, startNodeList, warningType, loginUser.getId(),
-                warningGroupId, runMode, processInstancePriority, workerGroup, environmentCode, startParams,
-                expectedParallelismNumber, dryRun, complementDependentMode, complementDto);
+        int create = this.createCommand(commandType,
+                processDefinition.getCode(),
+                taskDependType,
+                failureStrategy,
+                startNodeList,
+                warningType,
+                loginUser.getId(),
+                warningGroupId,
+                runMode,
+                processInstancePriority,
+                workerGroup,
+                environmentCode,
+                startParams,
+                expectedParallelismNumber,
+                dryRun,
+                complementDependentMode,
+                complementDto,
+                operationId);
 
         if (create > 0) {
             processDefinition.setWarningGroupId(warningGroupId);
@@ -680,14 +711,23 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
      * @param complementDto complement data
      * @return command id
      */
-    private int createCommand(CommandType commandType, long processDefineCode,
-                              TaskDependType nodeDep, FailureStrategy failureStrategy,
-                              String startNodeList, WarningType warningType,
-                              int executorId, int warningGroupId,
-                              RunMode runMode, Priority processInstancePriority, String workerGroup,
+    private int createCommand(CommandType commandType,
+                              long processDefineCode,
+                              TaskDependType nodeDep,
+                              FailureStrategy failureStrategy,
+                              String startNodeList,
+                              WarningType warningType,
+                              int executorId,
+                              int warningGroupId,
+                              RunMode runMode,
+                              Priority processInstancePriority,
+                              String workerGroup,
                               Long environmentCode,
-                              Map<String, String> startParams, Integer expectedParallelismNumber, int dryRun,
-                              ComplementDependentMode complementDependentMode, CheckComplementDto complementDto) {
+                              Map<String, String> startParams,
+                              Integer expectedParallelismNumber,
+                              int dryRun,
+                              ComplementDependentMode complementDependentMode,
+                              CheckComplementDto complementDto, Long operationId) {
 
         /**
          * instantiate command schedule instance
@@ -729,6 +769,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
             command.setProcessDefinitionVersion(processDefinition.getVersion());
         }
         command.setProcessInstanceId(0);
+        command.setOperationId(operationId);
 
         // determine whether to complement
         return commandType == CommandType.COMPLEMENT_DATA

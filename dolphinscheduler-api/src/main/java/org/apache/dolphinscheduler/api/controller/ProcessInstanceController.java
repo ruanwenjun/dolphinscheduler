@@ -123,6 +123,7 @@ public class ProcessInstanceController extends BaseController {
                                            @RequestParam(value = "startDate", required = false) String startTime,
                                            @RequestParam(value = "endDate", required = false) String endTime,
                                            @RequestParam(value = "otherParamsJson", required = false) String otherParamsJson,
+                                           @RequestParam(value = "operationId", required = false) Long operationId,
                                            @RequestParam("pageNo") Integer pageNo,
                                            @RequestParam("pageSize") Integer pageSize) {
 
@@ -142,6 +143,7 @@ public class ProcessInstanceController extends BaseController {
                 stateType,
                 host,
                 otherParamsJson,
+                operationId,
                 pageNo,
                 pageSize);
         return Result.success(processInstancePageInfo);

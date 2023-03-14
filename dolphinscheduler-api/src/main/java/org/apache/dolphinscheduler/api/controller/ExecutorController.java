@@ -144,7 +144,8 @@ public class ExecutorController extends BaseController {
                                        @RequestParam(value = "startParams", required = false) String startParams,
                                        @RequestParam(value = "expectedParallelismNumber", required = false) Integer expectedParallelismNumber,
                                        @RequestParam(value = "dryRun", defaultValue = "0", required = false) int dryRun,
-                                       @RequestParam(value = "complementDependentMode", required = false) ComplementDependentMode complementDependentMode) {
+                                       @RequestParam(value = "complementDependentMode", required = false) ComplementDependentMode complementDependentMode,
+                                       @RequestParam(value = "operationId", required = false) Long operationId) {
 
         if (timeout == null) {
             timeout = Constants.MAX_TASK_TIMEOUT;
@@ -158,11 +159,27 @@ public class ExecutorController extends BaseController {
             complementDependentMode = ComplementDependentMode.OFF_MODE;
         }
 
-        Map<String, Object> result = execService.execProcessInstance(loginUser, projectCode, processDefinitionCode,
-                scheduleTime, execType, failureStrategy,
-                startNodeList, taskDependType, warningType, warningGroupId, runMode, processInstancePriority,
-                workerGroup, environmentCode, timeout, startParamMap, expectedParallelismNumber, dryRun,
-                complementDependentMode);
+        Map<String, Object> result = execService.execProcessInstance(
+                loginUser,
+                projectCode,
+                processDefinitionCode,
+                scheduleTime,
+                execType,
+                failureStrategy,
+                startNodeList,
+                taskDependType,
+                warningType,
+                warningGroupId,
+                runMode,
+                processInstancePriority,
+                workerGroup,
+                environmentCode,
+                timeout,
+                startParamMap,
+                expectedParallelismNumber,
+                dryRun,
+                complementDependentMode,
+                operationId);
         return returnDataList(result);
     }
 
@@ -229,7 +246,8 @@ public class ExecutorController extends BaseController {
                                             @RequestParam(value = "startParams", required = false) String startParams,
                                             @RequestParam(value = "expectedParallelismNumber", required = false) Integer expectedParallelismNumber,
                                             @RequestParam(value = "dryRun", defaultValue = "0", required = false) int dryRun,
-                                            @RequestParam(value = "complementDependentMode", required = false) ComplementDependentMode complementDependentMode) {
+                                            @RequestParam(value = "complementDependentMode", required = false) ComplementDependentMode complementDependentMode,
+                                            @RequestParam(value = "operationId", required = false) Long operationId) {
 
         if (timeout == null) {
             timeout = Constants.MAX_TASK_TIMEOUT;
@@ -252,11 +270,27 @@ public class ExecutorController extends BaseController {
 
         for (String strProcessDefinitionCode : processDefinitionCodeArray) {
             long processDefinitionCode = Long.parseLong(strProcessDefinitionCode);
-            result = execService.execProcessInstance(loginUser, projectCode, processDefinitionCode, scheduleTime,
-                    execType, failureStrategy,
-                    startNodeList, taskDependType, warningType, warningGroupId, runMode, processInstancePriority,
-                    workerGroup, environmentCode, timeout, startParamMap, expectedParallelismNumber, dryRun,
-                    complementDependentMode);
+            result = execService.execProcessInstance(
+                    loginUser,
+                    projectCode,
+                    processDefinitionCode,
+                    scheduleTime,
+                    execType,
+                    failureStrategy,
+                    startNodeList,
+                    taskDependType,
+                    warningType,
+                    warningGroupId,
+                    runMode,
+                    processInstancePriority,
+                    workerGroup,
+                    environmentCode,
+                    timeout,
+                    startParamMap,
+                    expectedParallelismNumber,
+                    dryRun,
+                    complementDependentMode,
+                    operationId);
 
             if (!Status.SUCCESS.equals(result.get(Constants.STATUS))) {
                 startFailedProcessDefinitionCodeList.add(String.valueOf(processDefinitionCode));

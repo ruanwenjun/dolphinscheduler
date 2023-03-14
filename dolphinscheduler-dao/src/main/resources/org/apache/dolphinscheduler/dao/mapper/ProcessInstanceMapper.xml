@@ -24,7 +24,7 @@
         warning_group_id, schedule_time, command_start_time, global_params, flag,
         update_time, is_sub_process, executor_id, history_cmd,
         process_instance_priority, worker_group,environment_code, timeout, tenant_id, var_pool,
-        dry_run, next_process_instance_id, restart_time, state_history
+        dry_run, next_process_instance_id, restart_time, state_history, operation_id
     </sql>
     <select id="queryDetailById" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
         select
@@ -141,8 +141,18 @@
         <if test="executorId != 0">
             and executor_id = #{executorId}
         </if>
+        <if test="operationId != null">
+            and operation_id = #{operationId}
+        </if>
         order by start_time desc
     </select>
+
+    <select id="selectByOperationId" resultType="org.apache.dolphinscheduler.dao.entity.ProcessInstance">
+        select <include refid="baseSql"/>
+        from t_ds_process_instance
+        where operation_id = #{operationId}
+    </select>
+
     <update id="setFailoverByHostAndStateArray">
         update t_ds_process_instance
         set host=null

@@ -272,6 +272,8 @@ public class ProcessInstance {
      */
     private Date restartTime;
 
+    private Long operationId;
+
     /**
      * workflow block flag
      */

@@ -33,6 +33,7 @@ import org.apache.dolphinscheduler.common.enums.TaskDependType;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -110,7 +111,8 @@ public class ExecutorControllerTest extends AbstractControllerTest {
                 eq(scheduleTime), eq(execType), eq(failureStrategy), eq(startNodeList), eq(taskDependType),
                 eq(warningType),
                 eq(warningGroupId), eq(runMode), eq(processInstancePriority), eq(workerGroup), eq(environmentCode),
-                eq(timeout), eq(startParams), eq(expectedParallelismNumber), eq(dryRun), eq(complementDependentMode)))
+                eq(timeout), eq(startParams), eq(expectedParallelismNumber), eq(dryRun), eq(complementDependentMode),
+                Mockito.anyLong()))
                         .thenReturn(executeServiceResult);
 
         // When
@@ -152,7 +154,7 @@ public class ExecutorControllerTest extends AbstractControllerTest {
                 eq(warningType),
                 eq(warningGroupId), eq(runMode), eq(processInstancePriority), eq(workerGroup), eq(environmentCode),
                 eq(Constants.MAX_TASK_TIMEOUT), eq(startParams), eq(expectedParallelismNumber), eq(dryRun),
-                eq(complementDependentMode))).thenReturn(executeServiceResult);
+                eq(complementDependentMode), Mockito.anyLong())).thenReturn(executeServiceResult);
 
         // When
         final MvcResult mvcResult = mockMvc
@@ -193,7 +195,7 @@ public class ExecutorControllerTest extends AbstractControllerTest {
                 eq(warningType),
                 eq(warningGroupId), eq(runMode), eq(processInstancePriority), eq(workerGroup), eq(environmentCode),
                 eq(timeout), eq(null), eq(expectedParallelismNumber), eq(dryRun),
-                eq(complementDependentMode))).thenReturn(executeServiceResult);
+                eq(complementDependentMode), Mockito.anyLong())).thenReturn(executeServiceResult);
 
         // When
         final MvcResult mvcResult = mockMvc
@@ -222,7 +224,7 @@ public class ExecutorControllerTest extends AbstractControllerTest {
                 eq(scheduleTime), eq(null), eq(failureStrategy), eq(null), eq(null), eq(warningType),
                 eq(0), eq(null), eq(null), eq("default"), eq(-1L),
                 eq(Constants.MAX_TASK_TIMEOUT), eq(null), eq(null), eq(0),
-                eq(complementDependentMode))).thenReturn(executeServiceResult);
+                eq(complementDependentMode), Mockito.anyLong())).thenReturn(executeServiceResult);
 
         // When
         final MvcResult mvcResult = mockMvc

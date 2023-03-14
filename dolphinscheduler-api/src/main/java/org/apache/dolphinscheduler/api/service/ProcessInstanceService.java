@@ -81,6 +81,7 @@ public interface ProcessInstanceService {
                                                        ExecutionStatus stateType,
                                                        String host,
                                                        String otherParamsJson,
+                                                       Long operationId,
                                                        Integer pageNo,
                                                        Integer pageSize);
 

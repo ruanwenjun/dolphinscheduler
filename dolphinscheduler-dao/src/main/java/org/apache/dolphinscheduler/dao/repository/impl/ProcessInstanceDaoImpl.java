@@ -17,22 +17,25 @@
 
 package org.apache.dolphinscheduler.dao.repository.impl;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.mapper.ProcessInstanceMapper;
 import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
-
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -47,6 +50,12 @@ public class ProcessInstanceDaoImpl implements ProcessInstanceDao {
             return Collections.emptyList();
         }
         return processInstanceMapper.selectBatchIds(processInstanceIds);
+    }
+
+    @Override
+    public List<ProcessInstance> queryProcessInstanceByOperationId(Long operationId) {
+        checkNotNull(operationId, "operationId cannot be null");
+        return processInstanceMapper.selectByOperationId(operationId);
     }
 
     @Override

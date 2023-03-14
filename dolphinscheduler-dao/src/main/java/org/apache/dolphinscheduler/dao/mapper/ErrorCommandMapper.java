@@ -17,13 +17,15 @@
 
 package org.apache.dolphinscheduler.dao.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.dolphinscheduler.dao.entity.CommandCount;
 import org.apache.dolphinscheduler.dao.entity.ErrorCommand;
+
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * error command mapper interface
@@ -32,8 +34,9 @@ public interface ErrorCommandMapper extends BaseMapper<ErrorCommand> {
 
     /**
      * count command state
-     * @param startTime startTime
-     * @param endTime endTime
+     *
+     * @param startTime        startTime
+     * @param endTime          endTime
      * @param projectCodeArray projectCodeArray
      * @return CommandCount list
      */
@@ -43,4 +46,6 @@ public interface ErrorCommandMapper extends BaseMapper<ErrorCommand> {
                                          @Param("projectCodeArray") Long[] projectCodeArray);
 
     void deleteByProcessDefinitionCode(@Param("processDefinitionCode") int processDefinitionCode);
+
+    List<ErrorCommand> selectErrorCommandByOperationId(@Param("operationId") Long operationId);
 }

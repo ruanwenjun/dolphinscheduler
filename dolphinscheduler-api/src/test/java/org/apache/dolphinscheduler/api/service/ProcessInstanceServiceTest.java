@@ -17,7 +17,12 @@
 
 package org.apache.dolphinscheduler.api.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.INSTANCE_DELETE;
+import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.INSTANCE_UPDATE;
+import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.WORKFLOW_INSTANCE;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import org.apache.dolphinscheduler.api.enums.Status;
 import org.apache.dolphinscheduler.api.exceptions.ServiceException;
 import org.apache.dolphinscheduler.api.service.impl.LoggerServiceImpl;
@@ -57,14 +62,6 @@ import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.service.expand.CuringParamsService;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 import org.apache.dolphinscheduler.service.task.TaskPluginManager;
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -76,11 +73,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.INSTANCE_DELETE;
-import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.INSTANCE_UPDATE;
-import static org.apache.dolphinscheduler.api.constants.ApiFuncIdentificationConstant.WORKFLOW_INSTANCE;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 /**
  * process instance service test
@@ -177,7 +179,7 @@ public class ProcessInstanceServiceTest {
         try {
             processInstanceService.queryProcessInstanceList(loginUser, projectCode, 46, "2020-01-01 00:00:00",
                     "2020-01-02 00:00:00", "", "test_user", ExecutionStatus.SUBMITTED_SUCCESS,
-                    "192.168.xx.xx", "", 1, 10);
+                    "192.168.xx.xx", "", Mockito.anyLong(), 1, 10);
             Assert.fail("Should throw project not found exception");
         } catch (ServiceException serviceException) {
 
@@ -196,36 +198,63 @@ public class ProcessInstanceServiceTest {
         Mockito.doNothing().when(projectService).checkProjectAndAuth(loginUser, project, projectCode,
                 WORKFLOW_INSTANCE);
         when(processDefineMapper.selectById(Mockito.anyInt())).thenReturn(getProcessDefinition());
-        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Mockito.any(), Mockito.any(), Mockito.any(),
-                Mockito.any(), Mockito.any(), Mockito.any(),
-                eq("192.168.xx.xx"), Mockito.any(), Mockito.any())).thenReturn(pageReturn);
+        when(processInstanceMapper.queryProcessInstanceListPaging(
+                Mockito.any(Page.class),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                eq("192.168.xx.xx"),
+                null,
+                Mockito.any(),
+                Mockito.any())).thenReturn(pageReturn);
 
         processInstanceService.queryProcessInstanceList(loginUser, projectCode, 1, "20200101 00:00:00",
                 "20200102 00:00:00", "", loginUser.getUserName(), ExecutionStatus.SUBMITTED_SUCCESS,
-                "192.168.xx.xx", "", 1, 10);
+                "192.168.xx.xx", "", Mockito.anyLong(), 1, 10);
         // Assert.assertEquals(Status.REQUEST_PARAMS_NOT_VALID_ERROR.getCode(), (int) dataParameterRes.getCode());
 
         when(projectMapper.queryByCode(projectCode)).thenReturn(project);
         projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_INSTANCE);
         when(usersService.queryUser(loginUser.getId())).thenReturn(loginUser);
         when(usersService.getUserIdByName(loginUser.getUserName())).thenReturn(loginUser.getId());
-        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Collections.emptySet(), Lists.emptyList(),
-                eq(1L), eq(""), eq(-1), Mockito.any(),
-                eq("192.168.xx.xx"), eq(start), eq(end))).thenReturn(pageReturn);
+        when(processInstanceMapper.queryProcessInstanceListPaging(
+                Mockito.any(Page.class),
+                Collections.emptySet(),
+                Lists.emptyList(),
+                eq(1L),
+                eq(""),
+                eq(-1),
+                Mockito.any(),
+                eq("192.168.xx.xx"),
+                null,
+                eq(start),
+                eq(end))).thenReturn(pageReturn);
         when(usersService.queryUser(processInstance.getExecutorId())).thenReturn(loginUser);
 
         processInstanceService.queryProcessInstanceList(loginUser, projectCode, 1, "2020-01-01 00:00:00",
                 "2020-01-02 00:00:00", "", loginUser.getUserName(), ExecutionStatus.SUBMITTED_SUCCESS,
-                "192.168.xx.xx", "", 1, 10);
+                "192.168.xx.xx", "", Mockito.anyLong(), 1, 10);
         // Assert.assertEquals(Status.SUCCESS.getCode(), (int) successRes.getCode());
 
         // data parameter empty
-        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class), Collections.emptySet(), Lists.emptyList(),
-                eq(1L), eq(""), eq(-1), Mockito.any(),
-                eq("192.168.xx.xx"), eq(null), eq(null))).thenReturn(pageReturn);
+        when(processInstanceMapper.queryProcessInstanceListPaging(
+                Mockito.any(Page.class),
+                Collections.emptySet(),
+                Lists.emptyList(),
+                eq(1L),
+                eq(""),
+                eq(-1),
+                Mockito.any(),
+                eq("192.168.xx.xx"),
+                null,
+                eq(null),
+                eq(null))).thenReturn(pageReturn);
         processInstanceService.queryProcessInstanceList(loginUser, projectCode, 1, "",
                 "", "", loginUser.getUserName(), ExecutionStatus.SUBMITTED_SUCCESS,
-                "192.168.xx.xx", "", 1, 10);
+                "192.168.xx.xx", "", Mockito.anyLong(), 1, 10);
         // Assert.assertEquals(Status.SUCCESS.getCode(), (int) successRes.getCode());
 
         // executor null
@@ -234,20 +263,27 @@ public class ProcessInstanceServiceTest {
 
         processInstanceService.queryProcessInstanceList(loginUser, projectCode, 1, "2020-01-01 00:00:00",
                 "2020-01-02 00:00:00", "", "admin", ExecutionStatus.SUBMITTED_SUCCESS,
-                "192.168.xx.xx", "", 1, 10);
+                "192.168.xx.xx", "", Mockito.anyLong(), 1, 10);
 
         // Assert.assertEquals(Status.SUCCESS.getCode(), (int) executorExistRes.getCode());
 
         // executor name empty
-        when(processInstanceMapper.queryProcessInstanceListPaging(Mockito.any(Page.class),
+        when(processInstanceMapper.queryProcessInstanceListPaging(
+                Mockito.any(Page.class),
                 Collections.emptySet(),
                 Lists.newArrayList(project.getCode()),
-                eq(1L), eq(""), eq(0), Mockito.any(),
-                eq("192.168.xx.xx"), eq(start), eq(end))).thenReturn(pageReturn);
+                eq(1L),
+                eq(""),
+                eq(0),
+                Mockito.any(),
+                eq("192.168.xx.xx"),
+                null,
+                eq(start),
+                eq(end))).thenReturn(pageReturn);
 
         processInstanceService.queryProcessInstanceList(loginUser, projectCode, 1, "2020-01-01 00:00:00",
                 "2020-01-02 00:00:00", "", "", ExecutionStatus.SUBMITTED_SUCCESS,
-                "192.168.xx.xx", "", 1, 10);
+                "192.168.xx.xx", "", Mockito.anyLong(), 1, 10);
         // Assert.assertEquals(Status.SUCCESS.getCode(), (int) executorEmptyRes.getCode());
 
     }

@@ -58,16 +58,26 @@ public interface ExecutorService {
      * @param expectedParallelismNumber the expected parallelism number when execute complement in parallel mode
      * @return execute process instance code
      */
-    Map<String, Object> execProcessInstance(User loginUser, long projectCode,
-                                            long processDefinitionCode, String cronTime, CommandType commandType,
-                                            FailureStrategy failureStrategy, String startNodeList,
-                                            TaskDependType taskDependType, WarningType warningType, int warningGroupId,
+    Map<String, Object> execProcessInstance(User loginUser,
+                                            long projectCode,
+                                            long processDefinitionCode,
+                                            String cronTime,
+                                            CommandType commandType,
+                                            FailureStrategy failureStrategy,
+                                            String startNodeList,
+                                            TaskDependType taskDependType,
+                                            WarningType warningType,
+                                            int warningGroupId,
                                             RunMode runMode,
-                                            Priority processInstancePriority, String workerGroup, Long environmentCode,
+                                            Priority processInstancePriority,
+                                            String workerGroup,
+                                            Long environmentCode,
                                             Integer timeout,
-                                            Map<String, String> startParams, Integer expectedParallelismNumber,
+                                            Map<String, String> startParams,
+                                            Integer expectedParallelismNumber,
                                             int dryRun,
-                                            ComplementDependentMode complementDependentMode);
+                                            ComplementDependentMode complementDependentMode,
+                                            Long operationId);
 
     /**
      * check whether the process definition can be executed

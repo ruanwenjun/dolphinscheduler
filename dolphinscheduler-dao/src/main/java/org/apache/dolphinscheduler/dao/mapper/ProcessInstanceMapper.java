@@ -113,6 +113,7 @@ public interface ProcessInstanceMapper extends BaseMapper<ProcessInstance> {
                                                           @Param("executorId") Integer executorId,
                                                           @Param("states") int[] statusArray,
                                                           @Param("host") String host,
+                                                          @Param("operationId") Long operationId,
                                                           @Param("startTime") Date startTime,
                                                           @Param("endTime") Date endTime);
 
@@ -267,4 +268,6 @@ public interface ProcessInstanceMapper extends BaseMapper<ProcessInstance> {
                                        @Param("status") int status);
 
     ProcessInstance queryByProcessInstanceName(@Param("processInstanceName") String processInstanceName);
+
+    List<ProcessInstance> selectByOperationId(@Param("operationId") Long operationId);
 }

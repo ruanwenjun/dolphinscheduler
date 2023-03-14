@@ -68,7 +68,7 @@ public class CodeGenerateUtils {
         return SYSTEM_TIMESTAMP + (System.nanoTime() - SYSTEM_NANOTIME) / 1000000;
     }
 
-    public static class CodeGenerateException extends Exception {
+    public static class CodeGenerateException extends RuntimeException {
 
         public CodeGenerateException(String message) {
             super(message);

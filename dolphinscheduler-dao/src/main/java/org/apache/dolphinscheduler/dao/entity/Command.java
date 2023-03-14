@@ -137,6 +137,9 @@ public class Command {
     @TableField("process_definition_version")
     private int processDefinitionVersion;
 
+    @TableField("operation_id")
+    private Long operationId;
+
     public Command() {
         this.taskDependType = TaskDependType.TASK_POST;
         this.failureStrategy = FailureStrategy.CONTINUE;
@@ -321,6 +324,14 @@ public class Command {
 
     public void setProcessDefinitionVersion(int processDefinitionVersion) {
         this.processDefinitionVersion = processDefinitionVersion;
+    }
+
+    public Long getOperationId() {
+        return operationId;
+    }
+
+    public void setOperationId(Long operationId) {
+        this.operationId = operationId;
     }
 
     @Override

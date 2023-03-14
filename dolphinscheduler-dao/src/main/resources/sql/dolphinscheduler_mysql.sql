@@ -343,6 +343,7 @@ CREATE TABLE `t_ds_command` (
   `worker_group`              varchar(64)  COMMENT 'worker group',
   `environment_code`          bigint(20) DEFAULT '-1' COMMENT 'environment code',
   `dry_run`                   tinyint(4) DEFAULT '0' COMMENT 'dry run flag：0 normal, 1 dry run',
+  `operation_id`              bigint(20) DEFAULT NULL COMMENT 'operation id',
   PRIMARY KEY (`id`),
   KEY `priority_id_index` (`process_instance_priority`,`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
@@ -619,6 +620,7 @@ CREATE TABLE `t_ds_process_instance` (
   `dry_run` tinyint(4) DEFAULT '0' COMMENT 'dry run flag：0 normal, 1 dry run',
   `next_process_instance_id` int(11) DEFAULT '0' COMMENT 'serial queue next processInstanceId',
   `restart_time` datetime DEFAULT NULL COMMENT 'process instance restart time',
+  `operation_id` bigint(20) DEFAULT NULL COMMENT 'operation id',
   PRIMARY KEY (`id`),
   KEY `process_instance_index` (`process_definition_code`,`id`) USING BTREE,
   KEY `start_time_index` (`start_time`) USING BTREE,

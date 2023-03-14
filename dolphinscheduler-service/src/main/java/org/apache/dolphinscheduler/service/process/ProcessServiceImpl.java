@@ -788,6 +788,7 @@ public class ProcessServiceImpl implements ProcessService {
                 .setEnvironmentCode(Objects.isNull(command.getEnvironmentCode()) ? -1 : command.getEnvironmentCode());
         processInstance.setTimeout(processDefinition.getTimeout());
         processInstance.setTenantId(processDefinition.getTenantId());
+        processInstance.setOperationId(command.getOperationId());
         return processInstance;
     }
 
@@ -912,7 +913,7 @@ public class ProcessServiceImpl implements ProcessService {
         if (processInstanceId == 0) {
             processInstance = generateNewProcessInstance(processDefinition, command, cmdParam);
         } else {
-            processInstance = this.findProcessInstanceDetailById(processInstanceId).orElse(null);
+            processInstance = processInstanceMapper.queryDetailById(processInstanceId);
             if (processInstance == null) {
                 return null;
             }

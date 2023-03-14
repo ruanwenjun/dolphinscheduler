@@ -47,4 +47,10 @@
         order by process_instance_priority, id asc
             limit #{limit} offset #{offset}
     </select>
+
+    <select id="selectByOperationId" resultType="org.apache.dolphinscheduler.dao.entity.Command">
+        select *
+        from t_ds_command
+        where operation_id = #{operationId}
+    </select>
 </mapper>

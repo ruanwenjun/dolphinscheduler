@@ -28,6 +28,8 @@ public interface ProcessInstanceDao {
 
     List<ProcessInstance> queryProcessInstanceByIds(List<Integer> processInstanceIds);
 
+    List<ProcessInstance> queryProcessInstanceByOperationId(Long operationId);
+
     Optional<ProcessInstance> queryProcessInstanceById(@NonNull Integer processInstanceId);
 
     Optional<ProcessInstance> queryProcessInstanceByName(String processInstanceName);

@@ -17,7 +17,6 @@
 
 package org.apache.dolphinscheduler.api.python;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.dolphinscheduler.api.configuration.PythonGatewayConfiguration;
 import org.apache.dolphinscheduler.api.dto.resources.ResourceComponent;
 import org.apache.dolphinscheduler.api.enums.Status;
@@ -59,13 +58,9 @@ import org.apache.dolphinscheduler.dao.mapper.ProjectUserMapper;
 import org.apache.dolphinscheduler.dao.mapper.ScheduleMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 import org.apache.dolphinscheduler.spi.enums.ResourceType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import py4j.GatewayServer;
 
-import javax.annotation.PostConstruct;
+import org.apache.commons.collections.CollectionUtils;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
@@ -74,6 +69,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import py4j.GatewayServer;
 
 @Component
 public class PythonGateway {
@@ -334,7 +338,8 @@ public class PythonGateway {
                                     String workerGroup,
                                     String warningType,
                                     int warningGroupId,
-                                    Integer timeout) {
+                                    Integer timeout,
+                                    Long operationId) {
         User user = usersService.queryUser(userName);
         Project project = projectMapper.queryByName(projectName);
         ProcessDefinition processDefinition =
@@ -362,7 +367,8 @@ public class PythonGateway {
                 null,
                 null,
                 DEFAULT_DRY_RUN,
-                COMPLEMENT_DEPENDENT_MODE);
+                COMPLEMENT_DEPENDENT_MODE,
+                operationId);
     }
 
     // side object
