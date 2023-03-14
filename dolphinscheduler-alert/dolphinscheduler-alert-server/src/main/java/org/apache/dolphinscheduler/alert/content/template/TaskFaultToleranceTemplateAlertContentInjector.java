@@ -35,7 +35,10 @@ public class TaskFaultToleranceTemplateAlertContentInjector extends BaseAlertTem
                         taskFaultToleranceAlertContent.getWorkflowInstanceName())
                 .replaceAll(TemplateInjectUtils.TASK_NAME_TEMPLATE, taskFaultToleranceAlertContent.getTaskName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(taskFaultToleranceAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(taskFaultToleranceAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        taskFaultToleranceAlertContent.getWorkflowInstanceLink())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, taskFaultToleranceAlertContent.getLabel());
 
         String content = alertTemplate.getContentTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
@@ -45,7 +48,10 @@ public class TaskFaultToleranceTemplateAlertContentInjector extends BaseAlertTem
                         taskFaultToleranceAlertContent.getWorkflowInstanceName())
                 .replaceAll(TemplateInjectUtils.TASK_NAME_TEMPLATE, taskFaultToleranceAlertContent.getTaskName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(taskFaultToleranceAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(taskFaultToleranceAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        taskFaultToleranceAlertContent.getWorkflowInstanceLink())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, taskFaultToleranceAlertContent.getLabel());
 
         return TemplateInjectedAlertContentWrapper.builder()
                 .alertContentPojo(alertContent)

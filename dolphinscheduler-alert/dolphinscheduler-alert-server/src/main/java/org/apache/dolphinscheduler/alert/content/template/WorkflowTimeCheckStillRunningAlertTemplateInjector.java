@@ -37,7 +37,10 @@ public class WorkflowTimeCheckStillRunningAlertTemplateInjector extends BaseAler
                 .replaceAll(TemplateInjectUtils.WORKFLOW_NAME_TEMPLATE,
                         workflowTimeCheckStillRunningAlertContent.getWorkflowName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(workflowTimeCheckStillRunningAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(workflowTimeCheckStillRunningAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, workflowTimeCheckStillRunningAlertContent.getLabel())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        workflowTimeCheckStillRunningAlertContent.getWorkflowInstanceLink());
 
         String content = alertTemplate.getContentTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
@@ -49,7 +52,10 @@ public class WorkflowTimeCheckStillRunningAlertTemplateInjector extends BaseAler
                 .replaceAll(TemplateInjectUtils.WORKFLOW_NAME_TEMPLATE,
                         workflowTimeCheckStillRunningAlertContent.getWorkflowName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(workflowTimeCheckStillRunningAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(workflowTimeCheckStillRunningAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, workflowTimeCheckStillRunningAlertContent.getLabel())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        workflowTimeCheckStillRunningAlertContent.getWorkflowInstanceLink());
 
         return TemplateInjectedAlertContentWrapper.builder()
                 .alertContentPojo(alertContent)

@@ -37,7 +37,10 @@ public class WorkflowTimeCheckNotRunAlertTemplateInjector extends BaseAlertTempl
                 .replaceAll(TemplateInjectUtils.WORKFLOW_NAME_TEMPLATE,
                         workflowTimeCheckNotRunAlertContent.getWorkflowName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(workflowTimeCheckNotRunAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(workflowTimeCheckNotRunAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, workflowTimeCheckNotRunAlertContent.getLabel())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        workflowTimeCheckNotRunAlertContent.getWorkflowInstanceLink());
 
         String content = alertTemplate.getContentTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
@@ -49,7 +52,10 @@ public class WorkflowTimeCheckNotRunAlertTemplateInjector extends BaseAlertTempl
                 .replaceAll(TemplateInjectUtils.WORKFLOW_NAME_TEMPLATE,
                         workflowTimeCheckNotRunAlertContent.getWorkflowName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(workflowTimeCheckNotRunAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(workflowTimeCheckNotRunAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, workflowTimeCheckNotRunAlertContent.getLabel())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        workflowTimeCheckNotRunAlertContent.getWorkflowInstanceLink());
 
         return TemplateInjectedAlertContentWrapper.builder()
                 .alertContentPojo(alertContent)

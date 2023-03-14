@@ -14,5 +14,7 @@ public class TemplateInjectUtils {
     public static final String TITLE_TEMPLATE = "\\{\\{title}}";
     public static final String SERVER_PATH_TEMPLATE = "\\{\\{serverPath}}";
     public static final String ALERT_CREATE_TIME_TEMPLATE = "\\{\\{alertCreateTime}}";
+    public static final String WORKFLOW_INSTANCE_LINK = "\\{\\{workflowInstanceLink}}";
+    public static final String WORKFLOW_LABEL = "\\{\\{label}}";
 
 }

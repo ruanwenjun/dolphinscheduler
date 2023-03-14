@@ -36,7 +36,10 @@ public class TaskResultTemplateAlertContentInjector extends BaseAlertTemplateInj
                 .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_NAME_TEMPLATE,
                         taskResultAlertContent.getWorkflowInstanceName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(taskResultAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(taskResultAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, taskResultAlertContent.getLabel())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        taskResultAlertContent.getWorkflowInstanceLink());
 
         String content = alertTemplate.getContentTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
@@ -49,7 +52,10 @@ public class TaskResultTemplateAlertContentInjector extends BaseAlertTemplateInj
                 .replaceAll(TemplateInjectUtils.RESULT_TEMPLATE,
                         JSONUtils.writeAsPrettyString(taskResultAlertContent.getResult()))
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(taskResultAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(taskResultAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, taskResultAlertContent.getLabel())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        taskResultAlertContent.getWorkflowInstanceLink());
 
         return TemplateInjectedAlertContentWrapper.builder()
                 .alertContentPojo(alertContent)

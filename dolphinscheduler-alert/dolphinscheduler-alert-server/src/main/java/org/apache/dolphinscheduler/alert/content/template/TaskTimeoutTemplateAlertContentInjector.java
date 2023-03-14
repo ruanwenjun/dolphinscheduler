@@ -35,7 +35,10 @@ public class TaskTimeoutTemplateAlertContentInjector extends BaseAlertTemplateIn
                         taskInstanceTimeoutAlertContent.getWorkflowInstanceName())
                 .replaceAll(TemplateInjectUtils.TASK_NAME_TEMPLATE, taskInstanceTimeoutAlertContent.getTaskName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(taskInstanceTimeoutAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(taskInstanceTimeoutAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, taskInstanceTimeoutAlertContent.getLabel())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        taskInstanceTimeoutAlertContent.getWorkflowInstanceLink());
 
         String content = alertTemplate.getContentTemplate()
                 .replaceAll(TemplateInjectUtils.ALERT_TYPE_TEMPLATE,
@@ -45,7 +48,10 @@ public class TaskTimeoutTemplateAlertContentInjector extends BaseAlertTemplateIn
                         taskInstanceTimeoutAlertContent.getWorkflowInstanceName())
                 .replaceAll(TemplateInjectUtils.TASK_NAME_TEMPLATE, taskInstanceTimeoutAlertContent.getTaskName())
                 .replaceAll(TemplateInjectUtils.ALERT_CREATE_TIME_TEMPLATE,
-                        DateUtils.formatDate(taskInstanceTimeoutAlertContent.getAlertCreateTime()));
+                        DateUtils.formatDate(taskInstanceTimeoutAlertContent.getAlertCreateTime()))
+                .replaceAll(TemplateInjectUtils.WORKFLOW_LABEL, taskInstanceTimeoutAlertContent.getLabel())
+                .replaceAll(TemplateInjectUtils.WORKFLOW_INSTANCE_LINK,
+                        taskInstanceTimeoutAlertContent.getWorkflowInstanceLink());
 
         return TemplateInjectedAlertContentWrapper.builder()
                 .alertContentPojo(alertContent)
