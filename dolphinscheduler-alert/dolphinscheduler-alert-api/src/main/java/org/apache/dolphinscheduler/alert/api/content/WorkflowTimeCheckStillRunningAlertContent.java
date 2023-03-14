@@ -17,6 +17,8 @@ public class WorkflowTimeCheckStillRunningAlertContent implements AlertContent {
     private String projectName;
     private String workflowName;
     private String workflowInstanceName;
+    private String label;
+    private String workflowInstanceLink;
     private Date alertCreateTime;
 
     @Override

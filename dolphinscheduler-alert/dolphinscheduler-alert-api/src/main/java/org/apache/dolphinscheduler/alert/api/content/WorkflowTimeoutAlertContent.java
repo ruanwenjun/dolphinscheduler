@@ -18,6 +18,8 @@ public class WorkflowTimeoutAlertContent implements AlertContent {
     private String projectName;
     private String workflowInstanceName;
     private Date alertCreateTime;
+    private String label;
+    private String workflowInstanceLink;
     private Date startTime;
     private Date endTime;
 

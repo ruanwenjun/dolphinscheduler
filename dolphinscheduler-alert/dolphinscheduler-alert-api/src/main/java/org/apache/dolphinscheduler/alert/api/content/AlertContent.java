@@ -33,6 +33,8 @@ public interface AlertContent {
 
     String getWorkflowInstanceName();
 
+    Date getAlertCreateTime();
+
     default Date getStartTime() {
         return null;
     }

@@ -59,14 +59,14 @@ public class AlertManager {
     private static final Logger logger = LoggerFactory.getLogger(AlertManager.class);
 
     @Autowired
-    private AlertDao alertDao;
+    protected AlertDao alertDao;
 
     @Autowired
-    private ProcessService processService;
+    protected ProcessService processService;
 
-    private boolean WORKER_FINISH_CLOSE_ALERT = PropertyUtils.getBoolean("workflow.finish.close.alert", true);
+    protected boolean WORKER_FINISH_CLOSE_ALERT = PropertyUtils.getBoolean("workflow.finish.close.alert", true);
 
-    private Map<AlertType, AlertContentFactory<? extends AlertContent>> alertContentFactoryMap = new HashMap<>();
+    protected Map<AlertType, AlertContentFactory<? extends AlertContent>> alertContentFactoryMap = new HashMap<>();
 
     public AlertManager() {
         ServiceLoader<AlertContentFactory> serviceLoader = ServiceLoader.load(AlertContentFactory.class);

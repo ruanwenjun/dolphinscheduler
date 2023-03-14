@@ -17,6 +17,8 @@ public class TaskFailureAlertContent implements AlertContent {
     private String projectName;
     private String workflowInstanceName;
     private String taskName;
+    private String label;
+    private String workflowInstanceLink;
     private Date alertCreateTime;
     private Date startTime;
     private Date endTime;

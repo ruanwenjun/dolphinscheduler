@@ -49,8 +49,8 @@ public class DqExecuteResultAlertContent implements AlertContent {
     private String userName;
     private int state;
     private String errorDataPath;
+    private String workflowInstanceLink;
     private Date alertCreateTime;
-
     private Date startTime;
     private Date endTime;
 

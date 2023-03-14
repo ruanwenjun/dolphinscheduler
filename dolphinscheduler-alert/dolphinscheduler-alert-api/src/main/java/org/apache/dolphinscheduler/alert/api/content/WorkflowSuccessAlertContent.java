@@ -16,6 +16,8 @@ public class WorkflowSuccessAlertContent implements AlertContent {
 
     private String projectName;
     private String workflowInstanceName;
+    private String label;
+    private String workflowInstanceLink;
     private Date alertCreateTime;
     private Date startTime;
     private Date endTime;

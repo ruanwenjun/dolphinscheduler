@@ -17,6 +17,8 @@ public class TaskFaultToleranceAlertContent implements AlertContent {
     private String projectName;
     private String workflowInstanceName;
     private String taskName;
+    private String label;
+    private String workflowInstanceLink;
     private Date alertCreateTime;
 
     @Override
