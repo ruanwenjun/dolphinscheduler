@@ -77,12 +77,12 @@ public class RemoteShellTask extends AbstractTaskExecutor {
     public void init() {
         logger.info("shell task params {}", taskExecutionContext.getTaskParams());
 
-        remoteShellParameters = JSONUtils.parseObject(taskExecutionContext.getTaskParams(), RemoteShellParameters.class);
+        remoteShellParameters =
+                JSONUtils.parseObject(taskExecutionContext.getTaskParams(), RemoteShellParameters.class);
 
         if (!remoteShellParameters.checkParameters()) {
             throw new RuntimeException("sell task params is not valid");
         }
-
 
         taskId = taskExecutionContext.getAppIds();
         if (taskId == null) {
@@ -124,8 +124,8 @@ public class RemoteShellTask extends AbstractTaskExecutor {
     private String buildCommand() throws Exception {
         // generate scripts
         String fileName = String.format("%s/%s_node.%s",
-            taskExecutionContext.getExecutePath(),
-            taskExecutionContext.getTaskAppId(), OSUtils.isWindows() ? "bat" : "sh");
+                taskExecutionContext.getExecutePath(),
+                taskExecutionContext.getTaskAppId(), OSUtils.isWindows() ? "bat" : "sh");
 
         File file = new File(fileName);
         Path path = file.toPath();
@@ -164,13 +164,14 @@ public class RemoteShellTask extends AbstractTaskExecutor {
         return ParameterUtils.convertParameterPlaceholders(script, ParamUtils.convert(paramsMap));
     }
 
-
     private void initRemoteExecutor() {
-        DataSourceParameters dbSource = (DataSourceParameters) taskExecutionContext.getResourceParametersHelper().getResourceParameters(ResourceType.DATASOURCE, remoteShellParameters.getDatasource());
-        taskExecutionContext.getResourceParametersHelper().getResourceParameters(ResourceType.DATASOURCE, remoteShellParameters.getDatasource());
+        DataSourceParameters dbSource = (DataSourceParameters) taskExecutionContext.getResourceParametersHelper()
+                .getResourceParameters(ResourceType.DATASOURCE, remoteShellParameters.getDatasource());
+        taskExecutionContext.getResourceParametersHelper().getResourceParameters(ResourceType.DATASOURCE,
+                remoteShellParameters.getDatasource());
         SSHConnectionParam sshConnectionParam = (SSHConnectionParam) DataSourceUtils.buildConnectionParams(
-            DbType.valueOf(remoteShellParameters.getType()),
-            dbSource.getConnectionParams());
+                DbType.valueOf(remoteShellParameters.getType()),
+                dbSource.getConnectionParams());
         remoteExecutor = new RemoteExecutor(sshConnectionParam);
     }
 }

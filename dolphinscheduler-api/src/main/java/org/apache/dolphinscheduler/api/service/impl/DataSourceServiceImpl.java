@@ -368,10 +368,10 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
     public Result<Object> checkConnection(DbType type, ConnectionParam connectionParam) {
         Result<Object> result = new Result<>();
         if (type == DbType.SSH) {
-            DataSourceProcessor sshDataSourceProcessor =  DataSourceUtils.getDatasourceProcessor(type);
+            DataSourceProcessor sshDataSourceProcessor = DataSourceUtils.getDatasourceProcessor(type);
             if (sshDataSourceProcessor.testConnection(connectionParam)) {
                 putMsg(result, Status.SUCCESS);
-            }else {
+            } else {
                 putMsg(result, Status.CONNECT_DATASOURCE_FAILURE);
             }
             return result;
@@ -388,7 +388,7 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
                     .map(Throwable::getMessage)
                     .orElse(e.getMessage());
             logger.error("datasource test connection error, dbType:{}, connectionParam:{}", type,
-                connectionParam, e);
+                    connectionParam, e);
             return new Result<>(Status.CONNECTION_TEST_FAILURE.getCode(), message);
         }
     }

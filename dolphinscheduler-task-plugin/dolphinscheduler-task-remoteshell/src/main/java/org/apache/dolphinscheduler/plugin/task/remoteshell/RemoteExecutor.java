@@ -26,8 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RemoteExecutor {
+
     protected final Logger logger =
-        LoggerFactory.getLogger(String.format(TaskConstants.TASK_LOG_LOGGER_NAME_FORMAT, getClass()));
+            LoggerFactory.getLogger(String.format(TaskConstants.TASK_LOG_LOGGER_NAME_FORMAT, getClass()));
 
     protected static final Pattern SETVALUE_REGEX = Pattern.compile(TaskConstants.SETVALUE_REGEX);
 
@@ -74,7 +75,8 @@ public class RemoteExecutor {
             String pid = getTaskPid(task_id);
             if (StringUtils.isEmpty(pid)) {
                 saveCommand(task_id, localFile);
-                String runCommand = String.format(COMMAND.RUN_COMMAND, getRemoteShellHome(), task_id, getRemoteShellHome(), task_id);
+                String runCommand = String.format(COMMAND.RUN_COMMAND, getRemoteShellHome(), task_id,
+                        getRemoteShellHome(), task_id);
                 runRemote(runCommand);
             }
             track(task_id);
@@ -94,7 +96,7 @@ public class RemoteExecutor {
             String log = runRemote(trackCommand);
             if (StringUtils.isEmpty(log)) {
                 Thread.sleep(TRACK_INTERVAL);
-            }else {
+            } else {
                 logN += log.split("\n").length;
                 setVarPool(log);
                 logger.info(log);
@@ -124,8 +126,6 @@ public class RemoteExecutor {
         return null;
     }
 
-
-
     public Integer getTaskExitCode(String task_id) throws IOException {
         String trackCommand = String.format(COMMAND.LOG_TAIL_COMMAND, getRemoteShellHome(), task_id);
         String log = runRemote(trackCommand);
@@ -147,7 +147,8 @@ public class RemoteExecutor {
     }
 
     public void cleanData(String task_id) {
-        String cleanCommand = String.format(COMMAND.CLEAN_COMMAND, getRemoteShellHome(), task_id, getRemoteShellHome(), task_id);
+        String cleanCommand =
+                String.format(COMMAND.CLEAN_COMMAND, getRemoteShellHome(), task_id, getRemoteShellHome(), task_id);
         try {
             runRemote(cleanCommand);
         } catch (Exception e) {
@@ -172,19 +173,19 @@ public class RemoteExecutor {
         runRemote(checkDirCommand);
         uploadScript(task_id, localFile);
 
-        logger.info("The final script is: \n{}", runRemote(String.format(COMMAND.CAT_FINAL_SCRIPT, getRemoteShellHome(), task_id)));
+        logger.info("The final script is: \n{}",
+                runRemote(String.format(COMMAND.CAT_FINAL_SCRIPT, getRemoteShellHome(), task_id)));
     }
 
     public void uploadScript(String task_id, String localFile) throws IOException {
 
         String remotePath = getRemoteShellHome() + task_id + ".sh";
         logger.info("upload script from local:{} to remote: {}", localFile, remotePath);
-        try(SftpFileSystem fs = SftpClientFactory.instance().createSftpFileSystem(getSession())) {
+        try (SftpFileSystem fs = SftpClientFactory.instance().createSftpFileSystem(getSession())) {
             Path path = fs.getPath(remotePath);
             Files.copy(Paths.get(localFile), path);
         }
     }
-
 
     public String runRemote(String command) throws IOException {
         ChannelExec channel = getSession().createExecChannel(command);
@@ -207,6 +208,7 @@ public class RemoteExecutor {
     }
 
     static class COMMAND {
+
         static final String CHECK_DIR = "if [ ! -d %s ]; then mkdir -p %s; fi";
         static final String RUN_COMMAND = "nohup /bin/bash %s%s.sh >%s%s.log 2>&1 &";
         static final String TRACK_COMMAND = "tail -n +%s %s%s.log";

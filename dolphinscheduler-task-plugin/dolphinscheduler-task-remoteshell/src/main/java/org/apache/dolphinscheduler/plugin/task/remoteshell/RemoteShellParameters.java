@@ -11,7 +11,6 @@ public class RemoteShellParameters extends AbstractParameters {
 
     private String rawScript;
 
-
     private String type;
 
     /**

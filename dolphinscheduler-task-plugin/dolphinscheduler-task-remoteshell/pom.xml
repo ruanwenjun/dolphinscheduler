@@ -23,16 +23,16 @@
         <artifactId>dolphinscheduler-task-plugin</artifactId>
         <version>dev-SNAPSHOT</version>
     </parent>
-
+    
     <artifactId>dolphinscheduler-task-remoteshell</artifactId>
     <packaging>jar</packaging>
-
+    
     <dependencies>
         <dependency>
             <groupId>org.apache.dolphinscheduler</groupId>
             <artifactId>dolphinscheduler-datasource-all</artifactId>
         </dependency>
-
+        
         <dependency>
             <groupId>org.apache.dolphinscheduler</groupId>
             <artifactId>dolphinscheduler-spi</artifactId>
@@ -52,6 +52,6 @@
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-sftp</artifactId>
         </dependency>
-
+        
     </dependencies>
 </project>

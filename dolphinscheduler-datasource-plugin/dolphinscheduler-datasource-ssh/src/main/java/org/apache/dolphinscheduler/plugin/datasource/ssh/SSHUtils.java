@@ -15,7 +15,8 @@ public class SSHUtils {
 
     public static ClientSession getSession(SshClient client, SSHConnectionParam connectionParam) throws Exception {
         ClientSession session;
-        session = client.connect(connectionParam.getUser(), connectionParam.getHost(), connectionParam.getPort()).verify(5000).getSession();
+        session = client.connect(connectionParam.getUser(), connectionParam.getHost(), connectionParam.getPort())
+                .verify(5000).getSession();
         // add password identity
         String password = connectionParam.getPassword();
         if (StringUtils.isNotEmpty(password)) {

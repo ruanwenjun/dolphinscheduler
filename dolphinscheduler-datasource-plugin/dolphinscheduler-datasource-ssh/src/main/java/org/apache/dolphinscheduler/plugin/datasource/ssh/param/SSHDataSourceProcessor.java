@@ -51,7 +51,7 @@ public class SSHDataSourceProcessor implements DataSourceProcessor {
     public String getDatasourceUniqueId(ConnectionParam connectionParam, DbType dbType) {
         BaseConnectionParam baseConnectionParam = (BaseConnectionParam) connectionParam;
         return MessageFormat.format("{0}@{1}@{2}@{3}", dbType.getDescp(), baseConnectionParam.getUser(),
-            PasswordUtils.encodePassword(baseConnectionParam.getPassword()), baseConnectionParam.getAddress());
+                PasswordUtils.encodePassword(baseConnectionParam.getPassword()), baseConnectionParam.getAddress());
     }
 
     @Override
