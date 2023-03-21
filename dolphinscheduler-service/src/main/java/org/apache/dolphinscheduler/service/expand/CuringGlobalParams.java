@@ -222,7 +222,7 @@ public class CuringGlobalParams implements CuringParamsService {
         return globalParams;
     }
 
-    private Map<String, String> setGlobalParamsMap(ProcessInstance processInstance) {
+    protected Map<String, String> setGlobalParamsMap(ProcessInstance processInstance) {
         Map<String, String> globalParamsMap = new HashMap<>(16);
 
         // global params string

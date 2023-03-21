@@ -349,7 +349,7 @@ public abstract class BaseTaskProcessor implements ITaskProcessor {
                 .create();
     }
 
-    private void setTaskResourceInfo(ResourceParametersHelper resourceParametersHelper) {
+    protected void setTaskResourceInfo(ResourceParametersHelper resourceParametersHelper) {
         if (Objects.isNull(resourceParametersHelper)) {
             return;
         }
@@ -407,7 +407,7 @@ public abstract class BaseTaskProcessor implements ITaskProcessor {
      * @param dataQualityTaskExecutionContext dataQualityTaskExecutionContext
      * @param taskInstance taskInstance
      */
-    private void setDataQualityTaskRelation(DataQualityTaskExecutionContext dataQualityTaskExecutionContext,
+    protected void setDataQualityTaskRelation(DataQualityTaskExecutionContext dataQualityTaskExecutionContext,
                                             TaskInstance taskInstance, String tenantCode) {
         DataQualityParameters dataQualityParameters =
                 JSONUtils.parseObject(taskInstance.getTaskParams(), DataQualityParameters.class);
