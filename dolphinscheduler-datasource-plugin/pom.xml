@@ -40,6 +40,7 @@
         <module>dolphinscheduler-datasource-api</module>
         <module>dolphinscheduler-datasource-all</module>
         <module>dolphinscheduler-datasource-redshift</module>
+        <module>dolphinscheduler-datasource-ssh</module>
     </modules>
     
     <dependencyManagement>

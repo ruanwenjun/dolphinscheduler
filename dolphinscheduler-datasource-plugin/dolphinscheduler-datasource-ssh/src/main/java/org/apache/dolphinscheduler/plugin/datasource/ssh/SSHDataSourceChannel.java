@@ -15,20 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.dolphinscheduler.spi.datasource;
+package org.apache.dolphinscheduler.plugin.datasource.ssh;
 
-import java.io.Serializable;
+import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
+import org.apache.dolphinscheduler.spi.datasource.DataSourceChannel;
+import org.apache.dolphinscheduler.spi.datasource.DataSourceClient;
+import org.apache.dolphinscheduler.spi.enums.DbType;
 
-/**
- * The model of Datasource Connection param
- */
-public interface ConnectionParam extends Serializable {
+public class SSHDataSourceChannel implements DataSourceChannel {
 
-    default String getPassword() {
-        return "";
-    }
-
-    default void setPassword(String s) {
+    @Override
+    public DataSourceClient createDataSourceClient(BaseConnectionParam baseConnectionParam, DbType dbType) {
+        return new SSHDataSourceClient(baseConnectionParam, dbType);
     }
 
 }

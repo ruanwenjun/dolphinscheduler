@@ -39,6 +39,7 @@ import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.dao.mapper.DataSourceMapper;
 import org.apache.dolphinscheduler.dao.mapper.DataSourceUserMapper;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.BaseDataSourceParamDTO;
+import org.apache.dolphinscheduler.plugin.datasource.api.datasource.DataSourceProcessor;
 import org.apache.dolphinscheduler.plugin.datasource.api.plugin.DataSourceClientProvider;
 import org.apache.dolphinscheduler.plugin.datasource.api.utils.DataSourceUtils;
 import org.apache.dolphinscheduler.spi.datasource.BaseConnectionParam;
@@ -187,9 +188,10 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
             return result;
         }
         // check password，if the password is not updated, set to the old password.
-        BaseConnectionParam connectionParam =
-                (BaseConnectionParam) DataSourceUtils.buildConnectionParams(dataSourceParam);
+        ConnectionParam connectionParam = DataSourceUtils.buildConnectionParams(dataSourceParam);
+
         String password = connectionParam.getPassword();
+
         if (StringUtils.isBlank(password)) {
             String oldConnectionParams = dataSource.getConnectionParams();
             ObjectNode oldParams = JSONUtils.parseObject(oldConnectionParams);
@@ -365,6 +367,15 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
     @Override
     public Result<Object> checkConnection(DbType type, ConnectionParam connectionParam) {
         Result<Object> result = new Result<>();
+        if (type == DbType.SSH) {
+            DataSourceProcessor sshDataSourceProcessor =  DataSourceUtils.getDatasourceProcessor(type);
+            if (sshDataSourceProcessor.testConnection(connectionParam)) {
+                putMsg(result, Status.SUCCESS);
+            }else {
+                putMsg(result, Status.CONNECT_DATASOURCE_FAILURE);
+            }
+            return result;
+        }
         try (Connection connection = DataSourceClientProvider.getInstance().getConnection(type, connectionParam)) {
             if (connection == null) {
                 putMsg(result, Status.CONNECTION_TEST_FAILURE);

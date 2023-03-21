@@ -41,6 +41,7 @@ public enum DbType {
     REDSHIFT(10, "redshift"),
     DAMENG(101, "dameng"),
     OPENLOOKENG(12, "openlookeng"),
+    SSH(13, "ssh"),
     ;
 
     @EnumValue

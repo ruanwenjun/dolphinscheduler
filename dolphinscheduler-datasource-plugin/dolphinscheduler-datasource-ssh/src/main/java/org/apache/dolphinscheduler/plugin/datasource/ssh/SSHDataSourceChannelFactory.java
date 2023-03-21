@@ -15,20 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dolphinscheduler.spi.datasource;
+package org.apache.dolphinscheduler.plugin.datasource.ssh;
 
-import java.io.Serializable;
+import org.apache.dolphinscheduler.spi.datasource.DataSourceChannel;
+import org.apache.dolphinscheduler.spi.datasource.DataSourceChannelFactory;
 
-/**
- * The model of Datasource Connection param
- */
-public interface ConnectionParam extends Serializable {
+import com.google.auto.service.AutoService;
 
-    default String getPassword() {
-        return "";
+@AutoService(DataSourceChannelFactory.class)
+public class SSHDataSourceChannelFactory implements DataSourceChannelFactory {
+
+    @Override
+    public String getName() {
+        return "ssh";
     }
 
-    default void setPassword(String s) {
+    @Override
+    public DataSourceChannel create() {
+        return new SSHDataSourceChannel();
     }
-
 }

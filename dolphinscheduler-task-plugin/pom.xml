@@ -50,6 +50,7 @@
         <module>dolphinscheduler-task-emr</module>
         <module>dolphinscheduler-task-blocking</module>
         <module>dolphinscheduler-task-hivecli</module>
+        <module>dolphinscheduler-task-remoteshell</module>
     </modules>
     
     <dependencyManagement>
