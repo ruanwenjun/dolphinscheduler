@@ -36,8 +36,8 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
       - name: Set new version
         run: |
-          VERSION=$(git rev-parse --short HEAD)
-          ./mvnw -B versions:set -DnewVersion=$VERSION-SNAPSHOT -DgenerateBackupPoms=false
+          VERSION=$(git rev-parse HEAD)
+          ./mvnw -B versions:set -DnewVersion=${VERSION::7}-SNAPSHOT -DgenerateBackupPoms=false
       - name: Deploy
         shell: bash
         run: |
