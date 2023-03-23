@@ -124,4 +124,12 @@ public interface TaskDefinitionMapper extends BaseMapper<TaskDefinition> {
      * @return task definition list
      */
     List<TaskDefinition> queryByCodeList(@Param("codes") Collection<Long> codes);
+
+
+    /**
+     * query by datasourceId
+     * @param dataSourceId
+     * @return
+     */
+    List<TaskMainInfo> queryByDataSourceId(@Param("dataSourceId") int dataSourceId);
 }

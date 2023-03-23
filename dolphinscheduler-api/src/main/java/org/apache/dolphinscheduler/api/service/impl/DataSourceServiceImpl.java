@@ -35,9 +35,12 @@ import org.apache.dolphinscheduler.common.enums.AuthorizationType;
 import org.apache.dolphinscheduler.common.enums.UserType;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.dao.entity.DataSource;
+import org.apache.dolphinscheduler.dao.entity.TaskMainInfo;
 import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.dao.mapper.DataSourceMapper;
 import org.apache.dolphinscheduler.dao.mapper.DataSourceUserMapper;
+import org.apache.dolphinscheduler.dao.repository.TaskDefinitionDao;
+import org.apache.dolphinscheduler.dao.repository.TaskDefinitionLogDao;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.BaseDataSourceParamDTO;
 import org.apache.dolphinscheduler.plugin.datasource.api.datasource.DataSourceProcessor;
 import org.apache.dolphinscheduler.plugin.datasource.api.plugin.DataSourceClientProvider;
@@ -87,6 +90,9 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
 
     @Autowired
     private DataSourceUserMapper datasourceUserMapper;
+
+    @Autowired
+    private TaskDefinitionDao taskDefinitionDao;
 
     @Autowired
     private ResourcePermissionCheckService resourcePermissionCheckService;
@@ -433,6 +439,12 @@ public class DataSourceServiceImpl extends BaseServiceImpl implements DataSource
             if (!canOperatorPermissions(loginUser, new Object[]{dataSource.getId()}, AuthorizationType.DATASOURCE,
                     DATASOURCE_DELETE)) {
                 putMsg(result, Status.USER_NO_OPERATION_PERM);
+                return result;
+            }
+            List<TaskMainInfo> taskMainInfos = taskDefinitionDao.queryByDataSourceId(datasourceId);
+            if (taskMainInfos.size() > 0) {
+                putMsg(result, Status.DATA_SOURCE_HAD_USED, taskMainInfos.stream().map(info ->
+                    String.format("%s - %s - %s",info.getProjectName(), info.getProcessDefinitionName(), info.getTaskName())).collect(Collectors.toList()));
                 return result;
             }
             dataSourceMapper.deleteById(datasourceId);

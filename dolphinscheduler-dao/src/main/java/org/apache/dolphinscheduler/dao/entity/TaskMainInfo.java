@@ -33,6 +33,16 @@ public class TaskMainInfo {
     private long id;
 
     /**
+     * project code
+     */
+    private long projectCode;
+
+    /**
+     * project name
+     */
+    private String projectName;
+
+    /**
      * task name
      */
     private String taskName;

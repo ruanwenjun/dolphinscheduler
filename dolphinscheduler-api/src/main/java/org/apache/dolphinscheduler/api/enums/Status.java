@@ -544,6 +544,8 @@ public enum Status {
             "[{0}]已存在，当前用户无[{0}]权限"),
 
     OPERATION_ALREADY_EXIST(1500000, "operation already exist", "操作已存在"),
+
+    DATA_SOURCE_HAD_USED(1600000, "data source already used (projectName - workflowName - taskName):{0}", "数据源正在被使用(项目名 - 工作流名 - 任务名):{0}"),
     ;
 
     private final int code;

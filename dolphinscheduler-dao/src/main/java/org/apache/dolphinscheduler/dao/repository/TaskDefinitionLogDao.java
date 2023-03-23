@@ -10,5 +10,4 @@ public interface TaskDefinitionLogDao {
     List<TaskDefinitionLog> queryTaskDefinitionByRelations(List<ProcessTaskRelationLog> processTaskRelations);
 
     List<Long> queryTaskDefinitionCodesByProjectCodes(long projectCode);
-
 }
