@@ -32,9 +32,13 @@ import org.apache.dolphinscheduler.dao.entity.ProcessInstance;
 import org.apache.dolphinscheduler.dao.entity.TaskInstance;
 import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
+import org.apache.dolphinscheduler.remote.command.TaskKillRequestCommand;
+import org.apache.dolphinscheduler.remote.utils.Host;
 import org.apache.dolphinscheduler.server.builder.TaskExecutionContextBuilder;
 import org.apache.dolphinscheduler.server.master.cache.ProcessInstanceExecCacheManager;
 import org.apache.dolphinscheduler.server.master.config.MasterConfig;
+import org.apache.dolphinscheduler.server.master.dispatch.exceptions.ExecuteException;
+import org.apache.dolphinscheduler.server.master.dispatch.executor.NettyExecutorManager;
 import org.apache.dolphinscheduler.server.master.metrics.ProcessInstanceMetrics;
 import org.apache.dolphinscheduler.server.master.metrics.TaskMetrics;
 import org.apache.dolphinscheduler.server.master.runner.task.TaskProcessorFactory;
@@ -42,6 +46,8 @@ import org.apache.dolphinscheduler.server.utils.ProcessUtils;
 import org.apache.dolphinscheduler.service.log.LogClient;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 import org.apache.dolphinscheduler.service.registry.RegistryClient;
+import org.apache.dolphinscheduler.spi.utils.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -63,17 +69,21 @@ public class MasterFailoverService {
 
     private final ProcessInstanceExecCacheManager processInstanceExecCacheManager;
 
+    private final NettyExecutorManager nettyExecutorManager;
+
     private final LogClient logClient;
 
     public MasterFailoverService(@NonNull RegistryClient registryClient,
                                  @NonNull MasterConfig masterConfig,
                                  @NonNull ProcessService processService,
+                                 @NonNull NettyExecutorManager nettyExecutorManager,
                                  @NonNull ProcessInstanceExecCacheManager processInstanceExecCacheManager,
                                  @NonNull LogClient logClient) {
         this.registryClient = registryClient;
         this.masterConfig = masterConfig;
         this.processService = processService;
         this.localAddress = masterConfig.getMasterAddress();
+        this.nettyExecutorManager = nettyExecutorManager;
         this.processInstanceExecCacheManager = processInstanceExecCacheManager;
         this.logClient = logClient;
 
@@ -232,6 +242,10 @@ public class MasterFailoverService {
                 LOGGER.info("TaskInstance failover begin kill the task related yarn job");
                 ProcessUtils.killYarnJob(logClient, taskExecutionContext);
             }
+            // kill worker task, When the master failover and worker failover happened in the same time,
+            // the task may not be failover if we don't set NEED_FAULT_TOLERANCE.
+            // This can be improved if we can load all task when cache a workflowInstance in memory
+            sendKillCommandToWorker(taskInstance);
         } else {
             LOGGER.info("The failover taskInstance is a master task");
         }
@@ -279,6 +293,21 @@ public class MasterFailoverService {
         }
 
         return true;
+    }
+
+    private void sendKillCommandToWorker(@NonNull TaskInstance taskInstance) {
+        if (StringUtils.isEmpty(taskInstance.getHost())) {
+            return;
+        }
+        try {
+            TaskKillRequestCommand killCommand = new TaskKillRequestCommand();
+            killCommand.setTaskInstanceId(taskInstance.getId());
+            Host workerHost = Host.of(taskInstance.getHost());
+            nettyExecutorManager.doExecute(workerHost, killCommand.convert2Command());
+            LOGGER.info("Failover task success, has killed the task in worker: {}", taskInstance.getHost());
+        } catch (ExecuteException e) {
+            LOGGER.error("Kill task failed, taskId:{}", taskInstance.getId(), e);
+        }
     }
 
 }
