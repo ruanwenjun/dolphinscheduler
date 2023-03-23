@@ -2,6 +2,10 @@ name: Deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'The ref to deploy'
+        required: false
   push:
     branches:
       - ws-3.0.0
@@ -20,6 +24,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.ref }}
 
       - name: Cache
         uses: actions/cache@v2
