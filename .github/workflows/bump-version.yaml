@@ -34,11 +34,13 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-
+      - name: Set new version
+        run: |
+          VERSION=$(git rev-parse --short HEAD)
+          ./mvnw -B versions:set -DnewVersion=$VERSION-SNAPSHOT -DgenerateBackupPoms=false
       - name: Deploy
         shell: bash
         run: |
-          ./mvnw -B versions:set -DnewVersion=${GITHUB_SHA::7}-SNAPSHOT -DgenerateBackupPoms=false
           ./mvnw -T2C --batch-mode -q --settings maven-settings.xml clean deploy \
                 -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/whaleops/dolphinscheduler \
                 -Dmaven.test.skip \
