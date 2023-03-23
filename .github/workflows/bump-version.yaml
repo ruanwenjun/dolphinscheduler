@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           ./mvnw -B versions:set -DnewVersion=${GITHUB_SHA::7}-SNAPSHOT -DgenerateBackupPoms=false
-          ./mvnw -T2C --batch-mode --settings maven-settings.xml clean deploy \
+          ./mvnw -T2C --batch-mode -q --settings maven-settings.xml clean deploy \
                 -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/whaleops/dolphinscheduler \
                 -Dmaven.test.skip \
                 -Dmaven.javadoc.skip \
