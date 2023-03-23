@@ -27,7 +27,11 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.ref }}
-
+      - name: Set up maven settings
+        run: |
+          cat <<EOF > ~/.m2/settings.xml
+          ${{ secrets.MAVEN_SETTINGS_XML }}
+          EOF
       - name: Cache
         uses: actions/cache@v2
         with:
@@ -41,7 +45,7 @@ jobs:
       - name: Deploy
         shell: bash
         run: |
-          ./mvnw -T2C --batch-mode --settings maven-settings.xml clean deploy \
+          ./mvnw -T2C --batch-mode clean deploy \
                 -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/whaleops/dolphinscheduler \
                 -Dmaven.test.skip \
                 -Dmaven.javadoc.skip \
