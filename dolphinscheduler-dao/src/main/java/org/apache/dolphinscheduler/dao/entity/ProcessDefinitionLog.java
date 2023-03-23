@@ -17,6 +17,7 @@
 
 package org.apache.dolphinscheduler.dao.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.util.Date;
@@ -31,6 +32,9 @@ public class ProcessDefinitionLog extends ProcessDefinition {
      * operator
      */
     private int operator;
+
+    @TableField(exist = false)
+    private String operatorName;
 
     /**
      * operateTime
@@ -88,4 +92,11 @@ public class ProcessDefinitionLog extends ProcessDefinition {
         return super.equals(o);
     }
 
+    public String getOperatorName() {
+        return operatorName;
+    }
+
+    public void setOperatorName(String operatorName) {
+        this.operatorName = operatorName;
+    }
 }

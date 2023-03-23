@@ -394,4 +394,23 @@ public class TaskGroupServiceImpl extends BaseServiceImpl implements TaskGroupSe
         putMsg(result, Status.SUCCESS);
         return result;
     }
+
+    @Override
+    public Map<String, Object> deleteTaskGroup(User loginUser, Integer id) {
+        Map<String, Object> result = new HashMap<>();
+        boolean canOperatorPermissions = canOperatorPermissions(loginUser, new Object[]{id}, AuthorizationType.TASK_GROUP,
+                ApiFuncIdentificationConstant.TASK_GROUP_DELETE);
+        if (!canOperatorPermissions) {
+            putMsg(result, Status.NO_CURRENT_OPERATING_PERMISSION);
+            return result;
+        }
+        TaskGroup taskGroup = taskGroupMapper.selectById(id);
+        if (taskGroup.getUseSize() > 0) {
+            putMsg(result, Status.TASK_GROUP_USED_SIZE_NOT_EMPTY);
+            return result;
+        }
+        taskGroupMapper.deleteById(taskGroup.getId());
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
 }

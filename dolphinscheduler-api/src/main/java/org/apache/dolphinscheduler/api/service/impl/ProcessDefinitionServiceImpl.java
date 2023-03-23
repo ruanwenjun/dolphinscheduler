@@ -2047,11 +2047,18 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         // check user access for project
         projectService.checkProjectAndAuth(loginUser, project, projectCode, VERSION_LIST);
 
+        List<User> users = userMapper.queryEnabledUsers();
+        Map<Integer, String> userIdNameMap = users.stream().collect(Collectors.toMap(User::getId, User::getUserName));
         PageInfo<ProcessDefinitionLog> pageInfo = new PageInfo<>(pageNo, pageSize);
         Page<ProcessDefinitionLog> page = new Page<>(pageNo, pageSize);
         IPage<ProcessDefinitionLog> processDefinitionVersionsPaging =
                 processDefinitionLogMapper.queryProcessDefinitionVersionsPaging(page, code, projectCode);
         List<ProcessDefinitionLog> processDefinitionLogs = processDefinitionVersionsPaging.getRecords();
+        if (CollectionUtils.isNotEmpty(processDefinitionLogs)) {
+            processDefinitionLogs
+                    .forEach(processDefinitionLog ->
+                            processDefinitionLog.setOperatorName(userIdNameMap.getOrDefault(processDefinitionLog.getOperator(), "")));
+        }
 
         pageInfo.setTotalList(processDefinitionLogs);
         pageInfo.setTotal((int) processDefinitionVersionsPaging.getTotal());

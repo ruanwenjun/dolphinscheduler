@@ -122,6 +122,20 @@ public class TaskGroupController extends BaseController {
         return returnDataList(result);
     }
 
+    @ApiOperation(value = "delete", notes = "DELETE_TASK_GROUP_NOTE")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "id", dataType = "Int")
+    })
+    @PostMapping(value = "/delete")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiException(UPDATE_TASK_GROUP_ERROR)
+    @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
+    public Result deleteTaskGroup(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
+                                  @RequestParam("id") Integer id) {
+        Map<String, Object> result = taskGroupService.deleteTaskGroup(loginUser, id);
+        return returnDataList(result);
+    }
+
     /**
      * query task group list paging
      *

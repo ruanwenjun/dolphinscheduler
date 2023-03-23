@@ -144,6 +144,7 @@ public class ApiFuncIdentificationConstant {
     public static final String TASK_GROUP_CREATE = "resources:task-group:create";
     public static final String TASK_GROUP_CLOSE = "resources:task-group:close";
     public static final String TASK_GROUP_EDIT = "resources:task-group:update";
+    public static final String TASK_GROUP_DELETE = "resources:task-group:delete";
     public static final String TASK_GROUP_VIEW_QUEUE = "resources:task-group:queue-view";
 
     public static final String TASK_GROUP_QUEUE = "resources:task-group-queue:view";
