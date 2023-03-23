@@ -48,6 +48,9 @@ public class AlertPluginInstance {
     @TableField("update_time")
     private Date updateTime;
 
+    @TableField("create_user_id")
+    private int createUserId;
+
     public AlertPluginInstance() {
         this.createTime = new Date();
         this.updateTime = new Date();

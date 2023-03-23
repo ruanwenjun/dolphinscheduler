@@ -160,6 +160,7 @@ public class QueueServiceImpl extends BaseServiceImpl implements QueueService {
         queueObj.setQueueName(queueName);
         queueObj.setCreateTime(now);
         queueObj.setUpdateTime(now);
+        queueObj.setCreateUserId(loginUser.getId());
 
         queueMapper.insert(queueObj);
         result.put(Constants.DATA_LIST, queueObj);

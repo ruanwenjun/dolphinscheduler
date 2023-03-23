@@ -18,6 +18,7 @@
 package org.apache.dolphinscheduler.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -51,5 +52,8 @@ public class WorkerGroup {
     private String description;
 
     private String workerGroupExtraParam;
+
+    @TableField("create_user_id")
+    private int createUserId;
 
 }

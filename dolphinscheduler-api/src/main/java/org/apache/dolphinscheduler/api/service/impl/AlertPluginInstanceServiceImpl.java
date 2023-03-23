@@ -86,6 +86,7 @@ public class AlertPluginInstanceServiceImpl extends BaseServiceImpl implements A
         alertPluginInstance.setPluginInstanceParams(paramsMapJson);
         alertPluginInstance.setInstanceName(instanceName);
         alertPluginInstance.setPluginDefineId(pluginDefineId);
+        alertPluginInstance.setCreateUserId(loginUser.getId());
 
         Map<String, Object> result = new HashMap<>();
         if (!canOperatorPermissions(loginUser, null, AuthorizationType.ALERT_PLUGIN_INSTANCE, ALART_INSTANCE_CREATE)) {

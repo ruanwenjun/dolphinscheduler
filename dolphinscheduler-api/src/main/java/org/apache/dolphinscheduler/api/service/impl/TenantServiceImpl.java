@@ -129,6 +129,7 @@ public class TenantServiceImpl extends BaseServiceImpl implements TenantService 
         tenant.setDescription(desc);
         tenant.setCreateTime(now);
         tenant.setUpdateTime(now);
+        tenant.setCreateUserId(loginUser.getId());
         // save
         tenantMapper.insert(tenant);
 
