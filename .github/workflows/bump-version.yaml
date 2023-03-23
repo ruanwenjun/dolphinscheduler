@@ -41,7 +41,7 @@ jobs:
       - name: Deploy
         shell: bash
         run: |
-          ./mvnw -T2C --batch-mode -q --settings maven-settings.xml clean deploy \
+          ./mvnw -T2C --batch-mode --settings maven-settings.xml clean deploy \
                 -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/whaleops/dolphinscheduler \
                 -Dmaven.test.skip \
                 -Dmaven.javadoc.skip \
