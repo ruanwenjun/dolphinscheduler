@@ -6,7 +6,6 @@ on:
     branches:
       - ws-3.0.0
       - v*
-      - test/deploy/*
 
 env:
   GITHUB_USERNAME: x-access-token
@@ -34,6 +33,7 @@ jobs:
         run: |
           ./mvnw -B versions:set -DnewVersion=${GITHUB_SHA::7}-SNAPSHOT -DgenerateBackupPoms=false
           ./mvnw -T2C --batch-mode --settings maven-settings.xml clean deploy \
+                -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/whaleops/dolphinscheduler \
                 -Dmaven.test.skip \
                 -Dmaven.javadoc.skip \
                 -Dmaven.site.skip=true \
