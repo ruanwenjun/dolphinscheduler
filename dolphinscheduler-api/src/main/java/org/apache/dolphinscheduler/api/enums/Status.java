@@ -268,6 +268,8 @@ public enum Status {
     LISTING_WAITING_TASK_INSTANCE_BY_WORKER_ERROR(10203, "listing waiting task by worker address error",
             "查询Worker中等待执行的任务信息错误"),
 
+    QUERY_PROJECT_DETAILS_BY_NAME_ERROR(10204, "query project details by name error", "查询项目详细信息错误"),
+
     CREATE_BATCH_RESOURCE_NOTES(10204, "create batch resource error", "创建资源错误"),
     UDF_FUNCTION_NOT_EXIST(20001, "UDF function not found", "UDF函数不存在"),
     UDF_FUNCTION_EXISTS(20002, "UDF function already exists", "UDF函数已存在"),

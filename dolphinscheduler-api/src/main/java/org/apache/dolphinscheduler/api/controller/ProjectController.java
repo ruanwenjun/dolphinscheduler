@@ -54,6 +54,7 @@ import static org.apache.dolphinscheduler.api.enums.Status.QUERY_AUTHORIZED_AND_
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_AUTHORIZED_PROJECT;
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_AUTHORIZED_USER;
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_PROJECT_DETAILS_BY_CODE_ERROR;
+import static org.apache.dolphinscheduler.api.enums.Status.QUERY_PROJECT_DETAILS_BY_NAME_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.QUERY_UNAUTHORIZED_PROJECT_ERROR;
 import static org.apache.dolphinscheduler.api.enums.Status.UPDATE_PROJECT_ERROR;
 
@@ -142,14 +143,13 @@ public class ProjectController extends BaseController {
         return returnDataList(result);
     }
 
-    @ApiOperation(value = "queryProjectByName", notes = "QUERY_PROJECT_BY_ID_NOTES")
+    @ApiOperation(value = "queryProjectByName", notes = "QUERY_PROJECT_BY_NAME_NOTES")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "code", value = "PROJECT_CODE", dataType = "Long", example = "123456")
+            @ApiImplicitParam(name = "name", value = "PROJECT_NAME", dataType = "String", example = "projectA")
     })
     @GetMapping(value = "/query-by-name")
     @ResponseStatus(HttpStatus.OK)
-    @ApiException(QUERY_PROJECT_DETAILS_BY_CODE_ERROR)
-    @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
+    @ApiException(QUERY_PROJECT_DETAILS_BY_NAME_ERROR)
     public Result<Project> queryProjectByName(@ApiIgnore @RequestAttribute(value = Constants.SESSION_USER) User loginUser,
                                               @RequestParam("name") String name) {
         return Result.success(projectService.queryByName(loginUser, name));
