@@ -29,7 +29,7 @@ jobs:
           ref: ${{ github.event.inputs.ref }}
       - name: Set up maven settings
         run: |
-          cat <<EOF > ~/.m2/settings.xml
+          cat << "EOF" > ~/.m2/settings.xml
           ${{ secrets.MAVEN_SETTINGS_XML }}
           EOF
       - name: Cache
