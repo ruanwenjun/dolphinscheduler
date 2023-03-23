@@ -146,7 +146,7 @@ public class ProjectController extends BaseController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "code", value = "PROJECT_CODE", dataType = "Long", example = "123456")
     })
-    @GetMapping(value = "/")
+    @GetMapping(value = "/query-by-name")
     @ResponseStatus(HttpStatus.OK)
     @ApiException(QUERY_PROJECT_DETAILS_BY_CODE_ERROR)
     @AccessLogAnnotation(ignoreRequestArgs = "loginUser")
