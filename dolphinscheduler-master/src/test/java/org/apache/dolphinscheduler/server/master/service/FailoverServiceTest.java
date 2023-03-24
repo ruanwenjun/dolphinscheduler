@@ -105,14 +105,18 @@ public class FailoverServiceTest {
         springApplicationContext.setApplicationContext(applicationContext);
 
         given(masterConfig.getListenPort()).willReturn(masterPort);
+
+        TaskGroupService taskGroupService = new TaskGroupService();
         MasterFailoverService masterFailoverService =
-                new MasterFailoverService(registryClient, masterConfig, processService, nettyExecutorManager, cacheManager, logClient);
+                new MasterFailoverService(registryClient, masterConfig, processService, nettyExecutorManager, cacheManager, logClient, taskGroupService);
         WorkerFailoverService workerFailoverService = new WorkerFailoverService(registryClient,
                 masterConfig,
                 processService,
                 workflowExecuteThreadPool,
                 cacheManager,
-                logClient);
+                logClient,
+                taskGroupService
+            );
 
         failoverService = new FailoverService(masterFailoverService, workerFailoverService);
 
