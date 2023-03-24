@@ -17,10 +17,6 @@
 
 package org.apache.dolphinscheduler.server.master.service;
 
-import lombok.NonNull;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.common.enums.NodeType;
@@ -43,11 +39,11 @@ import org.apache.dolphinscheduler.server.utils.ProcessUtils;
 import org.apache.dolphinscheduler.service.log.LogClient;
 import org.apache.dolphinscheduler.service.process.ProcessService;
 import org.apache.dolphinscheduler.service.registry.RegistryClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +51,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import lombok.NonNull;
 
 @Service
 public class WorkerFailoverService {
@@ -67,6 +71,7 @@ public class WorkerFailoverService {
     private final WorkflowExecuteThreadPool workflowExecuteThreadPool;
     private final ProcessInstanceExecCacheManager cacheManager;
     private final LogClient logClient;
+    private final TaskGroupService taskGroupService;
     private final String localAddress;
 
     public WorkerFailoverService(@NonNull RegistryClient registryClient,
@@ -74,7 +79,8 @@ public class WorkerFailoverService {
                                  @NonNull ProcessService processService,
                                  @NonNull WorkflowExecuteThreadPool workflowExecuteThreadPool,
                                  @NonNull ProcessInstanceExecCacheManager cacheManager,
-                                 @NonNull LogClient logClient) {
+                                 @NonNull LogClient logClient,
+                                 @NonNull TaskGroupService taskGroupService) {
         this.registryClient = registryClient;
         this.masterConfig = masterConfig;
         this.processService = processService;
@@ -82,6 +88,7 @@ public class WorkerFailoverService {
         this.cacheManager = cacheManager;
         this.logClient = logClient;
         this.localAddress = masterConfig.getMasterAddress();
+        this.taskGroupService = taskGroupService;
     }
 
     /**
@@ -193,6 +200,12 @@ public class WorkerFailoverService {
         stateEvent.setProcessInstanceId(processInstance.getId());
         stateEvent.setExecutionStatus(taskInstance.getState());
         workflowExecuteThreadPool.submitStateEvent(stateEvent);
+
+        if (taskInstance.getTaskGroupId() > 0) {
+            LOGGER.info("The failover taskInstance is using taskGroup: {}, will release the taskGroup",
+                    taskInstance.getTaskGroupId());
+            taskGroupService.releaseTaskGroup(taskInstance);
+        }
     }
 
     /**

@@ -72,13 +72,15 @@ public class MasterFailoverService {
     private final NettyExecutorManager nettyExecutorManager;
 
     private final LogClient logClient;
+    private final TaskGroupService taskGroupService;
 
     public MasterFailoverService(@NonNull RegistryClient registryClient,
                                  @NonNull MasterConfig masterConfig,
                                  @NonNull ProcessService processService,
                                  @NonNull NettyExecutorManager nettyExecutorManager,
                                  @NonNull ProcessInstanceExecCacheManager processInstanceExecCacheManager,
-                                 @NonNull LogClient logClient) {
+                                 @NonNull LogClient logClient,
+                                 @NonNull TaskGroupService taskGroupService) {
         this.registryClient = registryClient;
         this.masterConfig = masterConfig;
         this.processService = processService;
@@ -86,6 +88,7 @@ public class MasterFailoverService {
         this.nettyExecutorManager = nettyExecutorManager;
         this.processInstanceExecCacheManager = processInstanceExecCacheManager;
         this.logClient = logClient;
+        this.taskGroupService = taskGroupService;
 
     }
 
@@ -253,6 +256,12 @@ public class MasterFailoverService {
         taskInstance.setState(ExecutionStatus.NEED_FAULT_TOLERANCE);
         taskInstance.setFlag(Flag.NO);
         processService.saveTaskInstance(taskInstance);
+
+        if (taskInstance.getTaskGroupId() > 0) {
+            LOGGER.info("The failover taskInstance is using taskGroup: {}, will release the taskGroup",
+                    taskInstance.getTaskGroupId());
+            taskGroupService.releaseTaskGroup(taskInstance);
+        }
     }
 
     private boolean checkTaskInstanceNeedFailover(@NonNull TaskInstance taskInstance) {
