@@ -18,7 +18,7 @@ env:
 jobs:
   deploy:
     name: Deploy maven packages to pkg.github
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
@@ -45,7 +45,7 @@ jobs:
       - name: Deploy
         shell: bash
         run: |
-          ./mvnw -T2C --batch-mode clean deploy \
+          ./mvnw -T4C --batch-mode clean deploy \
                 -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/whaleops/dolphinscheduler \
                 -Dmaven.test.skip \
                 -Dmaven.javadoc.skip \
