@@ -362,6 +362,10 @@ public final class Constants {
      */
     public static final String CMDPARAM_COMPLEMENT_DATA_SCHEDULE_DATE_LIST = "complementScheduleDateList";
 
+    public static final String CMDPARAM_COMPLEMENT_DATA_CALENDAR_TYPE = "complementCalendarType";
+
+    public static final String CMDPARAM_COMPLEMENT_DATA_CALENDAR_CODE = "complementCalendarCode";
+
     /**
      * complement date default cron string
      */

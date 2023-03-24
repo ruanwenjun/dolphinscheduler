@@ -74,6 +74,10 @@ public class CheckComplementDto {
 
     private Date endDate;
 
+    private SelectCalendarTypeEnum calendarType;
+
+    private String calendarCode;
+
     private List<String> filterTimes = Lists.newArrayList();
 
     public CheckComplementDto(String scheduleTimeParam, ProcessDefinition processDefinition, boolean checkResult) {
@@ -84,6 +88,15 @@ public class CheckComplementDto {
 
     public void setHandleTypes(boolean manual) {
         this.timeSelectionType = manual ? TimeSelectionTypeEnum.MANUAL : TimeSelectionTypeEnum.SELECTED;
+
+        Map<String, String> scheduleTimeParamMap = JSONUtils.toMap(scheduleTimeParam);
+
+        String calendarTypeName = scheduleTimeParamMap.get(Constants.CMDPARAM_COMPLEMENT_DATA_CALENDAR_TYPE);
+        if (StringUtils.isEmpty(calendarTypeName)) {
+            calendarTypeName = SelectCalendarTypeEnum.NATURAL.name();
+        }
+        calendarType = SelectCalendarTypeEnum.valueOf(calendarTypeName);
+        calendarCode = scheduleTimeParamMap.get(Constants.CMDPARAM_COMPLEMENT_DATA_CALENDAR_CODE);
     }
 
     public void setWritingTimes(String writingTimes) {
@@ -164,5 +177,9 @@ public class CheckComplementDto {
      */
     enum TimeSelectionTypeEnum {
         MANUAL, SELECTED
+    }
+
+    public enum SelectCalendarTypeEnum {
+        NATURAL, SCHEDULE, CARD, CUSTOM
     }
 }

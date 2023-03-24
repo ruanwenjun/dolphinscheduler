@@ -17,6 +17,7 @@
 
 package org.apache.dolphinscheduler.api.service;
 
+import org.apache.dolphinscheduler.api.dto.CheckComplementDto;
 import org.apache.dolphinscheduler.api.enums.ExecuteType;
 import org.apache.dolphinscheduler.common.enums.CommandType;
 import org.apache.dolphinscheduler.common.enums.ComplementDependentMode;
@@ -131,4 +132,20 @@ public interface ExecutorService {
      * @return
      */
     WorkflowInstanceExecuteDetailDto queryExecutingWorkflowByProcessInstanceId(Integer processInstanceId);
+
+    /**
+     * query complement date list
+     *
+     * @param loginUser login user
+     * @param projectCode project code
+     * @param processDefinitionCode process definition code
+     * @param cronTime cron time
+     * @param commandType command type
+     * @return execute process instance code
+     */
+    Map<String, Object> queryComplementDateList(User loginUser,
+                                                long projectCode,
+                                                long processDefinitionCode,
+                                                String cronTime);
+
 }

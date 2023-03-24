@@ -546,6 +546,12 @@ public enum Status {
     OPERATION_ALREADY_EXIST(1500000, "operation already exist", "操作已存在"),
 
     DATA_SOURCE_HAD_USED(1600000, "data source already used (projectName - workflowName - taskName):{0}", "数据源正在被使用(项目名 - 工作流名 - 任务名):{0}"),
+
+    COMPLEMENT_CALENDAR_ERROR(1700000, "complement calendar error", "补数日历错误"),
+
+    COMPLEMENT_MISSING_CALENDAR_PARAM(1700001, "complement missing calendar param [{0}]", "补数缺少日历参数 [{0}]"),
+
+    COMPLEMENT_QUERY_DATE_LIST_ERROR(1700002, "complement query date list error", "补数查询日期列表错误"),
     ;
 
     private final int code;

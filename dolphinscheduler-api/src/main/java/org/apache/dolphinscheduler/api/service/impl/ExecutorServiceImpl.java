@@ -263,6 +263,31 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
         return result;
     }
 
+    @Override
+    public Map<String, Object> queryComplementDateList(User loginUser,
+                                                       long projectCode,
+                                                       long processDefinitionCode,
+                                                       String cronTime) {
+        Project project = projectMapper.queryByCode(projectCode);
+        // check user access for project
+        Map<String, Object> result = new HashMap<>();
+        projectService.checkProjectAndAuth(loginUser, project, projectCode, WORKFLOW_START);
+
+        // check process define release state
+        ProcessDefinition processDefinition = processDefinitionMapper.queryByCode(processDefinitionCode);
+
+        // check complement data
+        CheckComplementDto complementDto =
+                checkComplementDataWithSchedule(result, processDefinition, CommandType.COMPLEMENT_DATA, cronTime);
+        List<String> dateList = complementDto.getFilterTimes();
+        if (!complementDto.isCheckResult()) {
+            return result;
+        }
+        result.put(Constants.DATA_LIST, dateList);
+        putMsg(result, Status.SUCCESS);
+        return result;
+    }
+
     protected CheckComplementDto checkComplementDataWithSchedule(Map<String, Object> result,
                                                                  ProcessDefinition processDefinition,
                                                                  CommandType commandType, String cronTime) {
