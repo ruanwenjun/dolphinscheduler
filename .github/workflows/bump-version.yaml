@@ -29,6 +29,7 @@ jobs:
           ref: ${{ github.event.inputs.ref }}
       - name: Set up maven settings
         run: |
+          mkdir ~/.m2
           cat << "EOF" > ~/.m2/settings.xml
           ${{ secrets.MAVEN_SETTINGS_XML }}
           EOF
