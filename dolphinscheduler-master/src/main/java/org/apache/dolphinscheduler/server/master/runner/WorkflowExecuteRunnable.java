@@ -285,7 +285,8 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
                     this.stateEvents.remove(stateEvent);
                 }
             } catch (StateEventHandleError stateEventHandleError) {
-                logger.error("State event handle error, will remove this event: {}, errMsg:{}", stateEvent, stateEventHandleError.getMessage());
+                logger.error("State event handle error, will remove this event: {}, errMsg:{}", stateEvent,
+                        stateEventHandleError.getMessage());
                 this.stateEvents.remove(stateEvent);
                 ThreadUtils.sleep(Constants.SLEEP_TIME_MILLIS_SHORT);
             } catch (StateEventHandleException stateEventHandleException) {
@@ -1839,7 +1840,19 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
             // init varPool only this task is the first time running
             if (task.isFirstRun()) {
                 // get pre task ,get all the task varPool to this task
-                Set<String> preTask = dag.getPreviousNodes(Long.toString(task.getTaskCode()));
+                Set<String> basePreTask = dag.getPreviousNodes(Long.toString(task.getTaskCode()));
+                Set<String> preTask = new HashSet<>(basePreTask);
+
+                // handle pre task which is fobidden
+                List<String> indirectDepCodeList = new ArrayList<>();
+                for (String preTaskCode : basePreTask) {
+                    if (forbiddenTaskMap.containsKey(Long.parseLong(preTaskCode))) {
+                        preTask.remove(preTaskCode);
+                        setIndirectDepList(preTaskCode, indirectDepCodeList);
+                    }
+                }
+
+                preTask.addAll(indirectDepCodeList);
                 getPreVarPool(task, preTask);
             }
             DependResult dependResult = getDependResultForTask(task);
