@@ -17,16 +17,19 @@
 
 package org.apache.dolphinscheduler.scheduler.quartz;
 
-import io.micrometer.core.annotation.Counted;
-import io.micrometer.core.annotation.Timed;
 import org.apache.dolphinscheduler.common.Constants;
 import org.apache.dolphinscheduler.common.enums.CommandType;
 import org.apache.dolphinscheduler.common.enums.ReleaseState;
 import org.apache.dolphinscheduler.dao.entity.Command;
 import org.apache.dolphinscheduler.dao.entity.ProcessDefinition;
+import org.apache.dolphinscheduler.dao.entity.Project;
 import org.apache.dolphinscheduler.dao.entity.Schedule;
+import org.apache.dolphinscheduler.dao.repository.ProjectDao;
 import org.apache.dolphinscheduler.scheduler.quartz.utils.QuartzTaskUtils;
 import org.apache.dolphinscheduler.service.process.ProcessService;
+
+import java.util.Date;
+
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
@@ -37,7 +40,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.util.StringUtils;
 
-import java.util.Date;
+import io.micrometer.core.annotation.Counted;
+import io.micrometer.core.annotation.Timed;
 
 public class ProcessScheduleTask extends QuartzJobBean {
 
@@ -45,6 +49,9 @@ public class ProcessScheduleTask extends QuartzJobBean {
 
     @Autowired
     private ProcessService processService;
+
+    @Autowired
+    private ProjectDao projectDao;
 
     @Counted(value = "quartz_job_executed")
     @Timed(value = "quartz_job_execution", percentiles = {0.5, 0.75, 0.95, 0.99}, histogram = true)
@@ -63,9 +70,24 @@ public class ProcessScheduleTask extends QuartzJobBean {
 
         // query schedule
         Schedule schedule = processService.querySchedule(scheduleId);
-        if (schedule == null || ReleaseState.OFFLINE == schedule.getReleaseState()) {
+        if (schedule == null) {
             logger.warn(
-                    "process schedule does not exist in db or process schedule offline，delete schedule job in quartz, projectId:{}, scheduleId:{}",
+                    "Process schedule does not exist in db delete schedule job in quartz, projectId:{}, scheduleId:{}",
+                    projectId, scheduleId);
+            deleteJob(context, projectId, scheduleId);
+            return;
+        }
+        if (ReleaseState.OFFLINE == schedule.getReleaseState()) {
+            logger.warn(
+                    "Process schedule offline，delete schedule job in quartz, projectId:{}, scheduleId:{}",
+                    projectId, scheduleId);
+            deleteJob(context, projectId, scheduleId);
+            return;
+        }
+        Project project = projectDao.queryProjectById(projectId);
+        if (project == null) {
+            logger.warn(
+                    "Project does not exist in db，delete schedule job in quartz, projectId:{}, scheduleId:{}",
                     projectId, scheduleId);
             deleteJob(context, projectId, scheduleId);
             return;

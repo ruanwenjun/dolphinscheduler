@@ -42,4 +42,9 @@ public class ProjectDaoImpl implements ProjectDao {
         }
         return projectMapper.queryProjectCodeByIds(projectIds);
     }
+
+    @Override
+    public Project queryProjectById(int projectId) {
+        return projectMapper.selectById(projectId);
+    }
 }

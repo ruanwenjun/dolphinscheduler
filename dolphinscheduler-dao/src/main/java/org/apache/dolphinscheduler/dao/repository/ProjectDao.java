@@ -13,4 +13,6 @@ public interface ProjectDao {
                                          String searchVal);
 
     List<Long> queryProjectCodeByIds(Set<Integer> projectIds);
+
+    Project queryProjectById(int projectId);
 }
