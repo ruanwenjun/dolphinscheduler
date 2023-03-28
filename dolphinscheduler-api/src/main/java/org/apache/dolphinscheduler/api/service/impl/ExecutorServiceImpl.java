@@ -449,10 +449,12 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
                 JSONUtils.parseObject(processInstance.getCommandParam(), new TypeReference<Map<String, Object>>() {
                 });
         String startParams = null;
-        if (MapUtils.isNotEmpty(commandMap) && executeType == ExecuteType.REPEAT_RUNNING) {
-            Object startParamsJson = commandMap.get(Constants.CMD_PARAM_START_PARAMS);
-            if (startParamsJson != null) {
-                startParams = startParamsJson.toString();
+        if (MapUtils.isNotEmpty(commandMap)) {
+            if (executeType == ExecuteType.REPEAT_RUNNING || executeType == ExecuteType.RECOVER_SUSPENDED_PROCESS || executeType == ExecuteType.START_FAILURE_TASK_PROCESS) {
+                Object startParamsJson = commandMap.get(Constants.CMD_PARAM_START_PARAMS);
+                if (startParamsJson != null) {
+                    startParams = startParamsJson.toString();
+                }
             }
         }
 
