@@ -48,7 +48,6 @@ import org.apache.dolphinscheduler.common.enums.Priority;
 import org.apache.dolphinscheduler.common.enums.ProcessExecutionTypeEnum;
 import org.apache.dolphinscheduler.common.enums.ReleaseState;
 import org.apache.dolphinscheduler.common.enums.TimeoutFlag;
-import org.apache.dolphinscheduler.common.enums.UserType;
 import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.graph.DAG;
 import org.apache.dolphinscheduler.common.lifecycle.ServerLifeCycleManager;
@@ -86,8 +85,8 @@ import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskInstanceMapper;
 import org.apache.dolphinscheduler.dao.mapper.TenantMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
-import org.apache.dolphinscheduler.plugin.task.api.enums.SqlType;
 import org.apache.dolphinscheduler.plugin.task.api.enums.TaskTimeoutStrategy;
+import org.apache.dolphinscheduler.plugin.task.api.model.Property;
 import org.apache.dolphinscheduler.plugin.task.api.parameters.ParametersNode;
 import org.apache.dolphinscheduler.plugin.task.api.parameters.SqlParameters;
 import org.apache.dolphinscheduler.service.process.ProcessService;
@@ -346,6 +345,13 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
                     putMsg(result, Status.PROCESS_NODE_S_PARAMETER_INVALID, taskDefinitionLog.getName());
                     return result;
                 }
+                List<Property> localParams = taskDefinitionLog.getTaskParamList();
+                localParams.stream()
+                    .filter(param -> StringUtils.isEmpty(param.getProp()))
+                    .findAny()
+                    .ifPresent(s -> {
+                        throw new ServiceException(Status.TASK_HAVE_EMPTY_LOCAL_PARAM, taskDefinitionLog.getName());
+                    });
             }
             putMsg(result, SUCCESS);
         } catch (Exception e) {

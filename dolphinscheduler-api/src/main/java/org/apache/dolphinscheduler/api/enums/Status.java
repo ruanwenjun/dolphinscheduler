@@ -396,6 +396,7 @@ public enum Status {
     NOT_SUPPORT_COPY_TASK_TYPE(50057, "task type [{0}] does not support copy", "不支持复制的任务类型[{0}]"),
     BATCH_EXECUTE_PROCESS_INSTANCE_ERROR(50058, "change process instance status error: {0}", "修改工作实例状态错误: {0}"),
     PROCESS_DEFINE_RELEASE(50059, "process definition {0} process version {1} on line", "工作流定义[{0}] 工作流版本[{1}]是上线状态"),
+    TASK_HAVE_EMPTY_LOCAL_PARAM(50060, "task {0} have empty local parameter", "任务[{0}]存在为空的本地参数"),
     HDFS_NOT_STARTUP(60001, "hdfs not startup", "hdfs未启用"),
     STORAGE_NOT_STARTUP(60002, "storage not startup", "存储未启用"),
     S3_CANNOT_RENAME(60003, "directory cannot be renamed", "S3无法重命名文件夹"),
