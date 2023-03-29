@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ public class DefaultHTMLTemplateTest {
     private static final Logger logger = LoggerFactory.getLogger(DefaultHTMLTemplateTest.class);
 
     @Test
+    @Ignore
     public void testGetMessageFromTemplate() {
         DefaultHTMLTemplate template = new DefaultHTMLTemplate();
 

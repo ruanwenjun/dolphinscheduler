@@ -42,16 +42,10 @@ public class DefaultHTMLTemplate implements AlertTemplate {
 
     @Override
     public String getMessageFromTemplate(String content, ShowType showType, boolean showAll) {
-
-        switch (showType) {
-            case TABLE:
-                return getTableTypeMessage(content, showAll);
-            case TEXT:
-                return getTextTypeMessage(content);
-            default:
-                throw new IllegalArgumentException(
-                        String.format("not support showType: %s in DefaultHTMLTemplate", showType));
+        if (!showType.equals(ShowType.TEXT)) {
+            throw new IllegalArgumentException(String.format("not support showType: %s in DefaultHTMLTemplate", showType));
         }
+        return getTextTypeMessage(content);
     }
 
     /**
@@ -114,15 +108,13 @@ public class DefaultHTMLTemplate implements AlertTemplate {
     private String getTextTypeMessage(String content) {
 
         if (StringUtils.isNotEmpty(content)) {
-            ArrayNode list = JSONUtils.parseArray(content);
-            StringBuilder contents = new StringBuilder(100);
-            for (JsonNode jsonNode : list) {
-                contents.append(EmailConstants.TR);
-                contents.append(EmailConstants.TD).append(jsonNode.toString()).append(EmailConstants.TD_END);
-                contents.append(EmailConstants.TR_END);
-            }
+            String contents = EmailConstants.TR +
+                EmailConstants.TD +
+                content +
+                EmailConstants.TD_END +
+                EmailConstants.TR_END;
 
-            return getMessageFromHtmlTemplate(null, contents.toString());
+            return getMessageFromHtmlTemplate(null, contents);
 
         }
 

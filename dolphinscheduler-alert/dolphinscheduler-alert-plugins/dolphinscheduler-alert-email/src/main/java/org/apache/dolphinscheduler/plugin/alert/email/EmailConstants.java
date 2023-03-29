@@ -58,7 +58,7 @@ public final class EmailConstants {
 
     public static final String UTF_8 = "UTF-8";
 
-    public static final String EXCEL_SUFFIX_XLSX = ".xlsx";
+    public static final String TEXT_SUFFIX = ".txt";
 
     public static final String SINGLE_SLASH = "/";
 

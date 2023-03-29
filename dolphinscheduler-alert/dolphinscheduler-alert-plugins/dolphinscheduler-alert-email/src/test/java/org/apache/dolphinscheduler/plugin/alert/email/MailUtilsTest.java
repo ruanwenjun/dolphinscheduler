@@ -108,28 +108,10 @@ public class MailUtilsTest {
     }
 
     @Test
-    public void testSendTableMail() {
-        String title = "Mysql Exception";
-        String content = list2String();
-        emailConfig.put(AlertConstants.NAME_SHOW_TYPE, ShowType.TABLE.getDescp());
-        mailSender = new MailSender(emailConfig);
-        // mailSender.sendMails(title, content);
-    }
-
-    @Test
     public void testAttachmentFile() throws Exception {
         String content = list2String();
         emailConfig.put(AlertConstants.NAME_SHOW_TYPE, ShowType.ATTACHMENT.getDescp());
         mailSender = new MailSender(emailConfig);
         // mailSender.sendMails("gaojing", content);
     }
-
-    @Test
-    public void testTableAttachmentFile() throws Exception {
-        String content = list2String();
-        emailConfig.put(AlertConstants.NAME_SHOW_TYPE, ShowType.TABLE_ATTACHMENT.getDescp());
-        mailSender = new MailSender(emailConfig);
-        // mailSender.sendMails("gaojing", content);
-    }
-
 }

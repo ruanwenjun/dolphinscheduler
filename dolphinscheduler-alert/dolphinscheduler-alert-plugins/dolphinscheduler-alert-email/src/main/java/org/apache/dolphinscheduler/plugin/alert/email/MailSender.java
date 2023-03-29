@@ -51,6 +51,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -162,7 +163,7 @@ public final class MailSender {
 
         String title = info.getAlertData().getTitle();
         String content = JSONUtils.toJsonString(taskResultAlertContent.getResult());
-        if (showType.equals(ShowType.TABLE.getDescp()) || showType.equals(ShowType.TEXT.getDescp())) {
+        if (showType.equals(ShowType.TEXT.getDescp())) {
             // send email
             HtmlEmail email = new HtmlEmail();
 
@@ -189,16 +190,9 @@ public final class MailSender {
             } catch (Exception e) {
                 handleException(alertResult, e);
             }
-        } else if (showType.equals(ShowType.ATTACHMENT.getDescp())
-                || showType.equals(ShowType.TABLE_ATTACHMENT.getDescp())) {
+        } else if (showType.equals(ShowType.ATTACHMENT.getDescp())) {
             try {
-
-                String partContent = (showType.equals(ShowType.ATTACHMENT.getDescp())
-                        ? "Please see the attachment " + info.getAlertContent().getAlertTitle()
-                                + EmailConstants.EXCEL_SUFFIX_XLSX
-                        : htmlTable(content, false));
-
-                attachment(title, content, partContent);
+                attachment(title, content);
 
                 alertResult.setSuccess(true);
                 return alertResult;
@@ -212,43 +206,12 @@ public final class MailSender {
     }
 
     /**
-     * html table content
-     *
-     * @param content the content
-     * @param showAll if show the whole content
-     * @return the html table form
-     */
-    private String htmlTable(String content, boolean showAll) {
-        return alertTemplate.getMessageFromTemplate(content, ShowType.TABLE, showAll);
-    }
-
-    /**
-     * html table content
-     *
-     * @param content the content
-     * @return the html table form
-     */
-    private String htmlTable(String content) {
-        return htmlTable(content, true);
-    }
-
-    /**
-     * html text content
-     *
-     * @param content the content
-     * @return text in html form
-     */
-    private String htmlText(String content) {
-        return alertTemplate.getMessageFromTemplate(content, ShowType.TEXT);
-    }
-
-    /**
      * send mail as Excel attachment
      */
-    private void attachment(String title, String content, String partContent) throws Exception {
+    private void attachment(String title, String content) throws Exception {
         MimeMessage msg = getMimeMessage();
 
-        attachContent(title, content, partContent, msg);
+        attachContent(title, content, msg);
     }
 
     /**
@@ -313,8 +276,8 @@ public final class MailSender {
     /**
      * attach content
      */
-    private void attachContent(String title, String content, String partContent,
-                               MimeMessage msg) throws MessagingException, IOException {
+    private void attachContent(String title, String content, MimeMessage msg) throws MessagingException, IOException {
+        title = title.replace(" ", "_");
         /*
          * set receiverCc
          */
@@ -325,26 +288,31 @@ public final class MailSender {
         }
 
         // set subject
-        msg.setSubject(title);
+        msg.setSubject("WhaleScheduler Alert");
         MimeMultipart partList = new MimeMultipart();
         // set signature
         MimeBodyPart part1 = new MimeBodyPart();
-        part1.setContent(partContent, EmailConstants.TEXT_HTML_CHARSET_UTF_8);
+        part1.setContent("see more detail in attachment", EmailConstants.TEXT_HTML_CHARSET_UTF_8);
         // set attach file
         MimeBodyPart part2 = new MimeBodyPart();
         // add random uuid to filename to avoid potential issue
         String randomFilename = title + UUID.randomUUID();
         File file =
-                new File(xlsFilePath + EmailConstants.SINGLE_SLASH + randomFilename + EmailConstants.EXCEL_SUFFIX_XLSX);
+            new File(xlsFilePath + EmailConstants.SINGLE_SLASH + randomFilename + EmailConstants.TEXT_SUFFIX);
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
-        // make excel file
 
-        ExcelUtils.genExcelFile(content, randomFilename, xlsFilePath);
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(content);
+            writer.flush();
+        } catch (IOException e) {
+            logger.error("write file error", e);
+            throw e;
+        }
 
         part2.attachFile(file);
-        part2.setFileName(MimeUtility.encodeText(title + EmailConstants.EXCEL_SUFFIX_XLSX, EmailConstants.UTF_8, "B"));
+        part2.setFileName(MimeUtility.encodeText(title + EmailConstants.TEXT_SUFFIX, EmailConstants.UTF_8, "B"));
         // add components to collection
         partList.addBodyPart(part1);
         partList.addBodyPart(part2);
@@ -368,11 +336,8 @@ public final class MailSender {
         /*
          * to send information, you can use HTML tags in mail content because of the use of HtmlEmail
          */
-        if (showType.equals(ShowType.TABLE.getDescp())) {
-            email.setMsg(htmlTable(content));
-        } else if (showType.equals(ShowType.TEXT.getDescp())) {
-            email.setMsg(htmlText(content));
-        }
+        String contentTemp = alertTemplate.getMessageFromTemplate(content, ShowType.TEXT);
+        email.setMsg(contentTemp);
 
         // send
         email.setDebug(true);
@@ -443,11 +408,8 @@ public final class MailSender {
             /*
              * to send information, you can use HTML tags in mail content because of the use of HtmlEmail
              */
-            if (showType.equals(ShowType.TABLE.getDescp())) {
-                email.setMsg(htmlTable(content));
-            } else if (showType.equals(ShowType.TEXT.getDescp())) {
-                email.setMsg(htmlText(content));
-            }
+            String contentTemp = alertTemplate.getMessageFromTemplate(content, ShowType.TEXT);
+            email.setMsg(contentTemp);
 
             // send
             email.setDebug(true);
