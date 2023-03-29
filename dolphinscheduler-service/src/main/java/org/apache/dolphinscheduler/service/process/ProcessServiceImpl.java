@@ -920,8 +920,8 @@ public class ProcessServiceImpl implements ProcessService {
         }
         if (cmdParam != null) {
             CommandType commandTypeIfComplement = getCommandTypeIfComplement(processInstance, command);
-            // reset global params while repeat running is needed by cmdParam
-            if (commandTypeIfComplement == CommandType.REPEAT_RUNNING) {
+            // reset global params by cmdParam
+            if (commandTypeIfComplement == CommandType.REPEAT_RUNNING || commandTypeIfComplement == CommandType.START_FAILURE_TASK_PROCESS || commandTypeIfComplement == CommandType.RECOVER_SUSPENDED_PROCESS) {
                 setGlobalParamIfCommanded(processDefinition, cmdParam);
             }
 
