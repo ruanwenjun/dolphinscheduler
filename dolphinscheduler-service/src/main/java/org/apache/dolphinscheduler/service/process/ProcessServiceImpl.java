@@ -921,7 +921,9 @@ public class ProcessServiceImpl implements ProcessService {
         if (cmdParam != null) {
             CommandType commandTypeIfComplement = getCommandTypeIfComplement(processInstance, command);
             // reset global params by cmdParam
-            if (commandTypeIfComplement == CommandType.REPEAT_RUNNING || commandTypeIfComplement == CommandType.START_FAILURE_TASK_PROCESS || commandTypeIfComplement == CommandType.RECOVER_SUSPENDED_PROCESS) {
+            if (commandTypeIfComplement == CommandType.REPEAT_RUNNING
+                    || commandTypeIfComplement == CommandType.START_FAILURE_TASK_PROCESS
+                    || commandTypeIfComplement == CommandType.RECOVER_SUSPENDED_PROCESS) {
                 setGlobalParamIfCommanded(processDefinition, cmdParam);
             }
 
@@ -2047,13 +2049,10 @@ public class ProcessServiceImpl implements ProcessService {
         processInstance.setHost(Constants.NULL);
         processInstanceMapper.updateById(processInstance);
 
-        ProcessDefinition processDefinition = findProcessDefinition(processInstance.getProcessDefinitionCode(),
-                processInstance.getProcessDefinitionVersion());
-
         // 2 insert into recover command
         Command cmd = new Command();
-        cmd.setProcessDefinitionCode(processDefinition.getCode());
-        cmd.setProcessDefinitionVersion(processDefinition.getVersion());
+        cmd.setProcessDefinitionCode(processInstance.getProcessDefinitionCode());
+        cmd.setProcessDefinitionVersion(processInstance.getProcessDefinitionVersion());
         cmd.setProcessInstanceId(processInstance.getId());
         cmd.setCommandParam(
                 String.format("{\"%s\":%d}", Constants.CMD_PARAM_RECOVER_PROCESS_ID_STRING, processInstance.getId()));

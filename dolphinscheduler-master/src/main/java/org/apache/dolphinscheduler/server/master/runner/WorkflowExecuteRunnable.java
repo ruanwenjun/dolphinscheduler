@@ -63,6 +63,9 @@ import org.apache.dolphinscheduler.plugin.task.api.enums.Direct;
 import org.apache.dolphinscheduler.plugin.task.api.enums.ExecutionStatus;
 import org.apache.dolphinscheduler.plugin.task.api.model.Property;
 import org.apache.dolphinscheduler.remote.command.HostUpdateCommand;
+import org.apache.dolphinscheduler.remote.command.task.WorkflowHostChangeRequest;
+import org.apache.dolphinscheduler.remote.command.task.WorkflowHostChangeResponse;
+import org.apache.dolphinscheduler.remote.exceptions.RemotingException;
 import org.apache.dolphinscheduler.remote.utils.Host;
 import org.apache.dolphinscheduler.server.master.config.MasterConfig;
 import org.apache.dolphinscheduler.server.master.dispatch.executor.NettyExecutorManager;
@@ -73,6 +76,7 @@ import org.apache.dolphinscheduler.server.master.event.StateEventHandler;
 import org.apache.dolphinscheduler.server.master.event.StateEventHandlerManager;
 import org.apache.dolphinscheduler.server.master.event.WorkflowEventHandleError;
 import org.apache.dolphinscheduler.server.master.metrics.TaskMetrics;
+import org.apache.dolphinscheduler.server.master.rpc.MasterRPCClient;
 import org.apache.dolphinscheduler.server.master.runner.task.ITaskProcessor;
 import org.apache.dolphinscheduler.server.master.runner.task.TaskAction;
 import org.apache.dolphinscheduler.server.master.runner.task.TaskProcessorFactory;
@@ -86,6 +90,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -126,7 +131,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
 
     private final AlertManager alertManager;
 
-    private final NettyExecutorManager nettyExecutorManager;
+    private final MasterRPCClient masterRPCClient;
 
     private final ProcessInstance processInstance;
 
@@ -221,7 +226,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
      * @param processInstance         processInstance
      * @param processService          processService
      * @param processInstanceDao      processInstanceDao
-     * @param nettyExecutorManager    nettyExecutorManager
+     * @param masterRPCClient         masterRPCClient
      * @param alertManager            alertManager
      * @param masterConfig            masterConfig
      * @param stateWheelExecuteThread stateWheelExecuteThread
@@ -230,7 +235,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
                                    @NonNull ProcessInstance processInstance,
                                    @NonNull ProcessService processService,
                                    @NonNull ProcessInstanceDao processInstanceDao,
-                                   @NonNull NettyExecutorManager nettyExecutorManager,
+                                   @NonNull MasterRPCClient masterRPCClient,
                                    @NonNull AlertManager alertManager,
                                    @NonNull MasterConfig masterConfig,
                                    @NonNull StateWheelExecuteThread stateWheelExecuteThread,
@@ -238,7 +243,7 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
         this.processService = processService;
         this.processInstanceDao = processInstanceDao;
         this.processInstance = processInstance;
-        this.nettyExecutorManager = nettyExecutorManager;
+        this.masterRPCClient = masterRPCClient;
         this.alertManager = alertManager;
         this.stateWheelExecuteThread = stateWheelExecuteThread;
         this.curingParamsService = curingParamsService;
@@ -935,12 +940,6 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
             ITaskProcessor taskProcessor = TaskProcessorFactory.getTaskProcessor(taskInstance.getTaskType());
             taskProcessor.init(taskInstance, processInstance);
 
-            // the task is already running in worker, the task should already be killed, we can remove this line
-            if (taskInstance.getState() == ExecutionStatus.RUNNING_EXECUTION
-                    && taskProcessor.getType().equalsIgnoreCase(Constants.COMMON_TASK_TYPE)) {
-                notifyProcessHostUpdate(taskInstance);
-            }
-
             boolean submit = taskProcessor.action(TaskAction.SUBMIT);
             if (!submit) {
                 logger.error("process id:{} name:{} submit standby task id:{} name:{} failed!",
@@ -1021,23 +1020,6 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
                     taskInstance.getId(),
                     e);
             return Optional.empty();
-        }
-    }
-
-    private void notifyProcessHostUpdate(TaskInstance taskInstance) {
-        if (StringUtils.isEmpty(taskInstance.getHost())) {
-            return;
-        }
-
-        try {
-            HostUpdateCommand hostUpdateCommand = new HostUpdateCommand();
-            hostUpdateCommand.setProcessHost(masterAddress);
-            hostUpdateCommand.setTaskInstanceId(taskInstance.getId());
-            Host host = new Host(taskInstance.getHost());
-            nettyExecutorManager.doExecute(host, hostUpdateCommand.convert2Command());
-        } catch (Exception e) {
-            // Do we need to catch this exception?
-            logger.error("notify process host update", e);
         }
     }
 
@@ -1308,7 +1290,25 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
             TaskNode taskNodeObject = dag.getNode(taskNode);
             Optional<TaskInstance> existTaskInstanceOptional = getTaskInstance(taskNodeObject.getCode());
             if (existTaskInstanceOptional.isPresent()) {
-                taskInstances.add(existTaskInstanceOptional.get());
+                TaskInstance existTaskInstance = existTaskInstanceOptional.get();
+                if (existTaskInstance.getState() == ExecutionStatus.RUNNING_EXECUTION
+                        || existTaskInstance.getState() == ExecutionStatus.DISPATCH) {
+                    // try to take over task instance
+                    if (tryToTakeOverTaskInstance(existTaskInstance)) {
+                        logger.info("Success take over task {}", existTaskInstance.getName());
+                        continue;
+                    } else {
+                        // set the task instance state to fault tolerance
+                        existTaskInstance.setFlag(Flag.NO);
+                        existTaskInstance.setState(ExecutionStatus.NEED_FAULT_TOLERANCE);
+                        validTaskMap.remove(existTaskInstance.getTaskCode());
+                        processService.updateTaskInstance(existTaskInstance);
+                        existTaskInstance = cloneTolerantTaskInstance(existTaskInstance);
+                        logger.info("task {} cannot be take over will generate a tolerant task instance",
+                                existTaskInstance.getName());
+                    }
+                }
+                taskInstances.add(existTaskInstance);
                 continue;
             }
             TaskInstance task = createTaskInstance(processInstance, taskNodeObject);
@@ -2042,6 +2042,46 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
                     globalParamList.add(new Property(startParam.getKey(), IN, VARCHAR, startParam.getValue()));
                 }
             }
+        }
+    }
+
+    private boolean tryToTakeOverTaskInstance(TaskInstance taskInstance) {
+        if (TaskProcessorFactory.isMasterTask(taskInstance.getTaskType())) {
+            return false;
+        }
+        try {
+            org.apache.dolphinscheduler.remote.command.Command command = masterRPCClient.sendSyncCommand(
+                    Host.of(taskInstance.getHost()),
+                    new WorkflowHostChangeRequest(taskInstance.getId(), masterAddress).convert2Command(), 10_000L);
+            if (command == null) {
+                logger.error(
+                        "Takeover task instance failed, the worker {} might not be alive, will try to create a new task instance",
+                        taskInstance.getHost());
+                return false;
+            }
+            WorkflowHostChangeResponse workflowHostChangeResponse =
+                    JSONUtils.parseObject(command.getBody(), WorkflowHostChangeResponse.class);
+            if (workflowHostChangeResponse == null || !workflowHostChangeResponse.isSuccess()) {
+                logger.error(
+                        "Takeover task instance failed, receive a failed response from worker: {}, will try to create a new task instance",
+                        taskInstance.getHost());
+                return false;
+            }
+
+            ITaskProcessor taskProcessor = TaskProcessorFactory.getTaskProcessor(taskInstance.getTaskType());
+            taskProcessor.init(taskInstance, processInstance);
+
+            taskInstanceMap.put(taskInstance.getId(), taskInstance);
+            stateWheelExecuteThread.addTask4TimeoutCheck(processInstance, taskInstance);
+            stateWheelExecuteThread.addTask4RetryCheck(processInstance, taskInstance);
+            activeTaskProcessorMaps.put(taskInstance.getTaskCode(), taskProcessor);
+            return true;
+        } catch (RemotingException | InterruptedException | InvocationTargetException | InstantiationException
+                | IllegalAccessException e) {
+            logger.error(
+                    "Takeover task instance failed, the worker {} might not be alive, will try to create a new task instance",
+                    taskInstance.getHost());
+            return false;
         }
     }
 

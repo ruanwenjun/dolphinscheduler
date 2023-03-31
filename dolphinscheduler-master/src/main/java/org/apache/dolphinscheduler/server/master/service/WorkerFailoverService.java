@@ -176,6 +176,7 @@ public class WorkerFailoverService {
         if (!isMasterTask) {
             LOGGER.info("The failover taskInstance is not master task");
             TaskExecutionContext taskExecutionContext = TaskExecutionContextBuilder.get()
+                    .buildMasterHost(masterConfig.getMasterAddress())
                     .buildTaskInstanceRelatedInfo(taskInstance)
                     .buildProcessInstanceRelatedInfo(processInstance)
                     .buildProcessDefinitionRelatedInfo(processInstance.getProcessDefinition())
@@ -187,7 +188,7 @@ public class WorkerFailoverService {
                 ProcessUtils.killYarnJob(logClient, taskExecutionContext);
             }
         } else {
-            LOGGER.info("The failover taskInstance is a master task");
+            LOGGER.info("The failover taskInstance is a master task, no need to failover in worker failover");
         }
 
         taskInstance.setState(ExecutionStatus.NEED_FAULT_TOLERANCE);
@@ -201,11 +202,6 @@ public class WorkerFailoverService {
         stateEvent.setExecutionStatus(taskInstance.getState());
         workflowExecuteThreadPool.submitStateEvent(stateEvent);
 
-        if (taskInstance.getTaskGroupId() > 0) {
-            LOGGER.info("The failover taskInstance is using taskGroup: {}, will release the taskGroup",
-                    taskInstance.getTaskGroupId());
-            taskGroupService.releaseTaskGroup(taskInstance);
-        }
     }
 
     /**

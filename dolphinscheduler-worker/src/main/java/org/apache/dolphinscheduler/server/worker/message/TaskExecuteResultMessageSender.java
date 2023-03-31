@@ -42,11 +42,10 @@ public class TaskExecuteResultMessageSender implements MessageSender<TaskExecute
         workerRpcClient.send(Host.of(message.getMessageReceiverAddress()), message.convert2Command());
     }
 
-    public TaskExecuteResultCommand buildMessage(TaskExecutionContext taskExecutionContext,
-                                                 String messageReceiverAddress) {
+    public TaskExecuteResultCommand buildMessage(TaskExecutionContext taskExecutionContext) {
         TaskExecuteResultCommand taskExecuteResultMessage =
                 new TaskExecuteResultCommand(workerConfig.getWorkerAddress(),
-                        messageReceiverAddress,
+                        taskExecutionContext.getMasterHost(),
                         System.currentTimeMillis());
         taskExecuteResultMessage.setProcessInstanceId(taskExecutionContext.getProcessInstanceId());
         taskExecuteResultMessage.setTaskInstanceId(taskExecutionContext.getTaskInstanceId());

@@ -66,6 +66,8 @@ public class TaskExecutionContext implements Serializable {
      */
     private String host;
 
+    private String masterHost;
+
     /**
      * task execute path
      */

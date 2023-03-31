@@ -160,35 +160,9 @@ public class MasterFailoverService {
                 LoggerUtils.setWorkflowInstanceIdMDC(processInstance.getId());
                 LOGGER.info("WorkflowInstance failover starting");
                 if (!checkProcessInstanceNeedFailover(masterStartupTimeOptional, processInstance)) {
-                    LOGGER.info("WorkflowInstance doesn't need to failover");
                     continue;
                 }
-                // todo: use batch query
-                ProcessDefinition processDefinition =
-                        processService.findProcessDefinition(processInstance.getProcessDefinitionCode(),
-                                processInstance.getProcessDefinitionVersion());
-                processInstance.setProcessDefinition(processDefinition);
-                int processInstanceId = processInstance.getId();
-                List<TaskInstance> taskInstanceList = processService.findValidTaskListByProcessId(processInstanceId);
-                for (TaskInstance taskInstance : taskInstanceList) {
-                    try {
-                        LoggerUtils.setTaskInstanceIdMDC(taskInstance.getId());
-                        LOGGER.info("TaskInstance failover starting");
-                        if (!checkTaskInstanceNeedFailover(taskInstance)) {
-                            LOGGER.info("The taskInstance doesn't need to failover");
-                            continue;
-                        }
-                        failoverTaskInstance(processInstance, taskInstance);
-                        LOGGER.info("TaskInstance failover finished");
-                    } finally {
-                        LoggerUtils.removeTaskInstanceIdMDC();
-                    }
-                }
-
                 ProcessInstanceMetrics.incProcessInstanceFailover();
-                // updateProcessInstance host is null to mark this processInstance has been failover
-                // and insert a failover command
-                processInstance.setHost(Constants.NULL);
                 processService.processNeedFailoverProcessInstances(processInstance);
                 LOGGER.info("WorkflowInstance failover finished");
             } finally {
@@ -216,68 +190,13 @@ public class MasterFailoverService {
         return Optional.ofNullable(serverStartupTime);
     }
 
-    /**
-     * failover task instance
-     * <p>
-     * 1. kill yarn job if run on worker and there are yarn jobs in tasks.
-     * 2. change task state from running to need failover.
-     * 3. try to notify local master
-     *
-     * @param processInstance
-     * @param taskInstance
-     */
-    private void failoverTaskInstance(@NonNull ProcessInstance processInstance, @NonNull TaskInstance taskInstance) {
-        TaskMetrics.incTaskFailover();
-        boolean isMasterTask = TaskProcessorFactory.isMasterTask(taskInstance.getTaskType());
-
-        taskInstance.setProcessInstance(processInstance);
-
-        if (!isMasterTask) {
-            LOGGER.info("The failover taskInstance is not master task");
-            TaskExecutionContext taskExecutionContext = TaskExecutionContextBuilder.get()
-                    .buildTaskInstanceRelatedInfo(taskInstance)
-                    .buildProcessInstanceRelatedInfo(processInstance)
-                    .buildProcessDefinitionRelatedInfo(processInstance.getProcessDefinition())
-                    .create();
-
-            if (masterConfig.isKillYarnJobWhenTaskFailover()) {
-                // only kill yarn job if exists , the local thread has exited
-                LOGGER.info("TaskInstance failover begin kill the task related yarn job");
-                ProcessUtils.killYarnJob(logClient, taskExecutionContext);
-            }
-            // kill worker task, When the master failover and worker failover happened in the same time,
-            // the task may not be failover if we don't set NEED_FAULT_TOLERANCE.
-            // This can be improved if we can load all task when cache a workflowInstance in memory
-            sendKillCommandToWorker(taskInstance);
-        } else {
-            LOGGER.info("The failover taskInstance is a master task");
-        }
-
-        taskInstance.setState(ExecutionStatus.NEED_FAULT_TOLERANCE);
-        taskInstance.setFlag(Flag.NO);
-        processService.saveTaskInstance(taskInstance);
-
-        if (taskInstance.getTaskGroupId() > 0) {
-            LOGGER.info("The failover taskInstance is using taskGroup: {}, will release the taskGroup",
-                    taskInstance.getTaskGroupId());
-            taskGroupService.releaseTaskGroup(taskInstance);
-        }
-    }
-
-    private boolean checkTaskInstanceNeedFailover(@NonNull TaskInstance taskInstance) {
-        if (taskInstance.getState() != null && taskInstance.getState().typeIsFinished()) {
-            // The task is already finished, so we don't need to failover this task instance
-            return false;
-        }
-        return true;
-    }
-
     private boolean checkProcessInstanceNeedFailover(Optional<Date> beFailoveredMasterStartupTimeOptional,
                                                      @NonNull ProcessInstance processInstance) {
         // The process has already been failover, since when we do master failover we will hold a lock, so we can
         // guarantee
         // the host will not be set concurrent.
         if (Constants.NULL.equals(processInstance.getHost())) {
+            LOGGER.info("The workflowInstance's host is NULL, no need to failover");
             return false;
         }
         if (!beFailoveredMasterStartupTimeOptional.isPresent()) {
@@ -288,16 +207,20 @@ public class MasterFailoverService {
 
         if (processInstance.getStartTime().after(beFailoveredMasterStartupTime)) {
             // The processInstance is newly created
+            LOGGER.info("The workflowInstance is newly created, no need to failover");
             return false;
         }
         if (processInstance.getRestartTime() != null
                 && processInstance.getRestartTime().after(beFailoveredMasterStartupTime)) {
             // the processInstance is already be failovered.
+            LOGGER.info(
+                    "The workflowInstance's restartTime is after the dead master startup time, no need to failover");
             return false;
         }
 
         if (processInstanceExecCacheManager.contains(processInstance.getId())) {
             // the processInstance is a running process instance in the current master
+            LOGGER.info("The workflowInstance is running in the current master, no need to failover");
             return false;
         }
 

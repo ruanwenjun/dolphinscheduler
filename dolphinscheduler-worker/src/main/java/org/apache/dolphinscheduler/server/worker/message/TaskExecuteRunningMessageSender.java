@@ -44,11 +44,10 @@ public class TaskExecuteRunningMessageSender implements MessageSender<TaskExecut
         workerRpcClient.send(Host.of(message.getMessageReceiverAddress()), message.convert2Command());
     }
 
-    public TaskExecuteRunningCommand buildMessage(@NonNull TaskExecutionContext taskExecutionContext,
-                                                  @NonNull String messageReceiverAddress) {
+    public TaskExecuteRunningCommand buildMessage(@NonNull TaskExecutionContext taskExecutionContext) {
         TaskExecuteRunningCommand taskExecuteRunningMessage =
                 new TaskExecuteRunningCommand(workerConfig.getWorkerAddress(),
-                        messageReceiverAddress,
+                        taskExecutionContext.getMasterHost(),
                         System.currentTimeMillis());
         taskExecuteRunningMessage.setTaskInstanceId(taskExecutionContext.getTaskInstanceId());
         taskExecuteRunningMessage.setProcessInstanceId(taskExecutionContext.getProcessInstanceId());

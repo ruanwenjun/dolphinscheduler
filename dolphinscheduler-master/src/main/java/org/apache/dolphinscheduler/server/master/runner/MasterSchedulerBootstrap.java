@@ -45,6 +45,7 @@ import org.apache.dolphinscheduler.server.master.exception.MasterException;
 import org.apache.dolphinscheduler.server.master.metrics.MasterServerMetrics;
 import org.apache.dolphinscheduler.server.master.metrics.ProcessInstanceMetrics;
 import org.apache.dolphinscheduler.server.master.registry.ServerNodeManager;
+import org.apache.dolphinscheduler.server.master.rpc.MasterRPCClient;
 import org.apache.dolphinscheduler.service.alert.AlertManager;
 import org.apache.dolphinscheduler.service.expand.CuringParamsService;
 import org.apache.dolphinscheduler.service.process.ProcessService;
@@ -80,7 +81,7 @@ public class MasterSchedulerBootstrap extends BaseDaemonThread implements AutoCl
     private AlertManager processAlertManager;
 
     @Autowired
-    private NettyExecutorManager nettyExecutorManager;
+    private MasterRPCClient masterRPCClient;
 
     /**
      * master prepare exec service
@@ -180,7 +181,7 @@ public class MasterSchedulerBootstrap extends BaseDaemonThread implements AutoCl
                         WorkflowExecuteRunnable workflowRunnable = new WorkflowExecuteRunnable(processInstance,
                                 processService,
                                 processInstanceDao,
-                                nettyExecutorManager,
+                                masterRPCClient,
                                 processAlertManager,
                                 masterConfig,
                                 stateWheelExecuteThread,

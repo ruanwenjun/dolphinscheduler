@@ -116,7 +116,7 @@ public abstract class WorkerTaskExecuteRunnable implements Runnable {
         TaskExecutionContextCacheManager.removeByTaskInstanceId(taskExecutionContext.getTaskInstanceId());
         taskExecutionContext.setCurrentExecutionStatus(ExecutionStatus.FAILURE);
         taskExecutionContext.setEndTime(new Date());
-        workerMessageSender.sendMessageWithRetry(taskExecutionContext, masterAddress, CommandType.TASK_EXECUTE_RESULT);
+        workerMessageSender.sendMessageWithRetry(taskExecutionContext, CommandType.TASK_EXECUTE_RESULT);
         logger.info(
                 "Get a exception when execute the task, will send the task execute result to master, the current task execute result is {}",
                 ExecutionStatus.FAILURE);
@@ -156,8 +156,7 @@ public abstract class WorkerTaskExecuteRunnable implements Runnable {
                 taskExecutionContext.setCurrentExecutionStatus(ExecutionStatus.SUCCESS);
                 taskExecutionContext.setEndTime(new Date());
                 TaskExecutionContextCacheManager.removeByTaskInstanceId(taskExecutionContext.getTaskInstanceId());
-                workerMessageSender.sendMessageWithRetry(taskExecutionContext, masterAddress,
-                        CommandType.TASK_EXECUTE_RESULT);
+                workerMessageSender.sendMessageWithRetry(taskExecutionContext, CommandType.TASK_EXECUTE_RESULT);
                 logger.info(
                         "The current execute mode is dry run, will stop the subsequent process and set the taskInstance status to success");
                 return;
@@ -194,7 +193,7 @@ public abstract class WorkerTaskExecuteRunnable implements Runnable {
 
     protected void beforeExecute() {
         taskExecutionContext.setCurrentExecutionStatus(ExecutionStatus.RUNNING_EXECUTION);
-        workerMessageSender.sendMessageWithRetry(taskExecutionContext, masterAddress, CommandType.TASK_EXECUTE_RUNNING);
+        workerMessageSender.sendMessageWithRetry(taskExecutionContext, CommandType.TASK_EXECUTE_RUNNING);
         logger.info("Set task status to {}", ExecutionStatus.RUNNING_EXECUTION);
 
         Checker.checkTenantExist(workerConfig, taskExecutionContext);
@@ -256,7 +255,7 @@ public abstract class WorkerTaskExecuteRunnable implements Runnable {
         taskExecutionContext.setProcessId(task.getProcessId());
         taskExecutionContext.setAppIds(task.getAppIds());
         taskExecutionContext.setVarPool(JSONUtils.toJsonString(task.getParameters().getVarPool()));
-        workerMessageSender.sendMessageWithRetry(taskExecutionContext, masterAddress, CommandType.TASK_EXECUTE_RESULT);
+        workerMessageSender.sendMessageWithRetry(taskExecutionContext, CommandType.TASK_EXECUTE_RESULT);
 
         logger.info("Send task execute result to master, the current task status: {}",
                 taskExecutionContext.getCurrentExecutionStatus());

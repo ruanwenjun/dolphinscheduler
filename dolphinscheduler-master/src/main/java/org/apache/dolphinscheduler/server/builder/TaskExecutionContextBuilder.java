@@ -33,6 +33,8 @@ import org.apache.dolphinscheduler.plugin.task.api.parameters.resource.ResourceP
 
 import java.util.Map;
 
+import com.google.common.base.Preconditions;
+
 /**
  *  TaskExecutionContext builder
  */
@@ -143,12 +145,18 @@ public class TaskExecutionContextBuilder {
         return this;
     }
 
+    public TaskExecutionContextBuilder buildMasterHost(String masterHost) {
+        taskExecutionContext.setMasterHost(masterHost);
+        return this;
+    }
+
     /**
      * create
      *
      * @return taskExecutionContext
      */
     public TaskExecutionContext create() {
+        Preconditions.checkNotNull(taskExecutionContext.getMasterHost(), "The master host cannot be empty");
         return taskExecutionContext;
     }
 

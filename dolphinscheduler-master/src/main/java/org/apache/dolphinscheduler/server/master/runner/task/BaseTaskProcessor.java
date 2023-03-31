@@ -338,6 +338,7 @@ public abstract class BaseTaskProcessor implements ITaskProcessor {
         Map<String, Property> propertyMap =
                 curingParamsService.paramParsingPreparation(taskInstance, baseParam, processInstance);
         return TaskExecutionContextBuilder.get()
+                .buildMasterHost(masterConfig.getMasterAddress())
                 .buildTaskInstanceRelatedInfo(taskInstance)
                 .buildTaskDefinitionRelatedInfo(taskInstance.getTaskDefine())
                 .buildProcessInstanceRelatedInfo(taskInstance.getProcessInstance())
@@ -408,7 +409,7 @@ public abstract class BaseTaskProcessor implements ITaskProcessor {
      * @param taskInstance taskInstance
      */
     protected void setDataQualityTaskRelation(DataQualityTaskExecutionContext dataQualityTaskExecutionContext,
-                                            TaskInstance taskInstance, String tenantCode) {
+                                              TaskInstance taskInstance, String tenantCode) {
         DataQualityParameters dataQualityParameters =
                 JSONUtils.parseObject(taskInstance.getTaskParams(), DataQualityParameters.class);
         if (dataQualityParameters == null) {

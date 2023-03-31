@@ -44,6 +44,7 @@ public class ExecutionContextTestUtils {
         processInstance.setCommandType(CommandType.COMPLEMENT_DATA);
         taskInstance.setProcessInstance(processInstance);
         TaskExecutionContext context = TaskExecutionContextBuilder.get()
+                .buildMasterHost("127.0.0.1:5678")
                 .buildTaskInstanceRelatedInfo(taskInstance)
                 .buildProcessInstanceRelatedInfo(processInstance)
                 .buildProcessDefinitionRelatedInfo(processDefinition)
