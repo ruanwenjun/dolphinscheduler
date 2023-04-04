@@ -38,6 +38,7 @@ import org.apache.dolphinscheduler.common.enums.Priority;
 import org.apache.dolphinscheduler.common.enums.StateEventType;
 import org.apache.dolphinscheduler.common.enums.TaskDependType;
 import org.apache.dolphinscheduler.common.enums.TaskGroupQueueStatus;
+import org.apache.dolphinscheduler.common.enums.WarningType;
 import org.apache.dolphinscheduler.common.graph.DAG;
 import org.apache.dolphinscheduler.common.model.TaskNode;
 import org.apache.dolphinscheduler.common.model.TaskNodeRelation;
@@ -387,6 +388,14 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
         alertManager.workflowInstanceTimeoutSendAlertIfNeeded(processInstance);
     }
 
+    public void taskFailedAlert(TaskInstance taskInstance) {
+        // if task is failure and process warning type is all or failure, send alert
+        WarningType warningType = processInstance.getWarningType();
+        if (warningType == WarningType.ALL || warningType == WarningType.FAILURE) {
+            alertManager.taskFailedSendAlertIfNeeded(processInstance, taskInstance);
+        }
+    }
+
     public void taskTimeout(@NonNull TaskInstance taskInstance) {
         alertManager.taskTimeoutSendAlertIfNeeded(processInstance, taskInstance);
     }
@@ -424,6 +433,10 @@ public class WorkflowExecuteRunnable implements Callable<WorkflowSubmitStatue> {
                     if (processInstance.getFailureStrategy() == FailureStrategy.END) {
                         killAllTasks();
                     }
+                }
+                // only when the task is failure and the task can not retry, then we send alert
+                if (!taskInstance.taskCanRetry()) {
+                    taskFailedAlert(taskInstance);
                 }
             } else if (taskInstance.getState().typeIsFinished()) {
                 // todo: when the task instance type is pause, then it should not in completeTaskMap

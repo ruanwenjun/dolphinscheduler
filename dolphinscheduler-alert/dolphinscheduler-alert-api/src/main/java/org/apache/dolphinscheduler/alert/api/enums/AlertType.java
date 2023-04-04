@@ -31,15 +31,15 @@ public enum AlertType {
      * 0 process instance failure, 1 process instance success, 2 process instance blocked, 3 process instance timeout, 4 fault tolerance warning,
      * 5 task failure, 6 task success, 7 task timeout, 8 close alert
       */
-    PROCESS_INSTANCE_FAILURE(0, "WorkflowInstanceFailure", "执行失败"),
-    PROCESS_INSTANCE_SUCCESS(1, "WorkflowInstanceSuccess", "执行成功"),
-    PROCESS_INSTANCE_BLOCKED(2, "WorkflowInstanceBlocked", "执行阻塞"),
-    PROCESS_INSTANCE_TIMEOUT(3, "WorkflowInstanceTimeout", "执行超时"),
+    PROCESS_INSTANCE_FAILURE(0, "WorkflowInstanceFailure", "工作流执行失败"),
+    PROCESS_INSTANCE_SUCCESS(1, "WorkflowInstanceSuccess", "工作流执行成功"),
+    PROCESS_INSTANCE_BLOCKED(2, "WorkflowInstanceBlocked", "工作流执行阻塞"),
+    PROCESS_INSTANCE_TIMEOUT(3, "WorkflowInstanceTimeout", "工作流执行超时"),
     @Deprecated
     FAULT_TOLERANCE_WARNING(4, "FaultToleranceWarning", "容错"),
-    TASK_FAILURE(5, "TaskFailure", "执行失败"),
-    TASK_SUCCESS(6, "TaskSuccess", "执行成功"),
-    TASK_TIMEOUT(7, "TaskTimeout", "执行超时"),
+    TASK_FAILURE(5, "TaskFailure", "任务执行失败"),
+    TASK_SUCCESS(6, "TaskSuccess", "任务执行成功"),
+    TASK_TIMEOUT(7, "TaskTimeout", "任务执行超时"),
 
     CLOSE_ALERT(8, "The workflow instance success, can close the before alert", "关闭告警"),
 
