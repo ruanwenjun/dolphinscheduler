@@ -355,6 +355,7 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
             }
             putMsg(result, SUCCESS);
         } catch (Exception e) {
+            logger.error("check task definition list error", e);
             result.put(Constants.STATUS, Status.REQUEST_PARAMS_NOT_VALID_ERROR);
             result.put(Constants.MSG, e.getMessage());
         }
@@ -404,6 +405,7 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
             }
             putMsg(result, SUCCESS);
         } catch (Exception e) {
+            logger.error("check task relation list error", e);
             result.put(Constants.STATUS, Status.REQUEST_PARAMS_NOT_VALID_ERROR);
             result.put(Constants.MSG, e.getMessage());
         }
@@ -2165,6 +2167,7 @@ public class ProcessDefinitionServiceImpl extends BaseServiceImpl implements Pro
         try {
             processDefinitionCode = CodeGenerateUtils.getInstance().genCode();
         } catch (CodeGenerateException e) {
+            logger.error("generate process definition code error", e);
             putMsg(result, Status.INTERNAL_SERVER_ERROR_ARGS);
             return result;
         }
