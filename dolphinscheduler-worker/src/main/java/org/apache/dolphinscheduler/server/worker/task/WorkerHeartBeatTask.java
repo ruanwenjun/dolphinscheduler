@@ -10,6 +10,7 @@ import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.common.utils.OSUtils;
 import org.apache.dolphinscheduler.server.worker.config.WorkerConfig;
 import org.apache.dolphinscheduler.server.worker.message.MessageRetryRunner;
+import org.apache.dolphinscheduler.server.worker.metrics.WorkerServerMetrics;
 import org.apache.dolphinscheduler.server.worker.runner.AsyncTaskDelayQueue;
 import org.apache.dolphinscheduler.server.worker.runner.WorkerManagerThread;
 import org.apache.dolphinscheduler.service.registry.RegistryClient;
@@ -84,6 +85,7 @@ public class WorkerHeartBeatTask extends BaseHeartBeatTask<WorkerHeartBeat> {
         for (String workerGroupRegistryPath : workerConfig.getWorkerGroupRegistryPaths()) {
             String workerHeartBeatJson = JSONUtils.toJsonString(workerHeartBeat);
             registryClient.persistEphemeral(workerGroupRegistryPath, JSONUtils.toJsonString(workerHeartBeat));
+            WorkerServerMetrics.incWOrkerHeartbeatCount();
             log.info("Worker write heart beat info success, heartBeatInfo: {}", workerHeartBeatJson);
         }
     }

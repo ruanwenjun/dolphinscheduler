@@ -67,6 +67,11 @@ public class WorkerServerMetrics {
                     .description("size of downloaded resource files on worker")
                     .register(Metrics.globalRegistry);
 
+    private final Counter workerHeartbeatCounter =
+            Counter.builder("ws.worker.heartbeat.count")
+                    .description("worker heartbeat count")
+                    .register(Metrics.globalRegistry);
+
     public void incWorkerOverloadCount() {
         workerOverloadCounter.increment();
     }
@@ -97,4 +102,7 @@ public class WorkerServerMetrics {
                 .register(Metrics.globalRegistry);
     }
 
+    public static void incWOrkerHeartbeatCount() {
+        workerHeartbeatCounter.increment();
+    }
 }

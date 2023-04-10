@@ -39,6 +39,11 @@ public class AlertServerMetrics {
                     .description("Alert failure count")
                     .register(Metrics.globalRegistry);
 
+    private final Counter alertHeartbeatCounter =
+            Counter.builder("ws.alert.heartbeat.count")
+                    .description("Alert heartbeat count")
+                    .register(Metrics.globalRegistry);
+
     public void registerPendingAlertGauge(final Supplier<Number> supplier) {
         Gauge.builder("ds.alert.pending", supplier)
                 .description("Number of pending alert")
@@ -61,4 +66,7 @@ public class AlertServerMetrics {
         return alertFailCounter.count();
     }
 
+    public static void incAlertHeartbeatCounter() {
+        alertHeartbeatCounter.increment();
+    }
 }

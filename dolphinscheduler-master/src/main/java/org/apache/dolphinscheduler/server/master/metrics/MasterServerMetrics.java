@@ -42,6 +42,11 @@ public final class MasterServerMetrics {
                     .description("Master server consume command count")
                     .register(Metrics.globalRegistry);
 
+    private static final Counter MASTER_HEARTBEAT_COUNTER =
+        Counter.builder("ws_master_heart_beat_count")
+            .description("Master server heartbeat count")
+            .register(Metrics.globalRegistry);
+
     public static void incMasterOverload() {
         MASTER_OVERLOAD_COUNTER.increment();
     }
@@ -50,4 +55,7 @@ public final class MasterServerMetrics {
         MASTER_CONSUME_COMMAND_COUNTER.increment(commandCount);
     }
 
+    public static void incMasterHeartBeat() {
+        MASTER_HEARTBEAT_COUNTER.increment();
+    }
 }

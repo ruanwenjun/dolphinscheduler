@@ -10,6 +10,7 @@ import org.apache.dolphinscheduler.common.utils.OSUtils;
 import org.apache.dolphinscheduler.server.master.cache.ProcessInstanceExecCacheManager;
 import org.apache.dolphinscheduler.server.master.config.MasterConfig;
 import org.apache.dolphinscheduler.server.master.event.WorkflowEventQueue;
+import org.apache.dolphinscheduler.server.master.metrics.MasterServerMetrics;
 import org.apache.dolphinscheduler.server.master.processor.queue.TaskExecuteThreadPool;
 import org.apache.dolphinscheduler.server.master.registry.ServerNodeManager;
 import org.apache.dolphinscheduler.server.master.runner.WorkflowExecuteThreadPool;
@@ -67,6 +68,7 @@ public class MasterHeartBeatTask extends BaseHeartBeatTask<MasterHeartBeat> {
     public void writeHeartBeat(MasterHeartBeat masterHeartBeat) {
         String heartBeatJson = JSONUtils.toJsonString(masterHeartBeat);
         registryClient.persistEphemeral(masterConfig.getMasterRegistryPath(), heartBeatJson);
+        MasterServerMetrics.incMasterHeartBeat();
         log.info("Master write heart beat success, heartBeatInfo: {}", heartBeatJson);
     }
 

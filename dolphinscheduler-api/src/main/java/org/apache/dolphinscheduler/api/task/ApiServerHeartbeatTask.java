@@ -2,6 +2,8 @@ package org.apache.dolphinscheduler.api.task;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.dolphinscheduler.api.metrics.ApiServerMetrics;
 import org.apache.dolphinscheduler.common.enums.NodeType;
 import org.apache.dolphinscheduler.common.lifecycle.ServerLifeCycleManager;
 import org.apache.dolphinscheduler.common.model.ApiServerHeartBeat;
@@ -54,6 +56,7 @@ public class ApiServerHeartbeatTask extends BaseHeartBeatTask<ApiServerHeartBeat
     public void writeHeartBeat(ApiServerHeartBeat heartBeat) {
         String heartbeatJson = JSONUtils.toJsonString(heartBeat);
         registryClient.persistEphemeral(apiServerConfigProperty.getApiServerRegistryPath(), heartbeatJson);
+        ApiServerMetrics.incApiServerHeartbeatCounter();
         log.info("ApiServer write heart beat success, heartBeatInfo: {}", heartbeatJson);
     }
 
