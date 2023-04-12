@@ -28,6 +28,7 @@ import org.apache.dolphinscheduler.common.enums.CommandType;
 import org.apache.dolphinscheduler.common.enums.Flag;
 import org.apache.dolphinscheduler.common.enums.ProcessExecutionTypeEnum;
 import org.apache.dolphinscheduler.dao.repository.ProcessInstanceDao;
+import org.apache.dolphinscheduler.server.master.rpc.MasterRPCClient;
 import org.apache.dolphinscheduler.service.alert.AlertManager;
 import org.apache.dolphinscheduler.service.expand.CuringParamsService;
 import org.apache.dolphinscheduler.common.graph.DAG;
@@ -122,11 +123,12 @@ public class WorkflowExecuteRunnableTest {
 
         stateWheelExecuteThread = mock(StateWheelExecuteThread.class);
         curingGlobalParamsService = mock(CuringParamsService.class);
-        NettyExecutorManager nettyExecutorManager = mock(NettyExecutorManager.class);
+        MasterRPCClient masterRPCClient = mock(MasterRPCClient.class);
+
         AlertManager processAlertManager = mock(AlertManager.class);
         workflowExecuteThread =
                 PowerMockito.spy(new WorkflowExecuteRunnable(processInstance, processService, processInstanceDao,
-                        nettyExecutorManager, processAlertManager, config, stateWheelExecuteThread,
+                        masterRPCClient, processAlertManager, config, stateWheelExecuteThread,
                         curingGlobalParamsService));
         // prepareProcess init dag
         Field dag = WorkflowExecuteRunnable.class.getDeclaredField("dag");
