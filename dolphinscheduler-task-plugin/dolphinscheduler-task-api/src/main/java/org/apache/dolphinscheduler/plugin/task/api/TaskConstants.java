@@ -357,4 +357,6 @@ public class TaskConstants {
     // Loop task constants
     public static final Duration DEFAULT_LOOP_STATUS_INTERVAL = Duration.ofSeconds(5L);
 
+    public static final String TASK_RUNNING_IGNORE_UNRESOLVABLE_PLACEHOLDERS =
+        "task.running.ignore_unresolvable_placeholders";
 }

@@ -20,10 +20,12 @@ package org.apache.dolphinscheduler.plugin.task.api.parser;
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.PARAMETER_DATETIME;
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.PARAMETER_FORMAT_TIME;
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.PARAMETER_SHECDULE_TIME;
+import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.TASK_RUNNING_IGNORE_UNRESOLVABLE_PLACEHOLDERS;
 
 import org.apache.dolphinscheduler.plugin.task.api.model.Property;
 import org.apache.dolphinscheduler.plugin.task.api.enums.DataType;
 import org.apache.dolphinscheduler.spi.utils.DateUtils;
+import org.apache.dolphinscheduler.spi.utils.PropertyUtils;
 import org.apache.dolphinscheduler.spi.utils.StringUtils;
 
 import java.sql.PreparedStatement;
@@ -43,6 +45,9 @@ import org.slf4j.LoggerFactory;
 public class ParameterUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ParameterUtils.class);
+
+    private static final boolean isIgnoreUnresolvablePlaceholders =
+        PropertyUtils.getBoolean(TASK_RUNNING_IGNORE_UNRESOLVABLE_PLACEHOLDERS, true);
 
     private static final String DATE_PARSE_PATTERN = "\\$\\[([^\\$\\]]+)]";
 
@@ -66,7 +71,8 @@ public class ParameterUtils {
         Date cronTime;
         if (parameterMap != null && !parameterMap.isEmpty()) {
             // replace variable ${} form,refers to the replacement of system variables and custom variables
-            parameterString = PlaceholderUtils.replacePlaceholders(parameterString, parameterMap, true);
+            parameterString = PlaceholderUtils.replacePlaceholders(parameterString, parameterMap,
+                    isIgnoreUnresolvablePlaceholders);
         }
         if (parameterMap != null && null != parameterMap.get(PARAMETER_DATETIME)) {
             // Get current time, schedule execute time
