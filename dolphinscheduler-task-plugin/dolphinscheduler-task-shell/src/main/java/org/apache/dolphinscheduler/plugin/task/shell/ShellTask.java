@@ -17,127 +17,63 @@
 
 package org.apache.dolphinscheduler.plugin.task.shell;
 
-import org.apache.dolphinscheduler.plugin.task.api.AbstractTaskExecutor;
-import org.apache.dolphinscheduler.plugin.task.api.ShellCommandExecutor;
-import org.apache.dolphinscheduler.plugin.task.api.TaskException;
-import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
-import org.apache.dolphinscheduler.plugin.task.api.model.Property;
-import org.apache.dolphinscheduler.plugin.task.api.model.TaskResponse;
-import org.apache.dolphinscheduler.plugin.task.api.parameters.AbstractParameters;
-import org.apache.dolphinscheduler.plugin.task.api.parser.ParamUtils;
-import org.apache.dolphinscheduler.plugin.task.api.parser.ParameterUtils;
-import org.apache.dolphinscheduler.plugin.task.api.utils.FileUtils;
-import org.apache.dolphinscheduler.plugin.task.api.utils.OSUtils;
-import org.apache.dolphinscheduler.spi.utils.JSONUtils;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Map;
-
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.EXIT_CODE_FAILURE;
 
-/**
- * shell task
- */
-public class ShellTask extends AbstractTaskExecutor {
+import org.apache.dolphinscheduler.plugin.task.api.AbstractTask;
+import org.apache.dolphinscheduler.plugin.task.api.TaskConstants;
+import org.apache.dolphinscheduler.plugin.task.api.TaskException;
+import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
+import org.apache.dolphinscheduler.plugin.task.api.parameters.AbstractParameters;
+import org.apache.dolphinscheduler.plugin.task.shell.executor.ShellExecuteResult;
+import org.apache.dolphinscheduler.plugin.task.shell.executor.ShellExecutor;
+import org.apache.dolphinscheduler.plugin.task.shell.executor.ShellExecutorFactory;
+import org.apache.dolphinscheduler.spi.utils.JSONUtils;
 
-    /**
-     * shell parameters
-     */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ShellTask extends AbstractTask {
+
+    protected final Logger logger =
+        LoggerFactory.getLogger(String.format(TaskConstants.TASK_LOG_LOGGER_NAME_FORMAT, getClass()));
+
     private ShellParameters shellParameters;
 
-    /**
-     * shell command executor
-     */
-    private ShellCommandExecutor shellCommandExecutor;
+    private ShellExecutor shellExecutor;
 
-    /**
-     * taskExecutionContext
-     */
-    private TaskExecutionContext taskExecutionContext;
-
-    /**
-     * constructor
-     *
-     * @param taskExecutionContext taskExecutionContext
-     */
     public ShellTask(TaskExecutionContext taskExecutionContext) {
         super(taskExecutionContext);
-
-        this.taskExecutionContext = taskExecutionContext;
-        this.shellCommandExecutor = new ShellCommandExecutor(this::logHandle,
-                taskExecutionContext,
-                logger);
     }
 
-    @Override
     public void init() {
-        logger.info("shell task params {}", taskExecutionContext.getTaskParams());
-
-        shellParameters = JSONUtils.parseObject(taskExecutionContext.getTaskParams(), ShellParameters.class);
-
-        if (!shellParameters.checkParameters()) {
+        shellParameters = JSONUtils.parseObject(taskRequest.getTaskParams(), ShellParameters.class);
+        logger.info("Success initialize shell task params: {}", JSONUtils.toPrettyJsonString(shellParameters));
+        if (shellParameters == null || !shellParameters.checkParameters()) {
             throw new RuntimeException("shell task params is not valid");
         }
+        this.shellExecutor = ShellExecutorFactory.createShellExecutor(shellParameters, taskRequest);
     }
 
     @Override
     public void handle() throws TaskException {
         try {
-            // construct process
-            String command = buildCommand();
-            TaskResponse commandExecuteResult = shellCommandExecutor.run(command);
-            setExitStatusCode(commandExecuteResult.getExitStatusCode());
-            setAppIds(commandExecuteResult.getAppIds());
-            setProcessId(commandExecuteResult.getProcessId());
-            shellParameters.dealOutParam(shellCommandExecutor.getVarPool());
+            ShellExecuteResult shellExecuteResult = shellExecutor.execute();
+            setResult(shellExecuteResult);
         } catch (Exception e) {
-            logger.error("shell task error", e);
             setExitStatusCode(EXIT_CODE_FAILURE);
             throw new TaskException("Execute shell task error", e);
         }
     }
 
     @Override
-    public void cancelApplication(boolean cancelApplication) throws Exception {
-        // cancel process
-        shellCommandExecutor.cancelApplication();
-    }
-
-    /**
-     * create command
-     *
-     * @return file name
-     * @throws Exception exception
-     */
-    private String buildCommand() throws Exception {
-        // generate scripts
-        String fileName = String.format("%s/%s_node.%s",
-                taskExecutionContext.getExecutePath(),
-                taskExecutionContext.getTaskAppId(), OSUtils.isWindows() ? "bat" : "sh");
-
-        File file = new File(fileName);
-        Path path = file.toPath();
-
-        if (Files.exists(path)) {
-            // this shouldn't happen
-            logger.warn("The command file: {} is already exist", path);
-            return fileName;
+    public void cancelApplication(boolean cancelApplication) throws TaskException {
+        try {
+            if (cancelApplication && shellExecutor != null) {
+                shellExecutor.cancelTask();
+            }
+        } catch (Exception e) {
+            throw new TaskException("cancel application error", e);
         }
-
-        String script = shellParameters.getRawScript().replaceAll("\\r\\n", "\n");
-        script = parseScript(script);
-        shellParameters.setRawScript(script);
-
-        logger.info("raw script : {}", shellParameters.getRawScript());
-        logger.info("task execute path : {}", taskExecutionContext.getExecutePath());
-
-        FileUtils.createFileWith755(path);
-        Files.write(path, shellParameters.getRawScript().getBytes(), StandardOpenOption.APPEND);
-
-        return fileName;
     }
 
     @Override
@@ -145,9 +81,10 @@ public class ShellTask extends AbstractTaskExecutor {
         return shellParameters;
     }
 
-    private String parseScript(String script) {
-        // combining local and global parameters
-        Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
-        return ParameterUtils.convertParameterPlaceholders(script, ParamUtils.convert(paramsMap));
+    private void setResult(ShellExecuteResult shellExecuteResult) {
+        setExitStatusCode(shellExecuteResult.getExitStatusCode());
+        setAppIds(shellExecuteResult.getAppIds());
+        setProcessId(shellExecuteResult.getProcessId());
+        shellParameters.dealOutParam(shellExecuteResult.getVarPool());
     }
 }

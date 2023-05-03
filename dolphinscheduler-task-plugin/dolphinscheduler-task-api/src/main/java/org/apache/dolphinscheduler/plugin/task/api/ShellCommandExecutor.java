@@ -17,6 +17,8 @@
 
 package org.apache.dolphinscheduler.plugin.task.api;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dolphinscheduler.plugin.task.api.utils.FileUtils;
@@ -33,9 +35,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
-/**
- * shell command executor
- */
+@Slf4j
 public class ShellCommandExecutor extends AbstractCommandExecutor {
 
     /**
@@ -69,24 +69,24 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
     protected String buildCommandFilePath() {
         // command file
         return String.format("%s/%s.%s", taskRequest.getExecutePath(), taskRequest.getTaskAppId(),
-                OSUtils.isWindows() ? "bat" : "command");
+            OSUtils.isWindows() ? "bat" : "command");
     }
 
     /**
      * create command file if not exists
      *
-     * @param execCommand exec command
-     * @param commandFile command file
+     * @param shellScriptFilePath exec command
+     * @param commandFile         command file
      * @throws IOException io exception
      */
     @Override
-    protected void createCommandFileIfNotExists(String execCommand, String commandFile) throws IOException {
+    protected void createCommandFileIfNotExists(String shellScriptFilePath, String commandFile) throws IOException {
         // create if non existence
-        logger.info("Begin to create command file:{}", commandFile);
+        log.info("Begin to create command file: {}", commandFile);
 
         Path commandFilePath = Paths.get(commandFile);
         if (Files.exists(commandFilePath)) {
-            logger.warn("The command file: {} is already exist, will not create a again", commandFile);
+            log.warn("The command file: {} is already exist, will not create a again", commandFile);
             return;
         }
 
@@ -115,13 +115,13 @@ public class ShellCommandExecutor extends AbstractCommandExecutor {
                 sb.append(taskRequest.getEnvironmentConfig()).append("\n");
             }
         }
-        sb.append(execCommand);
+        sb.append(shellScriptFilePath);
         String commandContent = sb.toString();
 
         FileUtils.createFileWith755(commandFilePath);
         Files.write(commandFilePath, commandContent.getBytes(), StandardOpenOption.APPEND);
 
-        logger.info("Success create command file, command: {}", commandContent);
+        log.info("Success create command file:\n {}", commandContent);
     }
 
     @Override

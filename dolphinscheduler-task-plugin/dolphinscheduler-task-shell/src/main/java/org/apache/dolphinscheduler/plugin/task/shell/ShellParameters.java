@@ -17,46 +17,58 @@
 
 package org.apache.dolphinscheduler.plugin.task.shell;
 
+import org.apache.dolphinscheduler.plugin.task.api.enums.ResourceType;
 import org.apache.dolphinscheduler.plugin.task.api.model.ResourceInfo;
 import org.apache.dolphinscheduler.plugin.task.api.parameters.AbstractParameters;
+import org.apache.dolphinscheduler.plugin.task.api.parameters.resource.ResourceParametersHelper;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
 public class ShellParameters extends AbstractParameters {
 
-    /**
-     * shell script
-     */
     private String rawScript;
 
-    /**
-     * resource list
-     */
     private List<ResourceInfo> resourceList;
 
-    public String getRawScript() {
-        return rawScript;
-    }
-
-    public void setRawScript(String rawScript) {
-        this.rawScript = rawScript;
-    }
-
-    public List<ResourceInfo> getResourceList() {
-        return resourceList;
-    }
-
-    public void setResourceList(List<ResourceInfo> resourceList) {
-        this.resourceList = resourceList;
-    }
+    private RemoteConnection remoteConnection;
 
     @Override
     public boolean checkParameters() {
-        return rawScript != null && !rawScript.isEmpty();
+        return StringUtils.isNotEmpty(rawScript);
     }
 
     @Override
     public List<ResourceInfo> getResourceFilesList() {
         return resourceList;
+    }
+
+    @Override
+    public ResourceParametersHelper getResources() {
+        ResourceParametersHelper resources = super.getResources();
+        if (remoteConnection != null) {
+            resources.put(ResourceType.DATASOURCE, remoteConnection.getDatasourceId());
+        }
+
+        return resources;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RemoteConnection {
+
+        // todo: change this field name
+        private boolean open;
+        private String datasourceType;
+        private Integer datasourceId;
     }
 }
