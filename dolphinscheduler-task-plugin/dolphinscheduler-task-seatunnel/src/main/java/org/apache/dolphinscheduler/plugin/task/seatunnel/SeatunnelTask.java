@@ -104,7 +104,7 @@ public class SeatunnelTask extends AbstractRemoteTask {
             setExitStatusCode(commandExecuteResult.getExitStatusCode());
             setAppIds(String.join(TaskConstants.COMMA, getApplicationIds()));
             setProcessId(commandExecuteResult.getProcessId());
-            seatunnelParameters.dealOutParam(shellCommandExecutor.getVarPool());
+            seatunnelParameters.dealOutParam(shellCommandExecutor.getTaskOutputParams());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("The current SeaTunnel task has been interrupted", e);

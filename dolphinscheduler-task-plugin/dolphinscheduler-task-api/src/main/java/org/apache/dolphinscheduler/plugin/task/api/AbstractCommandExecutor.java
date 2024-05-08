@@ -23,6 +23,7 @@ import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.EXIT_COD
 
 import org.apache.dolphinscheduler.common.utils.PropertyUtils;
 import org.apache.dolphinscheduler.plugin.task.api.model.TaskResponse;
+import org.apache.dolphinscheduler.plugin.task.api.parser.TaskOutputParameterParser;
 import org.apache.dolphinscheduler.plugin.task.api.utils.AbstractCommandExecutorConstants;
 import org.apache.dolphinscheduler.plugin.task.api.utils.OSUtils;
 
@@ -35,16 +36,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 
@@ -55,12 +56,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public abstract class AbstractCommandExecutor {
 
-    /**
-     * rules for extracting Var Pool
-     */
-    protected static final Pattern SETVALUE_REGEX = Pattern.compile(TaskConstants.SETVALUE_REGEX);
+    protected volatile Map<String, String> taskOutputParams = new HashMap<>();
 
-    protected StringBuilder varPool = new StringBuilder();
     /**
      * process
      */
@@ -82,11 +79,6 @@ public abstract class AbstractCommandExecutor {
     protected LinkedBlockingQueue<String> logBuffer;
 
     protected boolean logOutputIsSuccess = false;
-
-    /*
-     * SHELL result string
-     */
-    protected String taskResultString;
 
     /**
      * taskRequest
@@ -149,6 +141,7 @@ public abstract class AbstractCommandExecutor {
     /**
      * generate systemd command.
      * eg: sudo systemd-run -q --scope -p CPUQuota=100% -p MemoryMax=200M --uid=root
+     *
      * @param command command
      */
     private void generateCgroupCommand(List<String> command) {
@@ -245,8 +238,8 @@ public abstract class AbstractCommandExecutor {
 
     }
 
-    public String getVarPool() {
-        return varPool.toString();
+    public Map<String, String> getTaskOutputParams() {
+        return taskOutputParams;
     }
 
     /**
@@ -347,22 +340,19 @@ public abstract class AbstractCommandExecutor {
         String threadLoggerInfoName = taskRequest.getTaskLogName();
         ExecutorService getOutputLogService = newDaemonSingleThreadExecutor(threadLoggerInfoName);
         getOutputLogService.submit(() -> {
+            TaskOutputParameterParser taskOutputParameterParser = new TaskOutputParameterParser();
             try (BufferedReader inReader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = inReader.readLine()) != null) {
-                    if (line.startsWith("${setValue(") || line.startsWith("#{setValue(")) {
-                        varPool.append(findVarPool(line));
-                        varPool.append("$VarPool$");
-                    } else {
-                        logBuffer.add(line);
-                        taskResultString = line;
-                    }
+                    logBuffer.add(line);
+                    taskOutputParameterParser.appendParseLog(line);
                 }
                 logOutputIsSuccess = true;
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
                 logOutputIsSuccess = true;
             }
+            taskOutputParams = taskOutputParameterParser.getTaskOutputParams();
         });
 
         getOutputLogService.shutdown();
@@ -386,20 +376,6 @@ public abstract class AbstractCommandExecutor {
             }
         });
         parseProcessOutputExecutorService.shutdown();
-    }
-
-    /**
-     * find var pool
-     *
-     * @param line
-     * @return
-     */
-    private String findVarPool(String line) {
-        Matcher matcher = SETVALUE_REGEX.matcher(line);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return null;
     }
 
     /**
