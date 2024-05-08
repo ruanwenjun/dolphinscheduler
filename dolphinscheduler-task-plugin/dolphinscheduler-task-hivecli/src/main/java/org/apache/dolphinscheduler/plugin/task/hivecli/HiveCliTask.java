@@ -80,7 +80,7 @@ public class HiveCliTask extends AbstractRemoteTask {
             setExitStatusCode(taskResponse.getExitStatusCode());
             setAppIds(taskResponse.getAppIds());
             setProcessId(taskResponse.getProcessId());
-            setVarPool(shellCommandExecutor.getVarPool());
+            hiveCliParameters.dealOutParam(shellCommandExecutor.getTaskOutputParams());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("The current HiveCLI Task has been interrupted", e);

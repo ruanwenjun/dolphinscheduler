@@ -46,8 +46,8 @@ public class PytorchTask extends AbstractTask {
         this.taskExecutionContext = taskExecutionContext;
 
         this.shellCommandExecutor = new ShellCommandExecutor(this::logHandle,
-            taskExecutionContext,
-            logger);
+                taskExecutionContext,
+                logger);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class PytorchTask extends AbstractTask {
             TaskResponse taskResponse = shellCommandExecutor.run(command);
             setExitStatusCode(taskResponse.getExitStatusCode());
             setProcessId(taskResponse.getProcessId());
-            setVarPool(shellCommandExecutor.getVarPool());
+            pytorchParameters.dealOutParam(shellCommandExecutor.getTaskOutputParams());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("The current Pytorch task has been interrupted", e);
@@ -88,7 +88,6 @@ public class PytorchTask extends AbstractTask {
     public void cancel() throws TaskException {
 
     }
-
 
     public String buildPythonExecuteCommand() throws Exception {
         List<String> args = new ArrayList<>();
@@ -112,7 +111,8 @@ public class PytorchTask extends AbstractTask {
 
         String scriptParams = pytorchParameters.getScriptParams();
         if (scriptParams != null && !scriptParams.isEmpty()) {
-            args.add(String.format("%s %s %s", getPythonCommand(), pytorchParameters.getScriptPath(), pytorchParameters.getScriptParams()));
+            args.add(String.format("%s %s %s", getPythonCommand(), pytorchParameters.getScriptPath(),
+                    pytorchParameters.getScriptParams()));
         } else {
             args.add(String.format("%s %s", getPythonCommand(), pytorchParameters.getScriptPath()));
 
@@ -133,10 +133,8 @@ public class PytorchTask extends AbstractTask {
 
     }
 
-
     @Override
     public AbstractParameters getParameters() {
         return pytorchParameters;
     }
 }
-

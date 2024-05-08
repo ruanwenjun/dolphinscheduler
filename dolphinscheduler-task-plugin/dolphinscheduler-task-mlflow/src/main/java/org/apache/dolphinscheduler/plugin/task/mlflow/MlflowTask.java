@@ -25,7 +25,6 @@ import org.apache.dolphinscheduler.common.utils.PropertyUtils;
 import org.apache.dolphinscheduler.plugin.task.api.AbstractTask;
 import org.apache.dolphinscheduler.plugin.task.api.ShellCommandExecutor;
 import org.apache.dolphinscheduler.plugin.task.api.TaskCallBack;
-import org.apache.dolphinscheduler.plugin.task.api.TaskConstants;
 import org.apache.dolphinscheduler.plugin.task.api.TaskException;
 import org.apache.dolphinscheduler.plugin.task.api.TaskExecutionContext;
 import org.apache.dolphinscheduler.plugin.task.api.model.Property;
@@ -126,7 +125,7 @@ public class MlflowTask extends AbstractTask {
             }
             setExitStatusCode(exitCode);
             setProcessId(commandExecuteResult.getProcessId());
-            mlflowParameters.dealOutParam(shellCommandExecutor.getVarPool());
+            mlflowParameters.dealOutParam(shellCommandExecutor.getTaskOutputParams());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("The current Mlflow task has been interrupted", e);

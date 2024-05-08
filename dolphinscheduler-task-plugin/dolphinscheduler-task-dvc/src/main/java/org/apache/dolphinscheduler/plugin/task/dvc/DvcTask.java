@@ -82,7 +82,7 @@ public class DvcTask extends AbstractTask {
             TaskResponse commandExecuteResult = shellCommandExecutor.run(command);
             setExitStatusCode(commandExecuteResult.getExitStatusCode());
             setProcessId(commandExecuteResult.getProcessId());
-            parameters.dealOutParam(shellCommandExecutor.getVarPool());
+            parameters.dealOutParam(shellCommandExecutor.getTaskOutputParams());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("The current DvcTask has been interrupted", e);
