@@ -19,6 +19,11 @@ package org.apache.dolphinscheduler.plugin.task.hivecli;
 
 import static org.apache.dolphinscheduler.plugin.task.api.TaskConstants.EXIT_CODE_FAILURE;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import org.apache.dolphinscheduler.common.utils.JSONUtils;
 import org.apache.dolphinscheduler.plugin.task.api.AbstractRemoteTask;
 import org.apache.dolphinscheduler.plugin.task.api.ShellCommandExecutor;
@@ -38,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.apache.dolphinscheduler.plugin.task.api.utils.FileUtils;
 
 public class HiveCliTask extends AbstractRemoteTask {
 
@@ -107,35 +113,44 @@ public class HiveCliTask extends AbstractRemoteTask {
 
         final List<String> args = new ArrayList<>();
 
-        final String type = hiveCliParameters.getHiveCliTaskExecutionType();
+        String fileContent = HiveSqlScriptReader.readHiveSqlContent(taskExecutionContext.getExecutePath(), hiveCliParameters);
+        fileContent = ParameterUtils.convertParameterPlaceholders(fileContent, ParamUtils.convert(taskExecutionContext.getPrepareParamsMap()));
+        String sqlFilePath = generateSqlScriptFile(fileContent);
 
-        // TODO: make sure type is not unknown
-        if (HiveCliConstants.TYPE_FILE.equals(type)) {
-            args.add(HiveCliConstants.HIVE_CLI_EXECUTE_FILE);
-            final List<ResourceInfo> resourceInfos = hiveCliParameters.getResourceList();
-            if (resourceInfos.size() > 1) {
-                logger.warn("more than 1 files detected, use the first one by default");
-            }
-
-            args.add(StringUtils.stripStart(resourceInfos.get(0).getResourceName(), "/"));
-        } else {
-            final String script = hiveCliParameters.getHiveSqlScript();
-            args.add(String.format(HiveCliConstants.HIVE_CLI_EXECUTE_SCRIPT, script));
-        }
+        args.add(HiveCliConstants.HIVE_CLI_EXECUTE_FILE);
+        args.add(sqlFilePath);
 
         final String hiveCliOptions = hiveCliParameters.getHiveCliOptions();
         if (StringUtils.isNotEmpty(hiveCliOptions)) {
             args.add(hiveCliOptions);
         }
 
-        final Map<String, Property> paramsMap = taskExecutionContext.getPrepareParamsMap();
-        final String command =
-                ParameterUtils.convertParameterPlaceholders(String.join(" ", args), ParamUtils.convert(paramsMap));
+        String command = String.join(" ", args);
 
         logger.info("hiveCli task command: {}", command);
 
         return command;
 
+    }
+
+    protected String generateSqlScriptFile(String rawScript) {
+        String scriptFileName = Paths.get(taskExecutionContext.getExecutePath(), "hive_cli.sql").toString();
+
+        try {
+            File file = new File(scriptFileName);
+            Path path = file.toPath();
+            if (Files.exists(path)) {
+                logger.warn("The HiveCli sql file: {} is already exist, will delete it", scriptFileName);
+                Files.deleteIfExists(path);
+            }
+            if (!Files.exists(path)) {
+                org.apache.dolphinscheduler.plugin.task.api.utils.FileUtils.createFileWith755(path);
+                Files.write(path, rawScript.getBytes(), StandardOpenOption.APPEND);
+            }
+            return scriptFileName;
+        } catch (Exception ex) {
+            throw new TaskException("Generate sql script file: " + scriptFileName + " failed", ex);
+        }
     }
 
     @Override
