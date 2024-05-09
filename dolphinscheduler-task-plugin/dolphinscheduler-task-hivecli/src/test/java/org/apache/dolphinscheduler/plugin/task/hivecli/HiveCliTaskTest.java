@@ -36,42 +36,26 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class HiveCliTaskTest {
 
-    public static final String EXPECTED_HIVE_CLI_TASK_EXECUTE_FROM_SCRIPT_COMMAND =
-            "hive -e \"SHOW DATABASES;\"";
-
-    public static final String EXPECTED_HIVE_CLI_TASK_EXECUTE_FROM_FILE_COMMAND =
-            "hive -f sql_tasks/hive_task.sql";
-
-    public static final String EXPECTED_HIVE_CLI_TASK_EXECUTE_WITH_OPTIONS =
-            "hive -e \"SHOW DATABASES;\" --verbose";
-
     @Test
     public void hiveCliTaskExecuteSqlFromScript() throws Exception {
         String hiveCliTaskParameters = buildHiveCliTaskExecuteSqlFromScriptParameters();
         HiveCliTask hiveCliTask = prepareHiveCliTaskForTest(hiveCliTaskParameters);
         hiveCliTask.init();
-        Assert.assertEquals(hiveCliTask.buildCommand(), EXPECTED_HIVE_CLI_TASK_EXECUTE_FROM_SCRIPT_COMMAND);
+        Assert.assertEquals("hive -f /tmp/hive_cli.sql", hiveCliTask.buildCommand());
     }
 
     @Test
-    public void hiveCliTaskExecuteSqlFromFile() throws Exception {
-        String hiveCliTaskParameters = buildHiveCliTaskExecuteSqlFromFileParameters();
-        HiveCliTask hiveCliTask = prepareHiveCliTaskForTest(hiveCliTaskParameters);
-        hiveCliTask.init();
-        Assert.assertEquals(hiveCliTask.buildCommand(), EXPECTED_HIVE_CLI_TASK_EXECUTE_FROM_FILE_COMMAND);
-    }
-
-    @Test
-    public void hiveCliTaskExecuteWithOptions() throws Exception {
+    public void hiveCliTaskExecuteWithOptions() {
         String hiveCliTaskParameters = buildHiveCliTaskExecuteWithOptionsParameters();
         HiveCliTask hiveCliTask = prepareHiveCliTaskForTest(hiveCliTaskParameters);
         hiveCliTask.init();
-        Assert.assertEquals(hiveCliTask.buildCommand(), EXPECTED_HIVE_CLI_TASK_EXECUTE_WITH_OPTIONS);
+        Assert.assertEquals("hive -f /tmp/hive_cli.sql --verbose", hiveCliTask.buildCommand());
     }
 
     private HiveCliTask prepareHiveCliTaskForTest(final String hiveCliTaskParameters) {
         TaskExecutionContext taskExecutionContext = Mockito.mock(TaskExecutionContext.class);
         when(taskExecutionContext.getTaskParams()).thenReturn(hiveCliTaskParameters);
+        when(taskExecutionContext.getExecutePath()).thenReturn("/tmp");
         HiveCliTask hiveCliTask = spy(new HiveCliTask(taskExecutionContext));
         return hiveCliTask;
     }
@@ -80,17 +64,6 @@ public class HiveCliTaskTest {
         final HiveCliParameters hiveCliParameters = new HiveCliParameters();
         hiveCliParameters.setHiveCliTaskExecutionType("SCRIPT");
         hiveCliParameters.setHiveSqlScript("SHOW DATABASES;");
-        return JSONUtils.toJsonString(hiveCliParameters);
-    }
-
-    private String buildHiveCliTaskExecuteSqlFromFileParameters() {
-        final HiveCliParameters hiveCliParameters = new HiveCliParameters();
-        hiveCliParameters.setHiveCliTaskExecutionType("FILE");
-        List<ResourceInfo> resources = new ArrayList<>();
-        ResourceInfo sqlResource = new ResourceInfo();
-        sqlResource.setResourceName("/sql_tasks/hive_task.sql");
-        resources.add(sqlResource);
-        hiveCliParameters.setResourceList(resources);
         return JSONUtils.toJsonString(hiveCliParameters);
     }
 
