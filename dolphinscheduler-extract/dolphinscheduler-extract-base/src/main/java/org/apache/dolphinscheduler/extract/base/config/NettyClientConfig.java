@@ -22,6 +22,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+// todo: exposed to application.yaml
 @Data
 @Builder
 @NoArgsConstructor
@@ -63,5 +64,8 @@ public class NettyClientConfig {
      */
     @Builder.Default
     private int connectTimeoutMillis = 3000;
+
+    @Builder.Default
+    private long syncRpcResponseTimeout = 10_000;
 
 }

@@ -107,14 +107,20 @@ public class NettyRemotingClient implements AutoCloseable {
         isStarted.compareAndSet(false, true);
     }
 
+    /**
+     * Send the
+     */
     public IRpcResponse sendSync(final Host host,
                                  final Transporter transporter,
-                                 final long timeoutMillis) throws InterruptedException, RemotingException {
+                                 long timeoutMillis) throws InterruptedException, RemotingException {
         final Channel channel = getOrCreateChannel(host);
         if (channel == null) {
             throw new RemotingException(String.format("connect to : %s fail", host));
         }
         final long opaque = transporter.getHeader().getOpaque();
+        if (timeoutMillis < 0) {
+            timeoutMillis = clientConfig.getSyncRpcResponseTimeout();
+        }
         final ResponseFuture responseFuture = new ResponseFuture(opaque, timeoutMillis);
         channel.writeAndFlush(transporter).addListener(future -> {
             if (future.isSuccess()) {
@@ -160,12 +166,6 @@ public class NettyRemotingClient implements AutoCloseable {
         return channel;
     }
 
-    /**
-     * create channel
-     *
-     * @param host host
-     * @return channel
-     */
     Channel createChannel(Host host) {
         try {
             ChannelFuture future = bootstrap.connect(new InetSocketAddress(host.getIp(), host.getPort()));
