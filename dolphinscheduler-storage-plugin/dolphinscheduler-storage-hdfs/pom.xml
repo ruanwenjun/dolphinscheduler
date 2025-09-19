@@ -255,6 +255,11 @@
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.hbase.thirdparty</groupId>
+            <artifactId>hbase-noop-htrace</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
