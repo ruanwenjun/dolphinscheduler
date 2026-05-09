@@ -57,20 +57,7 @@ cd dolphinscheduler-standalone-server/target && ./bin/start.sh
 
 Binary artifact: `dolphinscheduler-dist/target/apache-dolphinscheduler-*-bin.tar.gz`.
 
-## Test
-
-```bash
-# Unit tests for one module
-./mvnw -pl dolphinscheduler-master test
-
-# API integration tests (separate reactor, requires Docker)
-mvn -pl dolphinscheduler-api-test/dolphinscheduler-api-test-case test
-
-# E2E browser tests (Selenium + Docker)
-mvn -pl dolphinscheduler-e2e/dolphinscheduler-e2e-case test
-
-# Apple Silicon: add -Dm1_chip=true to the Docker-driven suites
-```
+How to run a module's tests is documented in that module's own `CLAUDE.md` — commands, fork settings, and per-module gotchas vary too much to centralize here.
 
 ---
 
@@ -147,15 +134,33 @@ A **user** hits the UI, which calls the API server. The API server writes to the
 ## Project-wide conventions
 
 - **Formatting**: `./mvnw spotless:apply`. CI will fail PRs that aren't formatted. Java imports are ordered; license headers are enforced.
-- **Commit style**: `[Type-ISSUE_ID] [Scope] Subject`, e.g. `[Fix-18168] [Worker] ...`. Scopes match module names.
 - **Branching**: `dev` is the main integration branch (not `main`/`master`).
 - **PRs must link a GitHub issue** and keep their scope tight — one module / one concern.
 - **Do not break wire / DB compatibility** silently. Changes to `extract-*` RPC interfaces, `dao` entities, enum values, and `spi.DbType` ripple to deployed clusters mid-upgrade.
 - **Only one registry / storage / DB dialect is active at runtime**. Code paths that check "which one" belong inside the plugin SPI, not sprinkled through services.
 
-## External references
+### Commit message template
 
-- Release docs (version-specific): https://dolphinscheduler.apache.org/en-us/docs
-- GitHub issues: https://github.com/apache/dolphinscheduler/issues
-- Python SDK: https://dolphinscheduler.apache.org/python/main/index.html
-- Contribution guide: [`docs/docs/en/contribute/join/contribute.md`](docs/docs/en/contribute/join/contribute.md)
+```
+[<Type>-<ISSUE_ID>][<Scope>] <Imperative subject — what changed, present tense>
+
+<Optional body: WHY this change is needed, and the WHY behind any non-obvious
+choice. Wrap at ~72 chars. Skip if the subject already says everything.>
+```
+
+- `<Type>`: one of `Fix` (bug fix), `Improvement` (enhancement to existing behavior), `Feature` (net-new capability), `Chore` (build/CI/refactor with no behavior change), `Doc` (docs only), `DSIP-N` (an accepted DolphinScheduler Improvement Proposal).
+- `<ISSUE_ID>`: the linked GitHub issue number, no `#`. Omit `-<ISSUE_ID>` only for `Chore` items that genuinely have no tracking issue (e.g. `[Chore]`, `[Chore][CI]`).
+- `<Scope>`: the affected module's short name in the existing commit log: `Master`, `Worker`, `API`, `UI`, `TaskPlugin`, `JdbcRegistry`, `Pom`, `CI`, `Doc`, etc. Pick the narrowest accurate one.
+- `<Subject>`: imperative mood (`Fix X`, `Add Y`, `Remove Z`), no trailing period, ≤72 chars. Don't restate the type or scope.
+- No space between the bracket groups (`[Fix-18222][Master]`, not `[Fix-18222] [Master]`) — that's the prevailing style in recent history.
+- Don't append `(#PR_ID)` manually; GitHub adds it on squash-merge.
+
+Examples from the existing log:
+
+```
+[Fix-18222][JdbcRegistry] Reuse a singleton scheduler executor in JdbcRegistryThreadFactory
+[Improvement-17795][Master] Add dispatch timeout checking logic to handle cases where the worker group does not exist or no workers are available
+[Chore][API] Remove deprecated ProjectService#checkProjectAndAuth
+[Doc-18193][dolphinscheduler-alert-http] Fix incorrect alert param doc
+```
+
