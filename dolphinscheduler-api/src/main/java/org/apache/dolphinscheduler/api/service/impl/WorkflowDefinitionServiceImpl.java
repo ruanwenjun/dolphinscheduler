@@ -78,7 +78,6 @@ import org.apache.dolphinscheduler.dao.entity.WorkflowTaskLineage;
 import org.apache.dolphinscheduler.dao.entity.WorkflowTaskRelation;
 import org.apache.dolphinscheduler.dao.entity.WorkflowTaskRelationLog;
 import org.apache.dolphinscheduler.dao.mapper.ScheduleMapper;
-import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskInstanceMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
@@ -185,9 +184,6 @@ public class WorkflowDefinitionServiceImpl extends BaseServiceImpl implements Wo
 
     @Autowired
     private WorkflowTaskRelationLogMapper workflowTaskRelationLogMapper;
-
-    @Autowired
-    TaskDefinitionLogMapper taskDefinitionLogMapper;
 
     @Lazy
     @Autowired
@@ -1591,7 +1587,7 @@ public class WorkflowDefinitionServiceImpl extends BaseServiceImpl implements Wo
                         workflowDefinitionLog.getVersion());
         List<TaskCodeVersionDto> taskDefinitionList = getTaskCodeVersionDtos(workflowTaskRelationList);
         List<TaskDefinitionLog> taskDefinitionLogList =
-                taskDefinitionLogMapper.queryByTaskDefinitions(taskDefinitionList.stream()
+                taskDefinitionLogDao.queryByTaskDefinitions(taskDefinitionList.stream()
                         .flatMap(taskCodeVersionDto -> {
                             TaskDefinitionLog taskDefinitionLog = new TaskDefinitionLog();
                             taskDefinitionLog.setCode(taskCodeVersionDto.getCode());

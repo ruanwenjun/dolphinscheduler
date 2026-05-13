@@ -50,10 +50,10 @@ import org.apache.dolphinscheduler.dao.entity.User;
 import org.apache.dolphinscheduler.dao.entity.WorkflowDefinition;
 import org.apache.dolphinscheduler.dao.entity.WorkflowInstance;
 import org.apache.dolphinscheduler.dao.entity.WorkflowTaskRelation;
-import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskGroupQueueMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkflowTaskRelationMapper;
+import org.apache.dolphinscheduler.dao.repository.TaskDefinitionLogDao;
 import org.apache.dolphinscheduler.dao.repository.WorkflowDefinitionDao;
 import org.apache.dolphinscheduler.dao.repository.WorkflowInstanceDao;
 import org.apache.dolphinscheduler.plugin.task.api.utils.TaskTypeUtils;
@@ -96,7 +96,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
     private CommandService commandService;
 
     @Autowired
-    private TaskDefinitionLogMapper taskDefinitionLogMapper;
+    private TaskDefinitionLogDao taskDefinitionLogDao;
 
     @Autowired
     private TaskDefinitionMapper taskDefinitionMapper;
@@ -327,7 +327,7 @@ public class ExecutorServiceImpl extends BaseServiceImpl implements ExecutorServ
             return response;
         }
 
-        if (taskDefinitionLogMapper.queryMaxVersionForDefinition(startNodeListLong) == null) {
+        if (taskDefinitionLogDao.queryMaxVersionForDefinition(startNodeListLong) == null) {
             putMsg(response, Status.EXECUTE_NOT_DEFINE_TASK);
             return response;
         }

@@ -52,6 +52,7 @@ import org.apache.dolphinscheduler.dao.mapper.WorkflowDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkflowTaskRelationLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkflowTaskRelationMapper;
 import org.apache.dolphinscheduler.dao.repository.ProjectDao;
+import org.apache.dolphinscheduler.dao.repository.TaskDefinitionLogDao;
 import org.apache.dolphinscheduler.dao.repository.WorkflowDefinitionDao;
 import org.apache.dolphinscheduler.dao.repository.WorkflowTaskRelationLogDao;
 import org.apache.dolphinscheduler.plugin.task.api.TaskPluginManager;
@@ -88,6 +89,9 @@ public class TaskDefinitionServiceImplTest {
 
     @Mock
     private TaskDefinitionLogMapper taskDefinitionLogMapper;
+
+    @Mock
+    private TaskDefinitionLogDao taskDefinitionLogDao;
 
     @Mock
     private ProjectDao projectDao;
@@ -164,7 +168,7 @@ public class TaskDefinitionServiceImplTest {
         Mockito.doNothing().when(projectService)
                 .checkProjectAndAuthThrowException(user, project, WORKFLOW_SWITCH_TO_THIS_VERSION);
 
-        when(taskDefinitionLogMapper.queryByDefinitionCodeAndVersion(TASK_CODE, VERSION))
+        when(taskDefinitionLogDao.queryByDefinitionCodeAndVersion(TASK_CODE, VERSION))
                 .thenReturn(new TaskDefinitionLog());
         TaskDefinition taskDefinition = new TaskDefinition();
         taskDefinition.setProjectCode(PROJECT_CODE);
@@ -190,7 +194,7 @@ public class TaskDefinitionServiceImplTest {
         when(taskDefinitionMapper.queryByCode(TASK_CODE)).thenReturn(otherProjectTask);
         assertThrowsServiceException(Status.TASK_DEFINE_NOT_EXIST,
                 () -> taskDefinitionService.deleteByCodeAndVersion(user, PROJECT_CODE, TASK_CODE, VERSION));
-        Mockito.verify(taskDefinitionLogMapper, Mockito.never()).deleteByCodeAndVersion(TASK_CODE, VERSION);
+        Mockito.verify(taskDefinitionLogDao, Mockito.never()).deleteByCodeAndVersion(TASK_CODE, VERSION);
 
         // normal path: taskCode belongs to the project - should succeed
         TaskDefinition taskDefinition = new TaskDefinition();
@@ -198,7 +202,7 @@ public class TaskDefinitionServiceImplTest {
         taskDefinition.setCode(TASK_CODE);
         taskDefinition.setVersion(VERSION + 1);
         when(taskDefinitionMapper.queryByCode(TASK_CODE)).thenReturn(taskDefinition);
-        when(taskDefinitionLogMapper.deleteByCodeAndVersion(TASK_CODE, VERSION)).thenReturn(1);
+        when(taskDefinitionLogDao.deleteByCodeAndVersion(TASK_CODE, VERSION)).thenReturn(true);
         Assertions.assertDoesNotThrow(
                 () -> taskDefinitionService.deleteByCodeAndVersion(user, PROJECT_CODE, TASK_CODE, VERSION));
     }
@@ -264,7 +268,7 @@ public class TaskDefinitionServiceImplTest {
         taskDefinition.setTaskType("SHELL");
         when(taskDefinitionMapper.queryByCode(TASK_CODE)).thenReturn(taskDefinition);
         TaskDefinitionLog taskDefinitionLog = new TaskDefinitionLog(taskDefinition);
-        when(taskDefinitionLogMapper.queryByDefinitionCodeAndVersion(TASK_CODE, taskDefinition.getVersion()))
+        when(taskDefinitionLogDao.queryByDefinitionCodeAndVersion(TASK_CODE, taskDefinition.getVersion()))
                 .thenReturn(taskDefinitionLog);
         Assertions.assertDoesNotThrow(() -> taskDefinitionService.releaseTaskDefinition(user, PROJECT_CODE, TASK_CODE,
                 ReleaseState.OFFLINE));
@@ -357,9 +361,9 @@ public class TaskDefinitionServiceImplTest {
             Mockito.doNothing().when(projectService).checkHasProjectWritePermissionThrowException(eq(user),
                     eq(getProject()));
             when(taskDefinitionMapper.queryByCode(TASK_CODE)).thenReturn(taskDefinition);
-            when(taskDefinitionLogMapper.queryMaxVersionForDefinition(TASK_CODE)).thenReturn(1);
+            when(taskDefinitionLogDao.queryMaxVersionForDefinition(TASK_CODE)).thenReturn(1);
             when(taskDefinitionMapper.updateById(Mockito.any())).thenReturn(1);
-            when(taskDefinitionLogMapper.insert(Mockito.any())).thenReturn(1);
+            when(taskDefinitionLogDao.insert(Mockito.any())).thenReturn(1);
 
             when(taskDefinitionMapper.queryByCodeList(Mockito.anySet()))
                     .thenReturn(Arrays.asList(taskDefinition, taskDefinitionSecond));

@@ -48,12 +48,12 @@ import org.apache.dolphinscheduler.dao.entity.WorkflowDefinition;
 import org.apache.dolphinscheduler.dao.entity.WorkflowDefinitionLog;
 import org.apache.dolphinscheduler.dao.entity.WorkflowTaskRelation;
 import org.apache.dolphinscheduler.dao.entity.WorkflowTaskRelationLog;
-import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkflowDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkflowTaskRelationMapper;
 import org.apache.dolphinscheduler.dao.repository.ProjectDao;
 import org.apache.dolphinscheduler.dao.repository.TaskDefinitionDao;
+import org.apache.dolphinscheduler.dao.repository.TaskDefinitionLogDao;
 import org.apache.dolphinscheduler.dao.repository.WorkflowDefinitionDao;
 import org.apache.dolphinscheduler.dao.repository.WorkflowTaskRelationLogDao;
 import org.apache.dolphinscheduler.service.process.ProcessService;
@@ -101,7 +101,7 @@ public class TaskDefinitionServiceImpl extends BaseServiceImpl implements TaskDe
     private TaskDefinitionDao taskDefinitionDao;
 
     @Autowired
-    private TaskDefinitionLogMapper taskDefinitionLogMapper;
+    private TaskDefinitionLogDao taskDefinitionLogDao;
 
     @Autowired
     private WorkflowTaskRelationMapper workflowTaskRelationMapper;
@@ -241,7 +241,7 @@ public class TaskDefinitionServiceImpl extends BaseServiceImpl implements TaskDe
         if (!checkTaskParameters(taskDefinitionToUpdate.getTaskType(), taskDefinitionToUpdate.getTaskParams())) {
             throw new ServiceException(Status.WORKFLOW_NODE_S_PARAMETER_INVALID, taskDefinitionToUpdate.getName());
         }
-        Integer version = taskDefinitionLogMapper.queryMaxVersionForDefinition(taskCode);
+        Integer version = taskDefinitionLogDao.queryMaxVersionForDefinition(taskCode);
         if (version == null || version == 0) {
             log.error("Max version task definitionLog can not be found in database, taskDefinitionCode:{}.",
                     taskCode);
@@ -260,7 +260,7 @@ public class TaskDefinitionServiceImpl extends BaseServiceImpl implements TaskDe
         taskDefinitionToUpdate.setOperateTime(now);
         taskDefinitionToUpdate.setCreateTime(now);
         taskDefinitionToUpdate.setId(null);
-        int insert = taskDefinitionLogMapper.insert(taskDefinitionToUpdate);
+        int insert = taskDefinitionLogDao.insert(taskDefinitionToUpdate);
         if ((update & insert) != 1) {
             log.error("Update task definition or definitionLog error, projectCode:{}, taskDefinitionCode:{}.",
                     projectCode, taskCode);
@@ -523,7 +523,7 @@ public class TaskDefinitionServiceImpl extends BaseServiceImpl implements TaskDe
             throw new ServiceException(Status.TASK_DEFINE_NOT_EXIST, String.valueOf(taskCode));
         }
         TaskDefinitionLog taskDefinitionUpdate =
-                taskDefinitionLogMapper.queryByDefinitionCodeAndVersion(taskCode, version);
+                taskDefinitionLogDao.queryByDefinitionCodeAndVersion(taskCode, version);
         taskDefinitionUpdate.setUserId(loginUser.getId());
         taskDefinitionUpdate.setUpdateTime(new Date());
         taskDefinitionUpdate.setId(taskDefinition.getId());
@@ -564,7 +564,7 @@ public class TaskDefinitionServiceImpl extends BaseServiceImpl implements TaskDe
         PageInfo<TaskDefinitionLog> pageInfo = new PageInfo<>(pageNo, pageSize);
         Page<TaskDefinitionLog> page = new Page<>(pageNo, pageSize);
         IPage<TaskDefinitionLog> taskDefinitionVersionsPaging =
-                taskDefinitionLogMapper.queryTaskDefinitionVersionsPaging(page, taskCode, projectCode);
+                taskDefinitionLogDao.queryTaskDefinitionVersionsPaging(page, taskCode, projectCode);
         List<TaskDefinitionLog> taskDefinitionLogs = taskDefinitionVersionsPaging.getRecords();
 
         pageInfo.setTotalList(taskDefinitionLogs);
@@ -591,8 +591,8 @@ public class TaskDefinitionServiceImpl extends BaseServiceImpl implements TaskDe
                     projectCode, taskCode, version);
             throw new ServiceException(Status.MAIN_TABLE_USING_VERSION);
         }
-        int delete = taskDefinitionLogMapper.deleteByCodeAndVersion(taskCode, version);
-        if (delete <= 0) {
+        boolean deleteSuccess = taskDefinitionLogDao.deleteByCodeAndVersion(taskCode, version);
+        if (!deleteSuccess) {
             log.error("Task definition version delete error, projectCode:{}, taskDefinitionCode:{}, version:{}.",
                     projectCode, taskCode, version);
             throw new ServiceException(Status.DELETE_TASK_DEFINITION_VERSION_ERROR);
@@ -660,7 +660,7 @@ public class TaskDefinitionServiceImpl extends BaseServiceImpl implements TaskDe
             throw new ServiceException(Status.TASK_DEFINE_NOT_EXIST, String.valueOf(code));
         }
         TaskDefinitionLog taskDefinitionLog =
-                taskDefinitionLogMapper.queryByDefinitionCodeAndVersion(code, taskDefinition.getVersion());
+                taskDefinitionLogDao.queryByDefinitionCodeAndVersion(code, taskDefinition.getVersion());
         if (taskDefinitionLog == null) {
             log.error("Task definition does not exist, taskDefinitionCode:{}.", code);
             throw new ServiceException(Status.TASK_DEFINE_NOT_EXIST, String.valueOf(code));
@@ -692,8 +692,8 @@ public class TaskDefinitionServiceImpl extends BaseServiceImpl implements TaskDe
                 throw new ServiceException(Status.REQUEST_PARAMS_NOT_VALID_ERROR, Constants.RELEASE_STATE);
         }
         int update = taskDefinitionMapper.updateById(taskDefinition);
-        int updateLog = taskDefinitionLogMapper.updateById(taskDefinitionLog);
-        if ((update == 0 && updateLog == 1) || (update == 1 && updateLog == 0)) {
+        boolean updateLogSuccess = taskDefinitionLogDao.updateById(taskDefinitionLog);
+        if ((update == 0 && updateLogSuccess) || (update == 1 && !updateLogSuccess)) {
             log.error("Update taskDefinition state or taskDefinitionLog state error, taskDefinitionCode:{}.", code);
             throw new ServiceException(Status.UPDATE_TASK_DEFINITION_ERROR);
         }

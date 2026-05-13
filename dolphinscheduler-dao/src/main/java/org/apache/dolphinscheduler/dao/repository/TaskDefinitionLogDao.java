@@ -17,11 +17,16 @@
 
 package org.apache.dolphinscheduler.dao.repository;
 
+import org.apache.dolphinscheduler.dao.entity.TaskDefinition;
 import org.apache.dolphinscheduler.dao.entity.TaskDefinitionLog;
 import org.apache.dolphinscheduler.dao.entity.WorkflowTaskRelation;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 public interface TaskDefinitionLogDao extends IDao<TaskDefinitionLog> {
 
@@ -29,6 +34,18 @@ public interface TaskDefinitionLogDao extends IDao<TaskDefinitionLog> {
                                                                     Integer workflowDefinitionVersion);
 
     List<TaskDefinitionLog> queryTaskDefineLogList(List<WorkflowTaskRelation> workflowTaskRelations);
+
+    TaskDefinitionLog queryByDefinitionCodeAndVersion(long code, int version);
+
+    Integer queryMaxVersionForDefinition(long code);
+
+    IPage<TaskDefinitionLog> queryTaskDefinitionVersionsPaging(Page<TaskDefinitionLog> page,
+                                                               long code,
+                                                               long projectCode);
+
+    List<TaskDefinitionLog> queryByTaskDefinitions(Collection<TaskDefinition> taskDefinitions);
+
+    boolean deleteByCodeAndVersion(long code, int version);
 
     void deleteByTaskDefinitionCodes(Set<Long> taskDefinitionCodes);
 }

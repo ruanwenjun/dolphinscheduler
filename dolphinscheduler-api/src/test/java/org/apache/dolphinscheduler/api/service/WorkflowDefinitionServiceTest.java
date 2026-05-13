@@ -61,7 +61,6 @@ import org.apache.dolphinscheduler.dao.entity.UserWithWorkflowDefinitionCode;
 import org.apache.dolphinscheduler.dao.entity.WorkflowDefinition;
 import org.apache.dolphinscheduler.dao.entity.WorkflowTaskRelation;
 import org.apache.dolphinscheduler.dao.mapper.ScheduleMapper;
-import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskInstanceMapper;
 import org.apache.dolphinscheduler.dao.mapper.UserMapper;
@@ -178,9 +177,6 @@ public class WorkflowDefinitionServiceTest extends BaseServiceTestTool {
 
     @Mock
     private TaskDefinitionLogDao taskDefinitionLogDao;
-
-    @Mock
-    private TaskDefinitionLogMapper taskDefinitionLogMapper;
 
     @Mock
     private TaskDefinitionService taskDefinitionService;

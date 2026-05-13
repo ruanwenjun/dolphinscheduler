@@ -27,6 +27,7 @@ import org.apache.dolphinscheduler.dao.repository.TaskDefinitionLogDao;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,9 @@ import lombok.NonNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 /**
  * Task Definition Log DAP implementation
@@ -78,6 +82,36 @@ public class TaskDefinitionLogDaoImpl extends BaseDao<TaskDefinitionLog, TaskDef
             return Collections.emptyList();
         }
         return mybatisMapper.queryByTaskDefinitions(taskDefinitionSet);
+    }
+
+    @Override
+    public TaskDefinitionLog queryByDefinitionCodeAndVersion(long code, int version) {
+        return mybatisMapper.queryByDefinitionCodeAndVersion(code, version);
+    }
+
+    @Override
+    public Integer queryMaxVersionForDefinition(long code) {
+        return mybatisMapper.queryMaxVersionForDefinition(code);
+    }
+
+    @Override
+    public IPage<TaskDefinitionLog> queryTaskDefinitionVersionsPaging(Page<TaskDefinitionLog> page,
+                                                                      long code,
+                                                                      long projectCode) {
+        return mybatisMapper.queryTaskDefinitionVersionsPaging(page, code, projectCode);
+    }
+
+    @Override
+    public List<TaskDefinitionLog> queryByTaskDefinitions(Collection<TaskDefinition> taskDefinitions) {
+        if (CollectionUtils.isEmpty(taskDefinitions)) {
+            return Collections.emptyList();
+        }
+        return mybatisMapper.queryByTaskDefinitions(taskDefinitions);
+    }
+
+    @Override
+    public boolean deleteByCodeAndVersion(long code, int version) {
+        return mybatisMapper.deleteByCodeAndVersion(code, version) > 0;
     }
 
     @Override

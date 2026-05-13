@@ -65,12 +65,12 @@ import org.apache.dolphinscheduler.dao.entity.WorkflowDefinition;
 import org.apache.dolphinscheduler.dao.entity.WorkflowInstance;
 import org.apache.dolphinscheduler.dao.entity.WorkflowTaskRelationLog;
 import org.apache.dolphinscheduler.dao.mapper.RelationSubWorkflowMapper;
-import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskDefinitionMapper;
 import org.apache.dolphinscheduler.dao.mapper.TaskInstanceMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkflowDefinitionLogMapper;
 import org.apache.dolphinscheduler.dao.mapper.WorkflowInstanceMapper;
 import org.apache.dolphinscheduler.dao.repository.ProjectDao;
+import org.apache.dolphinscheduler.dao.repository.TaskDefinitionLogDao;
 import org.apache.dolphinscheduler.dao.repository.TaskInstanceContextDao;
 import org.apache.dolphinscheduler.dao.repository.TaskInstanceDao;
 import org.apache.dolphinscheduler.dao.repository.WorkflowDefinitionDao;
@@ -157,7 +157,7 @@ public class WorkflowInstanceServiceImpl extends BaseServiceImpl implements Work
     WorkflowDefinitionLogMapper workflowDefinitionLogMapper;
 
     @Autowired
-    TaskDefinitionLogMapper taskDefinitionLogMapper;
+    TaskDefinitionLogDao taskDefinitionLogDao;
 
     @Autowired
     UsersService usersService;
@@ -683,7 +683,7 @@ public class WorkflowInstanceServiceImpl extends BaseServiceImpl implements Work
                 taskInstanceMapper.findValidTaskListByWorkflowInstanceId(workflowInstance.getId(), Flag.YES);
 
         for (TaskInstance taskInstance : taskInstanceList) {
-            TaskDefinitionLog taskDefinitionLog = taskDefinitionLogMapper.queryByDefinitionCodeAndVersion(
+            TaskDefinitionLog taskDefinitionLog = taskDefinitionLogDao.queryByDefinitionCodeAndVersion(
                     taskInstance.getTaskCode(), taskInstance.getTaskDefinitionVersion());
 
             String localParams = JSONUtils.getNodeString(taskDefinitionLog.getTaskParams(), LOCAL_PARAMS);
